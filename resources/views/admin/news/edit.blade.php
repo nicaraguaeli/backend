@@ -88,10 +88,10 @@
 
                 @include('admin.news.form')
 
-                <div class="form-group mt-3">
+                <div class="form-group mt-3 d-flex justify-content-end">
+                    <a href="{{ route('admin.news.index') }}" class="btn btn-secondary mr-2">Cancelar</a>
                     <button type="submit" class="btn btn-primary">Actualizar Noticia</button>
-                    <a href="{{ route('admin.news.index') }}" class="btn btn-secondary">Cancelar</a>
-                    </div>
+                </div>
                </form>
 
 </div>
@@ -178,41 +178,68 @@
                 placeholder: 'Seleccionar ciudad'
             });
 
-            // Cargar ciudades cuando cambie el país
-            $('#country_id').on('change', function () {
-                const countryId = $(this).val();
+            // helper para cargar ciudades
+            function loadCitiesForCountry(countryId, selectedCityId) {
                 const citiesSelect = $('#city_id');
-                citiesSelect.prop('disabled', true).empty().append('<option value="">Cargando...</option>');
                 if (!countryId) {
                     citiesSelect.empty().append('<option value="">Seleccionar ciudad...</option>');
                     citiesSelect.prop('disabled', true).trigger('change');
                     return;
                 }
 
-                // Construir URL desde data attribute (reemplaza placeholder)
-                let urlTemplate = $(this).data('cities-url');
+                // obtener plantilla de URL desde data attribute (si existe)
+                let urlTemplate = $('#country_id').data('cities-url') || '/admin/countries/COUNTRY_ID/cities';
                 const url = urlTemplate.replace('COUNTRY_ID', countryId);
 
-                $.get(url)
+                // mostrar cargando
+                citiesSelect.prop('disabled', true).empty().append('<option value="">Cargando...</option>').trigger('change');
+
+                return $.get(url)
                     .done(function (data) {
+                        // aceptar varias formas de respuesta
+                        let items = [];
+                        if (Array.isArray(data)) items = data;
+                        else if (Array.isArray(data.data)) items = data.data;
+                        else if (Array.isArray(data.cities)) items = data.cities;
+                        else if (Array.isArray(data.items)) items = data.items;
+
                         citiesSelect.empty();
                         citiesSelect.append('<option value="">Seleccionar ciudad...</option>');
-                        if (Array.isArray(data) && data.length) {
-                            data.forEach(function (c) {
-                                citiesSelect.append(new Option(c.name, c.id));
+
+                        if (items.length) {
+                            items.forEach(function (c) {
+                                const option = new Option(c.name, c.id, false, (selectedCityId && String(c.id) === String(selectedCityId)));
+                                citiesSelect.append(option);
                             });
                             citiesSelect.prop('disabled', false);
                         } else {
                             citiesSelect.append('<option value="">Sin ciudades</option>');
                             citiesSelect.prop('disabled', true);
                         }
+
                         citiesSelect.trigger('change');
                     })
-                    .fail(function () {
+                    .fail(function (xhr, status, err) {
+                        console.error('Error cargando ciudades:', status, err, xhr.responseText);
                         citiesSelect.empty().append('<option value="">Error cargando ciudades</option>');
                         citiesSelect.prop('disabled', true).trigger('change');
                     });
+            }
+
+            // Cargar ciudades cuando cambie el país
+            $('#country_id').on('change', function () {
+                const countryId = $(this).val();
+                // si hay una ciudad preseleccionada en el input (por ejemplo en edición)
+                const preselected = $('#city_id').data('selected') || $('#city_id').val() || null;
+                loadCitiesForCountry(countryId, preselected);
             });
+
+            // Si estamos editando y ya hay un país seleccionado, cargar sus ciudades y seleccionar la ciudad actual
+            const initialCountry = $('#country_id').val();
+            const initialCity = $('#city_id').data('selected') || $('#city_id').val();
+            if (initialCountry) {
+                loadCitiesForCountry(initialCountry, initialCity);
+            }
         });
     </script>
 @stop

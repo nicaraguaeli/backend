@@ -44,9 +44,9 @@
                 <label>Previsualización de la imagen</label>
                 <div>
                     @if(!empty($news->image_path))
-                        <img id="imagePreview" src="{{ asset('storage/' . $news->image_path) }}" class="image-preview" alt="Previsualización">
+                        <img id="imagePreview" src="{{ asset('storage/' . $news->image_path) }}" class="image-preview" alt="Previsualización" style="max-height:300px; width:auto; object-fit:contain;">
                     @else
-                        <img id="imagePreview" class="image-preview d-none" alt="Previsualización">
+                        <img id="imagePreview" class="image-preview d-none" alt="Previsualización" style="max-height:300px; width:auto; object-fit:contain;">
                     @endif
                 </div>
             </div>
@@ -91,7 +91,7 @@
                                 <option value="">Seleccionar ciudad...</option>
                                  @if(isset($cities))
                                 @foreach($cities as $city)
-                                    <option value="{{ $city->id }}" {{ old('city_id', $news->city_id ?? '') == $city->id ? 'selected' : '' }}>{{ $city->name }}</option>
+                                    <option value="{{ $city->id }}" {{ old('city_id', $city_id ?? '') == $city->id ? 'selected' : '' }}>{{ $city->name }}</option>
                                 @endforeach
                                 @endif
                             </select>

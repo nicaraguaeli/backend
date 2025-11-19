@@ -252,6 +252,14 @@ class NewsController extends Controller
         return response()->json(['success' => true, 'message' => 'News status updated successfully.']);
     }
 
+    public function highlight(Request $request, News $news)
+    {
+        $news->is_featured = !$news->is_featured;
+        $news->save();
+
+        return response()->json(['success' => true, 'is_featured' => $news->is_featured]);
+    }
+
     public function quickUpdate(Request $request, News $news)
     {
         $request->validate([

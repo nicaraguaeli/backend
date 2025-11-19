@@ -167,11 +167,16 @@
                                 </td>
                                 <td><span class="badge badge-dark">  {{ $new->views ?? 0 }}</span></td>
                                 <td class="text-center">
-                                    @if ($new->is_featured)
-                                        <i class="fas fa-star text-warning" aria-hidden="true"></i>
-                                    @else
-                                        <i class="far fa-star" aria-hidden="true"></i>
-                                    @endif
+                                    <a href="#"
+                                       class="highlight-btn"
+                                       data-id="{{ $new->id }}"
+                                       data-url="{{ route('admin.news.highlight', $new) }}">
+                                        @if ($new->is_featured)
+                                            <i id="highlight-icon-{{ $new->id }}" class="fas fa-star text-warning" aria-hidden="true"></i>
+                                        @else
+                                            <i id="highlight-icon-{{ $new->id }}" class="far fa-star" aria-hidden="true"></i>
+                                        @endif
+                                    </a>
                                 </td>
                                 <td>
                                     <div class="custom-control custom-switch">
@@ -393,6 +398,55 @@
                     toastr.error('Ocurrió un error al actualizar el estado.');
                 })
                 .finally(() => { el.disabled = false; });
+            });
+        });
+
+        // ---- HIGHLIGHT (AJAX) ----
+        document.querySelectorAll('.highlight-btn').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                const el = this;
+                const newsId = el.dataset.id;
+                const url = el.dataset.url;
+                const icon = document.getElementById('highlight-icon-' + newsId);
+
+                el.style.pointerEvents = 'none'; // Disable clicks
+
+                fetch(url, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({}) // No body needed, just the action
+                })
+                .then(res => {
+                    if (!res.ok) throw res;
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        const isFeatured = data.is_featured;
+                        toastr.success(`La noticia ahora está ${isFeatured ? 'destacada' : 'no destacada'}.`);
+                        aria(`Noticia ${isFeatured ? 'destacada' : 'no destacada'}`);
+                        if (isFeatured) {
+                            icon.classList.remove('far', 'fa-star');
+                            icon.classList.add('fas', 'fa-star', 'text-warning');
+                        } else {
+                            icon.classList.remove('fas', 'fa-star', 'text-warning');
+                            icon.classList.add('far', 'fa-star');
+                        }
+                    } else {
+                        toastr.error(data.message || 'Fallo al actualizar.');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    toastr.error('Ocurrió un error al actualizar.');
+                })
+                .finally(() => { el.style.pointerEvents = 'auto'; }); // Re-enable clicks
             });
         });
 

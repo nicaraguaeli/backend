@@ -88,10 +88,10 @@
 
                 @include('admin.news.form')
 
-                <div class="form-group mt-3">
+                <div class="form-group mt-3 d-flex justify-content-end">
+                    <a href="{{ route('admin.news.index') }}" class="btn btn-secondary mr-2">Cancelar</a>
                     <button type="submit" class="btn btn-primary">Crear Noticia</button>
-                    <a href="{{ route('admin.news.index') }}" class="btn btn-secondary">Cancelar</a>
-                    </div>
+                </div>
                </form>
         </div>
     </div>
