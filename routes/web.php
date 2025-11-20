@@ -12,6 +12,10 @@ Route::get('/', function () {
 });
 // ruta pública para obtener todas las noticias en JSON
     Route::get('api/news', [BlogNewsController::class, 'index'])->name('api.news.index');
+// ruta pública para obtener noticias relacionadas en JSON
+ Route::post('/admin/news/related', [NewsController::class, 'related'])
+    ->name('admin.news.related');
+
 
 Auth::routes();
 

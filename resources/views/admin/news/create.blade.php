@@ -87,6 +87,12 @@
                 @method('POST')
 
                 @include('admin.news.form')
+                
+                <hr>
+<h4 class="mt-4">Noticias Relacionadas</h4>
+<p class="text-muted">Basado en las categorías y tags que selecciones.</p>
+
+<div id="relatedResults" class="mt-3"></div>
 
                 <div class="form-group mt-3 d-flex justify-content-end">
                     <a href="{{ route('admin.news.index') }}" class="btn btn-secondary mr-2">Cancelar</a>
@@ -214,5 +220,72 @@
                     });
             });
         });
+        
     </script>
+
+    <script>
+function fetchRelatedNews() {
+    let categoryIds = $('#categories').val();
+    let tagIds = $('#tags').val();
+
+    // Si no hay nada seleccionado, limpiar resultados
+    if ((!categoryIds || categoryIds.length === 0) && (!tagIds || tagIds.length === 0)) {
+        $('#relatedResults').html('<p class="text-muted">Selecciona categorías o tags para ver sugerencias.</p>');
+        return;
+    }
+
+    $.post("{{ route('admin.news.related') }}", {
+        categoryIds,
+        tagIds,
+        limit: 6,
+        _token: "{{ csrf_token() }}"
+    })
+    .done(function(data) {
+        if (!data.length) {
+            $('#relatedResults').html('<p class="text-muted">No se encontraron noticias relacionadas.</p>');
+            return;
+        }
+
+        let html = '';
+        data.forEach(n => {
+            const url = `/news/${n.slug}`;
+
+            html += `
+                <div class="card mb-3 p-3 shadow-sm border-left-primary">
+                    <h5 class="mb-2">${n.title}</h5>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="${url}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            Ver noticia
+                        </a>
+
+                        <button class="btn btn-sm btn-primary copy-btn" data-url="${url}">
+                            Copiar URL
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+        $('#relatedResults').html(html);
+    })
+    .fail(function() {
+        $('#relatedResults').html('<p class="text-danger">Error cargando noticias relacionadas.</p>');
+    });
+}
+
+// EVENTOS — cada vez que el admin cambie categorías o tags
+$(document).on('change', '#categories, #tags', fetchRelatedNews);
+
+// BOTÓN DE COPIAR
+$(document).on('click', '.copy-btn', function () {
+    const url = $(this).data('url');
+    navigator.clipboard.writeText(url);
+
+    $(this).text('Copiado ✔').removeClass('btn-primary').addClass('btn-success');
+    setTimeout(() => {
+        $(this).text('Copiar URL').removeClass('btn-success').addClass('btn-primary');
+    }, 1500);
+});
+</script>
+
 @stop

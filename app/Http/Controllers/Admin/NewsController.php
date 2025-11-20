@@ -321,4 +321,21 @@ class NewsController extends Controller
 
     return response()->json(['success' => true, 'message' => $message]);
 }
+public function related(Request $request)
+{
+    $categoryIds = $request->input('categoryIds', []);
+    $tagIds = $request->input('tagIds', []);
+    $excludeId = $request->input('excludeId'); // null si es creación
+    $limit = $request->input('limit', 5);
+
+    $related = News::relatedBy(
+        $categoryIds,
+        $tagIds,
+        $excludeId,
+        $limit
+    )->get(['id', 'title', 'slug', 'published_at']);
+
+    return response()->json($related);
+}
+
 }
