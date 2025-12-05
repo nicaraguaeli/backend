@@ -88,11 +88,8 @@
 
                 @include('admin.news.form')
                 
-                <hr>
-<h4 class="mt-4">Noticias Relacionadas</h4>
-<p class="text-muted">Basado en las categorías y tags que selecciones.</p>
+       
 
-<div id="relatedResults" class="mt-3"></div>
 
                 <div class="form-group mt-3 d-flex justify-content-end">
                     <a href="{{ route('admin.news.index') }}" class="btn btn-secondary mr-2">Cancelar</a>
@@ -108,6 +105,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.18/summernote-bs4.min.js"></script>
     <!-- Select2 JS (CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
 
     <script>
         $(function () {
@@ -223,12 +223,11 @@
         
     </script>
 
-    <script>
+   <script>
 function fetchRelatedNews() {
     let categoryIds = $('#categories').val();
     let tagIds = $('#tags').val();
 
-    // Si no hay nada seleccionado, limpiar resultados
     if ((!categoryIds || categoryIds.length === 0) && (!tagIds || tagIds.length === 0)) {
         $('#relatedResults').html('<p class="text-muted">Selecciona categorías o tags para ver sugerencias.</p>');
         return;
@@ -251,18 +250,21 @@ function fetchRelatedNews() {
             const url = `/news/${n.slug}`;
 
             html += `
-                <div class="card mb-3 p-3 shadow-sm border-left-primary">
-                    <h5 class="mb-2">${n.title}</h5>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <a href="${url}" target="_blank" class="btn btn-sm btn-outline-primary">
-                            Ver noticia
-                        </a>
+               <div class=" p-3 shadow-sm">
+    <div class="d-flex justify-content-between align-items-center">
+        
+        <!-- Texto pequeño y en cursiva -->
+        <p style="font-size: 1rem; font-style: italic; margin: 0;">
+            ${n.title}  
+        </p>
+                    
+        <!-- Botón -->
+        <button class="btn btn-sm btn-primary copy-btn" data-url="${url}">
+            Copiar URL
+        </button>
+    </div>
+</div>
 
-                        <button class="btn btn-sm btn-primary copy-btn" data-url="${url}">
-                            Copiar URL
-                        </button>
-                    </div>
-                </div>
             `;
         });
 
@@ -273,19 +275,38 @@ function fetchRelatedNews() {
     });
 }
 
-// EVENTOS — cada vez que el admin cambie categorías o tags
+// EVENTOS
 $(document).on('change', '#categories, #tags', fetchRelatedNews);
 
-// BOTÓN DE COPIAR
+// Botón de copiar
 $(document).on('click', '.copy-btn', function () {
     const url = $(this).data('url');
     navigator.clipboard.writeText(url);
 
-    $(this).text('Copiado ✔').removeClass('btn-primary').addClass('btn-success');
+    $(this).text('Copiado ✔')
+        .removeClass('btn-primary')
+        .addClass('btn-success');
+
     setTimeout(() => {
-        $(this).text('Copiar URL').removeClass('btn-success').addClass('btn-primary');
+        $(this).text('Copiar URL')
+            .removeClass('btn-success')
+            .addClass('btn-primary');
     }, 1500);
 });
+
+// Acordeón
+$('#toggleRelatedBtn').on('click', function () {
+    const container = $('#relatedContainer');
+    container.slideToggle(250);
+
+    // Actualiza el texto del botón
+    if (container.is(':visible')) {
+        $(this).html('Ocultar noticias relacionadas ▲');
+    } else {
+        $(this).html('Mostrar noticias relacionadas ▼');
+    }
+});
 </script>
+
 
 @stop

@@ -386,6 +386,20 @@ return [
         'text' => 'Empleos',
         'url'  => '#',
         'icon' => 'fas fa-briefcase',
+        'submenu' => [
+            [
+                'text' => 'Todas las empleos',
+                'route'  => 'admin.vacancies.index',
+                
+            ],
+            [
+                'text' => 'Añadir empleo',
+                'route'  => 'admin.vacancies.create',
+            ],
+        ]
+        
+        
+            
     ],
 ],
 

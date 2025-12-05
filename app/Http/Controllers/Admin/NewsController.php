@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Intervention\Image\ImageManager;
 use App\Models\News;
 use App\Models\Author;
 use App\Models\Category;
@@ -78,8 +79,8 @@ class NewsController extends Controller
             'author_id.*' => 'exists:authors,id',
             'categories' => 'required|array',
             'categories.*' => 'exists:categories,id',
-            'city_id' => 'nullable|exists:cities,id',
-            'country_id' => 'nullable|exists:countries,id',
+            'city_id' => 'required|exists:cities,id',
+            'country_id' => 'required|exists:countries,id',
             'tags' => 'nullable|array',
             'tags.*' => 'distinct',
         ]);
@@ -105,8 +106,30 @@ class NewsController extends Controller
         $data['country'] = $countryName;
 
         // Handle image upload
-        if ($request->hasFile('image_path')) {
-            $data['image_path'] = $request->file('image_path')->store('news', 'public');
+        if ($request->filled('cropped_image') || $request->hasFile('image_path')) {
+            $manager = ImageManager::gd();
+
+            if ($request->filled('cropped_image')) {
+                $base64_image = $request->input('cropped_image');
+                @list($type, $file_data) = explode(';', $base64_image);
+                @list(, $file_data) = explode(',', $file_data);
+                $img = $manager->read(base64_decode($file_data));
+            } else { // hasFile('image_path')
+                $img = $manager->read($request->file('image_path'));
+            }
+
+            if ($request->boolean('add_watermark')) {
+                $watermarkPath = public_path('watermark.png');
+                if (file_exists($watermarkPath)) {
+                    $img->place($watermarkPath, 'bottom-right', 10, 10, 50);
+                }
+            }
+
+            $imageName = 'news/' . \Illuminate\Support\Str::random(40) . '.jpg';
+            $encodedImage = $img->toJpeg(90);
+            Storage::disk('public')->put($imageName, (string) $encodedImage);
+
+            $data['image_path'] = $imageName;
         }
 
         $news = News::create($data);
@@ -202,12 +225,35 @@ class NewsController extends Controller
         $data['country'] = $countryName;
 
         // Handle image upload
-        if ($request->hasFile('image_path')) {
+        if ($request->filled('cropped_image') || $request->hasFile('image_path')) {
             // Delete old image
             if ($news->image_path) {
                 Storage::disk('public')->delete($news->image_path);
             }
-            $data['image_path'] = $request->file('image_path')->store('news', 'public');
+
+            $manager = ImageManager::gd();
+
+            if ($request->filled('cropped_image')) {
+                $base64_image = $request->input('cropped_image');
+                @list($type, $file_data) = explode(';', $base64_image);
+                @list(, $file_data) = explode(',', $file_data);
+                $img = $manager->read(base64_decode($file_data));
+            } else { // hasFile('image_path')
+                $img = $manager->read($request->file('image_path'));
+            }
+
+            if ($request->boolean('add_watermark')) {
+                $watermarkPath = public_path('watermark.png');
+                if (file_exists($watermarkPath)) {
+                    $img->place($watermarkPath, 'bottom-right', 10, 10, 50);
+                }
+            }
+
+            $imageName = 'news/' . \Illuminate\Support\Str::random(40) . '.jpg';
+            $encodedImage = $img->toJpeg(90);
+            Storage::disk('public')->put($imageName, (string) $encodedImage);
+
+            $data['image_path'] = $imageName;
         }
 
         $news->update($data);

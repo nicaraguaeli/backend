@@ -127,8 +127,8 @@
                             <th>Categoria</th>
                             <th>Visto</th>
                             <th>Destacar</th>
-                            <th>Visible</th>
-                            <th>Publicado el</th>
+                            <th>Publicar</th>
+                            <th>Creado el</th>
                         </tr>
                     </thead>
                     <tbody>

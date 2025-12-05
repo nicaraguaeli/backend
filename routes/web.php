@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\TagController;
 use App\Http\Controllers\Admin\CountryController;
 use App\Http\Controllers\Blog\NewsController as BlogNewsController;
+use App\Http\Controllers\Admin\VacancyController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -22,6 +23,7 @@ Auth::routes();
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], function () {
+    
     Route::resource('news', NewsController::class);
     Route::patch('news/{news}/status', [NewsController::class, 'updateStatus'])->name('news.update.status');
     Route::patch('news/{news}/highlight', [NewsController::class, 'highlight'])->name('news.highlight');
@@ -33,6 +35,8 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], fu
     Route::resource('users', App\Http\Controllers\Admin\UserController::class);
     Route::patch('users/{user}/status', [App\Http\Controllers\Admin\UserController::class, 'updateStatus'])->name('users.update.status');
     Route::get('countries/{country}/cities', [App\Http\Controllers\Admin\CountryController::class, 'cities'])->name('admin.countries.cities');
+    // Rutas para Empleos (Vacancies)
+    Route::resource('vacancies', App\Http\Controllers\Admin\VacancyController::class);
     
 });
 
