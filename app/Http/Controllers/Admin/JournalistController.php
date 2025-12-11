@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Author;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class JournalistController extends Controller
 {
@@ -39,7 +40,24 @@ class JournalistController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:authors,email',
+            'phone_number' => 'nullable|string|max:20',
+            'bio' => 'nullable|string',
+            'avatar' => 'nullable|image|max:2048',
+            'type' => 'required|string|in:Periodista,Colaborador',
+        ]);
+
+        $data = $request->only('name', 'email', 'phone_number', 'bio', 'type');
+
+        if ($request->hasFile('avatar')) {
+            $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
+        }
+
+        Author::create($data);
+
+        return redirect()->route('admin.journalists.index')->with('success', 'Periodista creado con éxito.');
     }
 
     /**
@@ -71,9 +89,42 @@ class JournalistController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Author $journalist)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:authors,email,' . $journalist->id,
+            'phone_number' => 'nullable|string|max:20',
+            'bio' => 'nullable|string',
+            'avatar' => 'nullable|image|max:2048',
+            'type' => 'required|string|in:Periodista,Colaborador',
+        ]);
+
+        $data = $request->only('name', 'email', 'phone_number', 'bio', 'type');
+
+        if ($request->hasFile('avatar')) {
+            // Delete old avatar if it exists
+            if ($journalist->avatar) {
+                Storage::disk('public')->delete($journalist->avatar);
+            }
+            $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
+        }
+
+        $journalist->update($data);
+
+        return redirect()->route('admin.journalists.index')->with('success', 'Periodista actualizado con éxito.');
+    }
+
+    public function updateStatus(Request $request, Author $journalist)
+    {
+        $request->validate([
+            'status' => 'required|boolean',
+        ]);
+
+        $journalist->status = $request->status;
+        $journalist->save();
+
+        return redirect()->route('admin.journalists.index')->with('success', 'Estado actualizado con éxito.');
     }
 
     /**

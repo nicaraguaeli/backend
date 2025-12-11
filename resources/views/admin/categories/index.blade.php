@@ -33,15 +33,23 @@
                                 <th>ID</th>
                                 <th>Nombre</th>
                                 <th class="text-center">Noticias</th> {{-- nueva columna --}}
+                                <th class="text-center">Activo</th>
+                                <th class="text-center">Destacado</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($categories as $category)
-                                <tr data-id="{{ $category->id }}" data-name="{{ $category->name }}" data-news-count="{{ $category->news_count }}">
+                                <tr data-id="{{ $category->id }}" data-name="{{ $category->name }}" data-news-count="{{ $category->news_count }}" data-is-active="{{ $category->is_active }}" data-is-featured="{{ $category->is_featured }}">
                                     <td class="align-middle">{{ $category->id }}</td>
                                     <td class="align-middle category-name">{{ $category->name }}</td>
                                     <td class="align-middle text-center news-count">{{ $category->news_count }}</td> {{-- mostrar conteo --}}
+                                    <td class="align-middle text-center">
+                                        <div class="custom-control custom-switch"><input type="checkbox" class="custom-control-input category-toggle" id="isActiveSwitch{{$category->id}}" data-field="is_active" {{ $category->is_active ? 'checked' : '' }}> <label class="custom-control-label" for="isActiveSwitch{{$category->id}}"></label></div>
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        <div class="custom-control custom-switch"><input type="checkbox" class="custom-control-input category-toggle" id="isFeaturedSwitch{{$category->id}}" data-field="is_featured" {{ $category->is_featured ? 'checked' : '' }}> <label class="custom-control-label" for="isFeaturedSwitch{{$category->id}}"></label></div>
+                                    </td>
                                     <td class="align-middle">
                                         <button type="button" class="btn btn-sm btn-outline-secondary edit-category-btn" data-id="{{ $category->id }}" data-name="{{ $category->name }}">Editar</button>
 
@@ -95,6 +103,7 @@
 @stop
 
 @section('js')
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -146,7 +155,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 tr.setAttribute('data-name', cat.name);
                 tr.innerHTML = `<td class="align-middle">${cat.id}</td>
                                 <td class="align-middle category-name">${cat.name}</td>
-                                <td class="align-middle text-center news-count">${cat.news_count}</td> {{-- mostrar conteo --}}
+                                <td class="align-middle text-center news-count">${cat.news_count}</td>
+                                <td class="align-middle text-center"><div class="custom-control custom-switch"><input type="checkbox" class="custom-control-input category-toggle" id="isActiveSwitch${cat.id}" data-field="is_active" checked> <label class="custom-control-label" for="isActiveSwitch${cat.id}"></label></div></td>
+                                <td class="align-middle text-center"><div class="custom-control custom-switch"><input type="checkbox" class="custom-control-input category-toggle" id="isFeaturedSwitch${cat.id}" data-field="is_featured"> <label class="custom-control-label" for="isFeaturedSwitch${cat.id}"></label></div></td>
                                 <td class="align-middle">
                                     <button type="button" class="btn btn-sm btn-outline-secondary edit-category-btn" data-id="${cat.id}" data-name="${cat.name}">Editar</button>
                                     <form action="/admin/categories/${cat.id}" method="POST" class="d-inline delete-category-form" data-id="${cat.id}">
@@ -269,6 +280,47 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error(err);
             showToast('error', err && err.message ? err.message : 'Error al borrar categoría.');
         });
+    });
+
+    // TOGGLE is_active / is_featured
+    document.addEventListener('change', function(e) {
+        const toggle = e.target.closest('.category-toggle');
+        if (!toggle) return;
+
+        const tr = toggle.closest('tr');
+        const id = tr.dataset.id;
+        const field = toggle.dataset.field;
+        const value = toggle.checked;
+
+        toggle.disabled = true;
+
+        fetch('/admin/categories/' + id, {
+            method: 'POST', // method spoofing
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': token,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                _method: 'PATCH',
+                [field]: value
+            })
+        })
+        .then(async res => {
+            if (!res.ok) {
+                const err = await res.json().catch(() => null);
+                throw err || new Error('Error al actualizar');
+            }
+            return res.json();
+        })
+        .then(data => {
+            showToast('success', 'Categoría actualizada.');
+            tr.dataset[field === 'is_active' ? 'isActive' : 'isFeatured'] = value;
+        })
+        .catch(err => {
+            showToast('error', err.message || 'No se pudo actualizar.');
+            toggle.checked = !value; // Revert toggle on error
+        }).finally(() => toggle.disabled = false);
     });
 });
 </script>

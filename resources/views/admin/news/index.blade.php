@@ -89,7 +89,7 @@
                 <!-- moved buttons next to category for easier access -->
                 <div class="d-flex align-items-center">
                     <button class="btn btn-outline-secondary mr-2" type="submit">Buscar</button>
-                    <a href="{{ route('admin.news.index') }}" class="btn btn-link">Reset</a>
+                    <a href="{{ route('admin.news.index') }}" class="btn btn-link">Limpiar</a>
                 </div>
             </form>
 
@@ -142,7 +142,7 @@
                                     <strong><a href="{{ route('admin.news.edit', $new) }}">{{ $new->title }}</a></strong>
                                     <div class="row-actions">
                                         <a href="{{ route('admin.news.edit', $new) }}">Editar</a> |
-                                        <a href="#" class="quick-edit-btn" data-id="{{ $new->id }}" data-toggle="tooltip" title="Quick edit">Edicion Rapida</a> |
+                                        <a href="#" class="quick-edit-btn" data-id="{{ $new->id }}" data-toggle="tooltip" title="Edicion rápida">Edicion Rapida</a> |
                                         <form action="{{ route('admin.news.destroy', $new) }}" method="POST" style="display: inline;" class="delete-form" data-id="{{ $new->id }}">
                                             @csrf
                                             @method('DELETE')
@@ -559,6 +559,29 @@
             $('#quickEditModal .modal-body').empty().append(cloned);
 
             // initialize Select2 on cloned selects (categories + tags) if exists
+            // --- INICIO: Generación automática de Slug ---
+            const titleInput = cloned.find('input[name="title"]');
+            const slugInput = cloned.find('input[name="slug"]');
+
+            function slugify(text) {
+                const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;'
+                const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------'
+                const p = new RegExp(a.split('').join('|'), 'g')
+
+                return text.toString().toLowerCase()
+                    .replace(/\s+/g, '-') // Replace spaces with -
+                    .replace(p, c => b.charAt(a.indexOf(c))) // Replace special characters
+                    .replace(/&/g, '-and-') // Replace & with 'and'
+                    .replace(/[^\w\-]+/g, '') // Remove all non-word chars
+                    .replace(/\-\-+/g, '-') // Replace multiple - with single -
+                    .replace(/^-+/, '') // Trim - from start of text
+                    .replace(/-+$/, '') // Trim - from end of text
+            }
+
+            titleInput.on('input', function() {
+                slugInput.val(slugify($(this).val()));
+            });
+            // --- FIN: Generación automática de Slug ---
             try {
                 if (cloned.find('.select2-quick-categories').length) {
                     cloned.find('.select2-quick-categories').select2({

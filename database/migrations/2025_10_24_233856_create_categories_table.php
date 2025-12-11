@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('name', 100);
             $table->string('slug', 100)->unique();
+            $table->boolean('is_active')->default(true);    // activa por defecto
+            $table->boolean('is_featured')->default(false); // no destacada por defecto
             $table->timestamps();
         });
     }

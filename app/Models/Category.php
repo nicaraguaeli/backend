@@ -10,7 +10,7 @@ class Category extends Model
 
     // Solo columnas reales
     protected $fillable = [
-        'name', 'slug'
+        'name', 'slug', 'is_active', 'is_featured'
     ];
 
     public function news()

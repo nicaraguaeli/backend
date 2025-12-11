@@ -15,10 +15,19 @@
     </div>
 
     <div class="form-group">
-        <label for="slug">Slug</label>
-        <input id="slug" name="slug" type="text" class="form-control @error('slug') is-invalid @enderror"
-               value="{{ old('slug', $journalist->slug ?? '') }}">
-        @error('slug') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        <label for="phone_number">Teléfono</label>
+        <input id="phone_number" name="phone_number" type="text" class="form-control @error('phone_number') is-invalid @enderror"
+               value="{{ old('phone_number', $journalist->phone_number ?? '') }}">
+        @error('phone_number') <div class="invalid-feedback">{{ $message }}</div> @enderror
+    </div>
+
+    <div class="form-group">
+        <label for="type">Tipo</label>
+        <select id="type" name="type" class="form-control @error('type') is-invalid @enderror" required>
+            <option value="Periodista" {{ old('type', $journalist->type ?? '') == 'Periodista' ? 'selected' : '' }}>Periodista</option>
+            <option value="Colaborador" {{ old('type', $journalist->type ?? '') == 'Colaborador' ? 'selected' : '' }}>Colaborador</option>
+        </select>
+        @error('type') <div class="invalid-feedback">{{ $message }}</div> @enderror
     </div>
 
     <div class="form-group">
@@ -33,18 +42,12 @@
         @error('avatar') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
 
         <div class="mt-2">
-            @if(!empty($journalist->avatar_path))
-                <img id="avatarPreview" src="{{ asset('storage/' . $journalist->avatar_path) }}" alt="avatar" style="max-height:300px; width:auto; object-fit:contain;">
+            @if(!empty($journalist->avatar))
+                <img id="avatarPreview" src="{{ asset('storage/' . $journalist->avatar) }}" alt="avatar" style="max-height:300px; width:auto; object-fit:contain;">
             @else
                 <img id="avatarPreview" class="d-none" alt="avatar preview" style="max-height:300px; width:auto; object-fit:contain;">
             @endif
         </div>
-    </div>
-
-    <div class="form-group form-check">
-        <input type="checkbox" class="form-check-input" id="is_active" name="is_active" value="1"
-               {{ old('is_active', $journalist->is_active ?? false) ? 'checked' : '' }}>
-        <label class="form-check-label" for="is_active">Activo</label>
     </div>
 </div>
 

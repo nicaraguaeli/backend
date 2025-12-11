@@ -148,25 +148,7 @@
                 }
             });
 
-            // Image preview and filename label
-            $('#image_path').on('change', function (e) {
-                const file = this.files && this.files[0];
-                const label = $(this).next('.custom-file-label');
-                if (file) {
-                    label.text(file.name);
-                    const url = URL.createObjectURL(file);
-                    $('#imagePreview').attr('src', url).removeClass('d-none');
-                } else {
-                    label.text('Elegir imagen');
-                    $('#imagePreview').attr('src', '').addClass('d-none');
-                }
-            });
-
-            // Improve file input display for browsers not supporting bootstrap custom-file (optional)
-            $('.custom-file-input').on('change', function () {
-                const fileName = $(this).val().split('\\').pop();
-                $(this).next('.custom-file-label').addClass('selected').html(fileName);
-            });
+            
 
             // Asegúrate que Select2 esté inicializado en #country_id y #city_id
             $('#country_id').select2({

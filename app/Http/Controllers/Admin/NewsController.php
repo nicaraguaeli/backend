@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
+use App\Http\Controllers\Admin\Traits\HandlesImages;
 
 use App\Http\Controllers\Controller;
 use Intervention\Image\ImageManager;
@@ -12,9 +13,14 @@ use App\Models\Country;
 use App\Models\City;
 use App\Models\Tag;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Option;
+
 
 class NewsController extends Controller
+
 {
+   use HandlesImages;
+
     public function index(Request $request)
     {
         // base query
@@ -56,11 +62,12 @@ class NewsController extends Controller
         $categories = Category::all();
         $countries = Country::orderBy('name')->get();
         $tags = Tag::orderBy('name')->get();
+       $watermarkPath = Option::where( 'key', 'watermark_image_path' )->value('value');
 
         $news = new News();
 
 
-        return view('admin.news.create', compact('authors', 'categories', 'countries', 'tags', 'news'));
+        return view('admin.news.create', compact('authors', 'categories', 'countries', 'tags', 'news', 'watermarkPath'));
     }
 
     public function store(Request $request)
@@ -83,8 +90,10 @@ class NewsController extends Controller
             'country_id' => 'required|exists:countries,id',
             'tags' => 'nullable|array',
             'tags.*' => 'distinct',
+            'add_watermark' => 'sometimes|boolean', // <-- validación añadida
         ]);
-
+         
+        
         // Resolve city and country names
         $cityName = null;
         $countryName = null;
@@ -105,31 +114,12 @@ class NewsController extends Controller
         $data['city'] = $cityName;
         $data['country'] = $countryName;
 
-        // Handle image upload
-        if ($request->filled('cropped_image') || $request->hasFile('image_path')) {
-            $manager = ImageManager::gd();
+        // Manejar la subida de imagen usando el trait
+        $imagePath = $this->handleImageUpload($request);
 
-            if ($request->filled('cropped_image')) {
-                $base64_image = $request->input('cropped_image');
-                @list($type, $file_data) = explode(';', $base64_image);
-                @list(, $file_data) = explode(',', $file_data);
-                $img = $manager->read(base64_decode($file_data));
-            } else { // hasFile('image_path')
-                $img = $manager->read($request->file('image_path'));
-            }
-
-            if ($request->boolean('add_watermark')) {
-                $watermarkPath = public_path('watermark.png');
-                if (file_exists($watermarkPath)) {
-                    $img->place($watermarkPath, 'bottom-right', 10, 10, 50);
-                }
-            }
-
-            $imageName = 'news/' . \Illuminate\Support\Str::random(40) . '.jpg';
-            $encodedImage = $img->toJpeg(90);
-            Storage::disk('public')->put($imageName, (string) $encodedImage);
-
-            $data['image_path'] = $imageName;
+        if ($imagePath) {
+            $data['image_path'] = $imagePath;
+            
         }
 
         $news = News::create($data);
@@ -165,6 +155,8 @@ class NewsController extends Controller
         $authors = Author::all();
         $categories = Category::all();
         $countries = Country::orderBy('name')->get();
+        $tags = Tag::orderBy('name')->get();
+        $watermarkPath = Option::where( 'key', 'watermark_image_path' )->value('value');
         
         // Find the country by name to get its ID
         $country = Country::where('name', $news->country)->first();
@@ -179,105 +171,115 @@ class NewsController extends Controller
             $cities = City::where('country_id', $country_id)->orderBy('name')->get();
         }
 
-        return view('admin.news.edit', compact('news', 'authors', 'categories', 'countries', 'cities', 'country_id', 'city_id'));
+        return view('admin.news.edit', compact('news', 'authors', 'categories', 'countries', 'cities', 'country_id', 'city_id', 'tags', 'watermarkPath'));
     }
 
-    public function update(Request $request, News $news)
-    {
-        $request->validate([
-            'title' => 'required',
-            'slug' => 'required|unique:news,slug,' . $news->id,
-            'lead' => 'required',
-            'excerpt' => 'required',
-            'caption' => 'required',
-            'area' => 'required',
-            'published_at' => 'required',
-            'image_path' => 'nullable|image',
-            'content' => 'required',
-            'author_id' => 'required|array',
-            'author_id.*' => 'exists:authors,id',
-            'categories' => 'required|array',
-            'categories.*' => 'exists:categories,id',
-            'city_id' => 'nullable|exists:cities,id',
-            'country_id' => 'nullable|exists:countries,id',
-            'tags' => 'nullable|array',
-            'tags.*' => 'distinct',
-        ]);
+   public function update(Request $request, News $news)
+{
+    $request->validate([
+        'title' => 'required',
+        'slug' => 'required|unique:news,slug,' . $news->id,
+        'lead' => 'required',
+        'excerpt' => 'required',
+        'caption' => 'required',
+        'area' => 'required',
+        'published_at' => 'required',
+        'image_path' => 'nullable|image',
+        'content' => 'required',
+        'author_id' => 'required|array',
+        'author_id.*' => 'exists:authors,id',
+        'categories' => 'required|array',
+        'categories.*' => 'exists:categories,id',
+        'city_id' => 'nullable|exists:cities,id',
+        'country_id' => 'nullable|exists:countries,id',
+        'tags' => 'nullable|array',
+    ]);
 
-        // Resolve city and country names
-        $cityName = null;
-        $countryName = null;
+    // ✅ Resolver city / country
+    $cityName = null;
+    $countryName = null;
 
-        if ($request->filled('city_id')) {
-            $city = City::with('country')->find($request->city_id);
-            if ($city) {
-                $cityName = $city->name;
-                $countryName = $city->country->name ?? null;
-            }
-        } elseif ($request->filled('country_id')) {
-            $country = Country::find($request->country_id);
-            $countryName = $country->name ?? null;
-        }
-
-        // Prepare data to update News
-        $data = $request->only('title', 'slug', 'lead', 'excerpt', 'caption', 'content', 'area', 'published_at');
-        $data['city'] = $cityName;
-        $data['country'] = $countryName;
-
-        // Handle image upload
-        if ($request->filled('cropped_image') || $request->hasFile('image_path')) {
-            // Delete old image
-            if ($news->image_path) {
-                Storage::disk('public')->delete($news->image_path);
-            }
-
-            $manager = ImageManager::gd();
-
-            if ($request->filled('cropped_image')) {
-                $base64_image = $request->input('cropped_image');
-                @list($type, $file_data) = explode(';', $base64_image);
-                @list(, $file_data) = explode(',', $file_data);
-                $img = $manager->read(base64_decode($file_data));
-            } else { // hasFile('image_path')
-                $img = $manager->read($request->file('image_path'));
-            }
-
-            if ($request->boolean('add_watermark')) {
-                $watermarkPath = public_path('watermark.png');
-                if (file_exists($watermarkPath)) {
-                    $img->place($watermarkPath, 'bottom-right', 10, 10, 50);
-                }
-            }
-
-            $imageName = 'news/' . \Illuminate\Support\Str::random(40) . '.jpg';
-            $encodedImage = $img->toJpeg(90);
-            Storage::disk('public')->put($imageName, (string) $encodedImage);
-
-            $data['image_path'] = $imageName;
-        }
-
-        $news->update($data);
-
-        // Sync relations
-        $news->categories()->sync($request->categories);
-        $news->author()->sync($request->author_id);
-
-        // Tags: accept IDs or new names; create missing tags
-        $tagIds = [];
-        foreach ($request->input('tags', []) as $t) {
-            if (is_numeric($t) && Tag::where('id', (int)$t)->exists()) {
-                $tagIds[] = (int)$t;
-            } else {
-                $name = trim((string)$t);
-                if ($name === '') continue;
-                $tag = Tag::firstOrCreate(['name' => $name]);
-                $tagIds[] = $tag->id;
-            }
-        }
-        $news->tags()->sync($tagIds);
-
-        return redirect()->route('admin.news.index')->with('success', 'News updated successfully.');
+    if ($request->filled('city_id')) {
+        $city = City::with('country')->find($request->city_id);
+        $cityName = $city?->name;
+        $countryName = $city?->country?->name;
+    } elseif ($request->filled('country_id')) {
+        $countryName = Country::find($request->country_id)?->name;
     }
+
+    $data = $request->only(
+        'title', 'slug', 'lead', 'excerpt',
+        'caption', 'content', 'area', 'published_at'
+    );
+
+    $data['city'] = $cityName;
+    $data['country'] = $countryName;
+
+    // NUEVA LÓGICA DE IMAGEN
+$applyWatermark = $request->boolean('add_watermark');
+$imagePath = null;
+
+if ($request->filled('cropped_image')) {
+    // extraer base64
+    $imageData = $request->input('cropped_image');
+    if (strpos($imageData, ',') !== false) {
+        [, $imageData] = explode(',', $imageData, 2);
+    }
+    $binary = base64_decode($imageData);
+
+    $imagePath = $this->storeImageBinary(
+        $binary,
+        $news->image_path,
+        $applyWatermark
+    );
+} elseif ($request->hasFile('image_path')) {
+    // sigue funcionando para archivos físicos normales
+    $binary = file_get_contents($request->file('image_path')->getRealPath());
+
+    $imagePath = $this->storeImageBinary(
+        $binary,
+        $news->image_path,
+        $applyWatermark
+    );
+} elseif ($applyWatermark && $news->image_path) {
+    $binary = Storage::disk('public')->get($news->image_path);
+
+    $imagePath = $this->storeImageBinary(
+        $binary,
+        $news->image_path,
+        true
+    );
+}
+
+if ($imagePath) {
+    $data['image_path'] = $imagePath;
+}
+
+
+    $news->update($data);
+
+    // ✅ Relaciones
+    $news->categories()->sync($request->categories);
+    $news->author()->sync($request->author_id);
+
+    // ✅ Tags
+    $tagIds = [];
+    foreach ($request->input('tags', []) as $t) {
+        if (is_numeric($t) && Tag::where('id', $t)->exists()) {
+            $tagIds[] = (int) $t;
+        } else {
+            $name = trim($t);
+            if ($name !== '') {
+                $tagIds[] = Tag::firstOrCreate(['name' => $name])->id;
+            }
+        }
+    }
+    $news->tags()->sync($tagIds);
+
+    return redirect()
+        ->route('admin.news.index')
+        ->with('success', 'News updated successfully.');
+}
 
     public function destroy(News $news)
     {

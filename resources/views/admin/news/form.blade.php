@@ -48,16 +48,6 @@
                 <label class="custom-file-label" for="image_path">Elegir imagen</label>
             </div>
 
-            <div class="form-check mt-2">
-                <input class="form-check-input" type="checkbox" name="add_watermark" id="add_watermark" value="1" {{ old('add_watermark', $news->add_watermark ?? false) ? 'checked' : '' }}>
-                <label class="form-check-label" for="add_watermark">
-                    Agregar marca de agua
-                </label>
-            </div>
-
-            {{-- Hidden input para enviar imagen recortada como base64 --}}
-            <input type="hidden" name="cropped_image" id="cropped_image">
-
             <div class="mt-2">
                 <label>Previsualización de la imagen</label>
                 <div>
@@ -68,6 +58,69 @@
                     @endif
                 </div>
             </div>
+
+            <div class="form-group mt-2">
+                <label for="caption">Pie de foto</label>
+                <input type="text" name="caption" id="caption" class="form-control"
+                       value="{{ old('caption', $news->caption ?? '') }}">
+            </div>
+
+            <div class="form-check mt-2">
+
+
+    <input class="form-check-input" type="checkbox"
+           name="add_watermark" id="add_watermark" value="1">
+    <label class="form-check-label" for="add_watermark">
+        Agregar marca de agua
+    </label>
+</div>
+
+{{-- Watermark Manager --}}
+<div id="watermarkManager" class="border rounded p-3 mt-2 bg-light" style="display:none;">
+    <small class="text-muted d-block mb-2">
+        Marca de agua del sistema
+    </small>
+
+    <div id="watermarkPreviewContainer" class="mb-2">
+        @if(isset($watermarkPath))
+            <div class="d-flex align-items-center gap-2">
+                <img src="{{asset('storage/' . $watermarkPath) }}"
+                     style="height:40px;border:1px solid #ddd;padding:2px;border-radius:4px;background:#fff;">
+                <span class="text-muted small">Actual</span>
+            </div>
+        @else
+            <div class="alert alert-warning p-2 small mb-2">
+                No hay una marca de agua configurada.
+            </div>
+        @endif
+    </div>
+
+<div id="watermarkUploadBox">
+    @csrf
+
+    <div class="custom-file mb-2">
+        <input type="file"
+               class="custom-file-input"
+               id="watermarkInput"
+               accept="image/png,image/webp,image/jpeg">
+        <label class="custom-file-label" for="watermarkInput">
+            Cambiar marca de agua
+        </label>
+    </div>
+
+    <button type="button"
+            id="uploadWatermarkBtn"
+            class="btn btn-sm btn-outline-primary">
+        Guardar marca
+    </button>
+
+    <div id="watermarkStatus" class="small mt-2"></div>
+</div>
+</div>
+
+
+            {{-- Hidden input para enviar imagen recortada como base64 --}}
+            <input type="hidden" name="cropped_image" id="cropped_image">
 
             {{-- Modal para Cropper --}}
             <div class="modal fade" id="cropperModal" tabindex="-1" role="dialog" aria-labelledby="cropperModalLabel" aria-hidden="true">
@@ -90,12 +143,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="form-group mt-2">
-                <label for="caption">Pie de foto</label>
-                <input type="text" name="caption" id="caption" class="form-control"
-                       value="{{ old('caption', $news->caption ?? '') }}">
             </div>
         </div>
 
@@ -161,8 +208,8 @@
                             <label for="tags">Tags</label>
                             <select id="tags" name="tags[]" class="form-control select2-tags" multiple="multiple">
                                 @if(isset($news))
-                                    @foreach($news->tags as $tag)
-                                        <option value="{{ $tag->id }}" selected>{{ $tag->name }}</option>
+                                    @foreach($tags as $tag)
+                                         <option value="{{ $tag->id }}" {{ in_array($tag->id, old('tags', $news->tags->pluck('id')->toArray() ?? [])) ? 'selected' : '' }}>{{ $tag->name }}</option>
                                     @endforeach
                                 @endif
                             </select>
@@ -180,7 +227,13 @@
 
 {{-- Añadir scripts de Cropper al final del form (usar jQuery/Bootstrap ya presentes en la app) --}}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+ <!-- Select2 JS (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
+
+   
+
+
 document.addEventListener('DOMContentLoaded', function () {
     // Slug generator
     const titleInput = document.getElementById('title');
@@ -223,6 +276,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     imageInput.addEventListener('change', function (e) {
+        
         const file = this.files && this.files[0];
         if (!file) return;
 
@@ -272,8 +326,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const reader = new FileReader();
         reader.onloadend = function () {
             const base64data = reader.result;
+
             if (croppedInput) croppedInput.value = base64data;
 
+             console.log('cropped image:', base64data);
+             
             if (imagePreview) {
                 imagePreview.src = base64data;
                 imagePreview.classList.remove('d-none');
@@ -283,10 +340,71 @@ document.addEventListener('DOMContentLoaded', function () {
         };
         reader.readAsDataURL(blob);
     }, 'image/jpeg', 0.9);
+
+    console.log('cropped image:', base64data);
 });
 
+    // Watermark logic
+    const addWatermarkCheckbox = document.getElementById('add_watermark');
+    const watermarkManager = document.getElementById('watermarkManager');
+    const watermarkInput = document.getElementById('watermarkInput');
+    const uploadBtn = document.getElementById('uploadWatermarkBtn');
+    const watermarkPreviewContainer = document.getElementById('watermarkPreviewContainer');
+    const watermarkStatus = document.getElementById('watermarkStatus');
 
-    // Si el usuario desea remover la imagen seleccionada manualmente:
-    // puedes añadir aquí un handler para limpiar input/preview si hace falta.
+    addWatermarkCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            watermarkManager.style.display = 'block';
+        } else {
+            watermarkManager.style.display = 'none';
+        }
+    });
+
+    uploadBtn.addEventListener('click', function () {
+    if (!watermarkInput.files.length) {
+        watermarkStatus.textContent = 'Seleccione una imagen.';
+        watermarkStatus.classList.add('text-danger');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('watermark', watermarkInput.files[0]);
+    formData.append('_token', document.querySelector('input[name="_token"]').value);
+
+    uploadBtn.disabled = true;
+    watermarkStatus.textContent = 'Subiendo...';
+    watermarkStatus.className = 'small mt-2 text-muted';
+
+    fetch("{{ route('admin.watermark.upload') }}", {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'Accept': 'application/json'
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            watermarkStatus.textContent = 'Marca de agua guardada.';
+            watermarkStatus.classList.add('text-success');
+
+            document.getElementById('watermarkPreviewContainer').innerHTML = `
+                <img src="${data.path}"
+                     style="height:40px;border:1px solid #ddd;padding:2px;border-radius:4px;background:#fff;">
+            `;
+        } else {
+            watermarkStatus.textContent = data.message || 'Error al subir';
+            watermarkStatus.classList.add('text-danger');
+        }
+    })
+    .catch(() => {
+        watermarkStatus.textContent = 'Error de red';
+        watermarkStatus.classList.add('text-danger');
+    })
+    .finally(() => {
+        uploadBtn.disabled = false;
+        watermarkInput.value = '';
+    });
+});
 });
 </script>

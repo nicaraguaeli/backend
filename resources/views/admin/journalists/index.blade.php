@@ -42,7 +42,16 @@
                                     {{ $journalist->news_count ?? 0 }}
                                 </a>
                             </td> {{-- mostrar contador con enlace --}}
-                            <td>{{ $journalist->status ? 'Activo' : 'Inactivo' }}</td>
+                            <td>
+                                <form action="{{ route('admin.journalists.update.status', $journalist) }}" method="POST" style="display:inline-block;">
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="hidden" name="status" value="{{ $journalist->status ? 0 : 1 }}">
+                                    <button type="submit" class="btn btn-sm {{ $journalist->status ? 'btn-success' : 'btn-danger' }}">
+                                        {{ $journalist->status ? 'Activo' : 'Inactivo' }}
+                                    </button>
+                                </form>
+                            </td>
                             <td>
                                 <a href="{{ route('admin.journalists.edit', $journalist) }}" class="btn btn-sm btn-primary">Editar</a>
                             </td>
