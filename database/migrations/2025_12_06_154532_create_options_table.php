@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('options', function (Blueprint $table) {
+            
             $table->id();
             $table->string('key')->unique();
             $table->text('value')->nullable();

@@ -16,6 +16,7 @@ return new class extends Migration
                 
                 $table->id();
                 $table->string('title', 300);
+                $table->string('slug', 255)->unique();
                 $table->text('excerpt')->nullable();
                 $table->text('lead')->nullable(); // <- Aquí lo agregamos
                 $table->longText('content');
@@ -23,12 +24,12 @@ return new class extends Migration
                 $table->string('country', 100)->nullable();
                 $table->string('area', 100)->nullable();
                 $table->string('image_path', 255)->nullable();
-                $table->string('caption', 255)->nullable();
-                $table->string('slug', 255)->unique();
+                $table->string('caption', 255)->nullable();              
                 $table->timestamp('published_at')->nullable();
                 $table->integer('views')->default(0);
                 $table->boolean('is_featured')->default(false);
-                $table->boolean('status')->default(false);
+                $table->boolean('is_published')->default(false);
+                $table->boolean('is_hero')->default(false);
                 $table->timestamps();
 
         });

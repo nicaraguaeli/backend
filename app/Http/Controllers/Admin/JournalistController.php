@@ -118,11 +118,15 @@ class JournalistController extends Controller
     public function updateStatus(Request $request, Author $journalist)
     {
         $request->validate([
-            'status' => 'required|boolean',
+            'is_active' => 'required|boolean',
         ]);
 
-        $journalist->status = $request->status;
+        $journalist->is_active = $request->is_active;
         $journalist->save();
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Estado actualizado con éxito.']);
+        }
 
         return redirect()->route('admin.journalists.index')->with('success', 'Estado actualizado con éxito.');
     }
@@ -133,8 +137,25 @@ class JournalistController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Author $journalist)
     {
-        //
+        // Detach from news
+        $journalist->news()->detach();
+
+        // Delete associated audio reports
+        $journalist->audioReports()->delete();
+
+        // Delete avatar file if exists
+        if ($journalist->avatar) {
+            Storage::disk('public')->delete($journalist->avatar);
+        }
+
+        $journalist->delete();
+
+        if (request()->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Periodista eliminado con éxito.']);
+        }
+
+        return redirect()->route('admin.journalists.index')->with('success', 'Periodista eliminado con éxito.');
     }
 }

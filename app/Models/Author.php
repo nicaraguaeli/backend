@@ -13,11 +13,16 @@ class Author extends Model
         'bio',
         'avatar',
         'type',
-        'status',
+        'is_active',
     ];
 
     public function news()
     {
         return $this->belongsToMany(News::class, 'author_news');
+    }
+
+    public function audioReports()
+    {
+        return $this->hasMany(AudioReport::class);
     }
 }

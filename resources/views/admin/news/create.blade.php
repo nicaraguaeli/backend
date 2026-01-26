@@ -111,17 +111,76 @@
     <script>
         $(function () {
             // Summernote
-            $('.textarea').summernote({
-                height: 320,
-                toolbar: [
-                    ['style', ['style']],
-                    ['font', ['bold', 'italic', 'underline', 'clear']],
-                    ['fontname', ['fontname']],
-                    ['para', ['ul', 'ol', 'paragraph']],
-                    ['insert', ['link', 'picture', 'video']],
-                    ['view', ['fullscreen', 'codeview']]
-                ]
-            });
+           $('.textarea').summernote({
+    height: 320,
+    toolbar: [
+        ['style', ['style']],
+        ['font', ['bold', 'italic', 'underline', 'clear']],
+        ['fontname', ['fontname']],
+        ['para', ['ul', 'ol', 'paragraph']],
+        ['insert', ['link', 'picture', 'video']],
+        ['view', ['fullscreen', 'codeview']]
+    ],
+    callbacks: {
+
+        // 🔹 Intercepta la subida de imágenes (NO base64)
+        onImageUpload: function(files) {
+            uploadImageWithCaption(files[0], this);
+        },
+
+        // 🔹 Evita pegar imágenes base64 desde Word / Google Docs
+        onPaste: function(e) {
+            let clipboardData = (e.originalEvent || e).clipboardData;
+            if (clipboardData && clipboardData.items) {
+                for (let i = 0; i < clipboardData.items.length; i++) {
+                    if (clipboardData.items[i].type.indexOf('image') !== -1) {
+                        e.preventDefault();
+                        alert('Pegado de imágenes no permitido. Usa el botón de imagen.');
+                        return;
+                    }
+                }
+            }
+        }
+    }
+});
+
+// 🔹 Subida de imagen con caption
+function uploadImageWithCaption(file, editor) {
+
+    const caption = prompt('Pie de foto (opcional):');
+
+    let data = new FormData();
+    data.append('image', file);
+    data.append('caption', caption ?? '');
+
+    fetch('/admin/summernote/upload', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: data
+    })
+    .then(res => res.json())
+    .then(response => {
+
+       const figureHtml = `
+    
+        <img src="${response.url}" alt="${response.caption ?? ''}">
+        ${response.caption 
+            ? `<figcaption class="figure-caption mt-2 text-end fst-italic">
+                 ${response.caption}
+               </figcaption>` 
+            : ''}
+    
+`;
+
+$(editor).summernote('pasteHTML', figureHtml);
+
+    })
+    .catch(() => {
+        alert('Error subiendo la imagen');
+    });
+}
 
             // Select2 for multi-selects
             $('.select2').select2({
@@ -226,11 +285,14 @@
 function fetchRelatedNews() {
     let categoryIds = $('#categories').val();
     let tagIds = $('#tags').val();
+    const resultsContainer = $('#relatedResults');
 
     if ((!categoryIds || categoryIds.length === 0) && (!tagIds || tagIds.length === 0)) {
-        $('#relatedResults').html('<p class="text-muted">Selecciona categorías o tags para ver sugerencias.</p>');
+        resultsContainer.html('<div class="col-12 text-center text-muted py-4"><i class="fas fa-info-circle fa-2x mb-2"></i><p>Selecciona categorías o tags para ver sugerencias.</p></div>');
         return;
     }
+
+    resultsContainer.html('<div class="col-12 text-center text-muted py-4"><i class="fas fa-spinner fa-spin fa-2x"></i><p class="mt-2">Buscando noticias relacionadas...</p></div>');
 
     $.post("{{ route('admin.news.related') }}", {
         categoryIds,
@@ -240,70 +302,94 @@ function fetchRelatedNews() {
     })
     .done(function(data) {
         if (!data.length) {
-            $('#relatedResults').html('<p class="text-muted">No se encontraron noticias relacionadas.</p>');
+            resultsContainer.html('<div class="col-12 text-center text-muted py-4"><p>No se encontraron noticias relacionadas.</p></div>');
             return;
         }
 
         let html = '';
         data.forEach(n => {
-            const url = `/news/${n.slug}`;
+            const url = `{{ url('/') }}/news/${n.slug}`;
+            // Asumiendo que n.image_path existe, si no usar placeholder
+            const image = n.image_path ? `/storage/${n.image_path}` : 'https://via.placeholder.com/150';
 
             html += `
-               <div class=" p-3 shadow-sm">
-    <div class="d-flex justify-content-between align-items-center">
-        
-        <!-- Texto pequeño y en cursiva -->
-        <p style="font-size: 1rem; font-style: italic; margin: 0;">
-            ${n.title}  
-        </p>
-                    
-        <!-- Botón -->
-        <button class="btn btn-sm btn-primary copy-btn" data-url="${url}">
-            Copiar URL
-        </button>
-    </div>
-</div>
-
+            <div class="col-md-6 mb-2">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body p-2 d-flex flex-column">
+                        <h6 class="card-title font-weight-bold mb-1" style="font-size: 0.9rem;">${n.title}</h6>
+                        <p class="card-text text-muted small mb-2 flex-grow-1" style="font-size: 0.8rem;">${n.excerpt || ''}</p>
+                        <div class="mt-auto">
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control form-control-sm" value="${url}" readonly style="font-size: 0.75rem;">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-primary btn-sm copy-btn" type="button" data-url="${url}" style="font-size: 0.75rem;">
+                                        <i class="fas fa-copy"></i> Copiar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             `;
         });
 
-        $('#relatedResults').html(html);
+        resultsContainer.html(html);
     })
     .fail(function() {
-        $('#relatedResults').html('<p class="text-danger">Error cargando noticias relacionadas.</p>');
+        resultsContainer.html('<div class="col-12 text-center text-danger py-4"><p>Error cargando noticias relacionadas.</p></div>');
     });
 }
 
 // EVENTOS
-$(document).on('change', '#categories, #tags', fetchRelatedNews);
+// Ya no necesitamos el evento on change para cargar automáticamente, se carga al abrir el modal
+// $(document).on('change', '#categories, #tags', fetchRelatedNews);
+
+// Función robusta para copiar al portapapeles
+function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text);
+    } else {
+        // Fallback para navegadores antiguos o contextos no seguros (http)
+        let textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        textArea.style.top = "0";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        return new Promise((resolve, reject) => {
+            try {
+                document.execCommand('copy');
+                resolve();
+            } catch (err) {
+                reject(err);
+            } finally {
+                textArea.remove();
+            }
+        });
+    }
+}
 
 // Botón de copiar
 $(document).on('click', '.copy-btn', function () {
     const url = $(this).data('url');
-    navigator.clipboard.writeText(url);
+    const btn = $(this);
+    const originalHtml = btn.html();
 
-    $(this).text('Copiado ✔')
-        .removeClass('btn-primary')
-        .addClass('btn-success');
-
-    setTimeout(() => {
-        $(this).text('Copiar URL')
-            .removeClass('btn-success')
-            .addClass('btn-primary');
-    }, 1500);
-});
-
-// Acordeón
-$('#toggleRelatedBtn').on('click', function () {
-    const container = $('#relatedContainer');
-    container.slideToggle(250);
-
-    // Actualiza el texto del botón
-    if (container.is(':visible')) {
-        $(this).html('Ocultar noticias relacionadas ▲');
-    } else {
-        $(this).html('Mostrar noticias relacionadas ▼');
-    }
+    copyToClipboard(url).then(() => {
+        btn.removeClass('btn-outline-primary').addClass('btn-success').html('<i class="fas fa-check"></i> Copiado');
+        setTimeout(() => {
+            btn.removeClass('btn-success').addClass('btn-outline-primary').html(originalHtml);
+        }, 1500);
+    }).catch(err => {
+        console.error('Error al copiar', err);
+        btn.removeClass('btn-outline-primary').addClass('btn-danger').html('<i class="fas fa-times"></i> Error');
+        setTimeout(() => {
+            btn.removeClass('btn-danger').addClass('btn-outline-primary').html(originalHtml);
+        }, 1500);
+    });
 });
 </script>
 

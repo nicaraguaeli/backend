@@ -12,13 +12,25 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('categories', function (Blueprint $table) {
+            
             $table->id();
             $table->string('name', 100);
             $table->string('slug', 100)->unique();
             $table->boolean('is_active')->default(true);    // activa por defecto
             $table->boolean('is_featured')->default(false); // no destacada por defecto
+            $table->boolean('show_in_menu')->default(false); // no mostrar en el menú por defecto
+            $table->unsignedInteger('menu_order')->default(0); // orden por defecto
+            $table->string('image_path', 255)->nullable();    // Imagen de la categoría
             $table->timestamps();
+
+        
+       
+        
+            //
+        
+    
         });
+           
     }
 
     /**

@@ -8,16 +8,21 @@ class News extends Model
 {
     protected $fillable = [
         'title',
-        'slug',
-        'lead',
+        'slug', 
         'excerpt',
+        'lead',       
         'content',
-        'area',
-        'published_at',
-        'image_path',
-        'caption',
         'city',
         'country',
+        'area',
+        'image_path',
+        'caption',
+        'published_at',
+        'views', 
+        'is_featured',
+        'is_published',      
+        'is_hero',
+        
     ];
 
     protected $casts = [

@@ -41,8 +41,24 @@
 
         /* Responsive and spacing */
         .table-responsive { margin-top: 1rem; }
-        .bulk-actions { display:flex; gap:.5rem; align-items:center; }
+        .bulk-actions { display:flex; gap:.5rem; align-items:center; flex-wrap: wrap; }
         .badge { font-size:.85em; }
+
+        /* Mobile optimizations */
+        @media (max-width: 991.98px) {
+            .row-actions { visibility: visible; position: relative; margin-top: 5px; display: block; }
+            .form-inline .form-control, 
+            .form-inline .input-group,
+            .form-inline .custom-select { 
+                width: 100% !important; 
+                min-width: 0 !important; 
+                margin-bottom: 10px; 
+                margin-right: 0 !important;
+            }
+            .form-inline { display: block; }
+            .d-flex.align-items-center { margin-top: 10px; }
+            .w-100-mobile { width: 100%; justify-content: space-between; }
+        }
 
         /* Accessibility / focus */
         .focus-outline:focus { outline: 2px dashed #0b5ed7; outline-offset: 2px; }
@@ -68,18 +84,18 @@
         <div class="card-body">
             <!-- Filters / Search -->
             <form method="GET" action="{{ route('admin.news.index') }}" class="form-inline mb-3" role="search" aria-label="Filters">
-                <div class="input-group mr-2" style="min-width:260px;">
+                <div class="input-group mr-2">
                     <input name="q" value="{{ request('q') }}" class="form-control" placeholder="Buscar título..." type="search" aria-label="Buscar título">
                 </div>
 
-                <select name="author" class="form-control mr-2" style="min-width:180px">
+                <select name="author" class="form-control mr-2">
                     <option value="">Todos los autores</option>
                     @foreach($authors as $a)
                         <option value="{{ $a->id }}" {{ request('author') == $a->id ? 'selected' : '' }}>{{ $a->name }}</option>
                     @endforeach
                 </select>
 
-                <select name="category" class="form-control mr-2" style="min-width:180px">
+                <select name="category" class="form-control mr-2">
                     <option value="">Todas las categorías</option>
                     @foreach($categories as $c)
                         <option value="{{ $c->id }}" {{ request('category') == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
@@ -87,7 +103,7 @@
                 </select>
 
                 <!-- moved buttons next to category for easier access -->
-                <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center w-100-mobile">
                     <button class="btn btn-outline-secondary mr-2" type="submit">Buscar</button>
                     <a href="{{ route('admin.news.index') }}" class="btn btn-link">Limpiar</a>
                 </div>
@@ -121,14 +137,15 @@
                             <th style="width: 40px; padding-left: 1.25rem;"><!-- checkbox col -->
                                 &nbsp;
                             </th>
-                            <th style="width: 10px; padding-left: 1.25rem;">#</th>
+                            <th class="d-none d-md-table-cell" style="width: 10px; padding-left: 1.25rem;">#</th>
                             <th>Titulo</th>
-                            <th>Autor</th>
-                            <th>Categoria</th>
-                            <th>Visto</th>
-                            <th>Destacar</th>
-                            <th>Publicar</th>
-                            <th>Creado el</th>
+                            <th class="d-none d-lg-table-cell">Autor</th>
+                            <th class="d-none d-sm-table-cell">Categoria</th>
+                            <th class="d-none d-md-table-cell">Visto</th>
+                            <th class="text-center">Destacar</th>
+                            <th class="text-center">Hero</th>
+                            <th class="text-center">Publicar</th>
+                            <th class="d-none d-lg-table-cell">Creado el</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -137,7 +154,7 @@
                                 <td style="padding-left: 1.25rem;">
                                     <input type="checkbox" class="row-checkbox" value="{{ $new->id }}" aria-label="Seleccionar noticia {{ $new->id }}">
                                 </td>
-                                <td style="padding-left: 1.25rem;">{{$loop->iteration + ($news->firstItem() - 1) }}</td>
+                                <td class="d-none d-md-table-cell" style="padding-left: 1.25rem;">{{$loop->iteration + ($news->firstItem() - 1) }}</td>
                                 <td>
                                     <strong><a href="{{ route('admin.news.edit', $new) }}">{{ $new->title }}</a></strong>
                                     <div class="row-actions">
@@ -148,10 +165,14 @@
                                             @method('DELETE')
                                             <button type="button" class="btn-link text-danger trash-btn" data-id="{{ $new->id }}">Eliminar</button>
                                         </form> |
-                                        <a href="#" class="view-btn">Ver</a>
+                                        <a href="{{ route('admin.news.preview', $new) }}"
+   class="view-btn"
+   target="_blank">
+   Ver
+</a>
                                     </div>
                                 </td>
-                                <td>
+                                <td class="d-none d-lg-table-cell">
                                     @if(is_iterable($new->author))
                                         @foreach ($new->author as $author)
                                             {{ $author->name }}{{ !$loop->last ? ', ' : '' }}
@@ -160,12 +181,12 @@
                                         {{ optional($new->author)->name ?? 'N/A' }}
                                     @endif
                                 </td>
-                                <td>
+                                <td class="d-none d-sm-table-cell">
                                     @foreach ($new->categories as $category)
                                         {{ $category->name }}
                                     @endforeach
                                 </td>
-                                <td><span class="badge badge-dark">  {{ $new->views ?? 0 }}</span></td>
+                                <td class="d-none d-md-table-cell"><span class="badge badge-dark">  {{ $new->views ?? 0 }}</span></td>
                                 <td class="text-center">
                                     <a href="#"
                                        class="highlight-btn"
@@ -178,18 +199,30 @@
                                         @endif
                                     </a>
                                 </td>
-                                <td>
-                                    <div class="custom-control custom-switch">
+                                <td class="text-center">
+                                    <a href="#"
+                                       class="hero-btn"
+                                       data-id="{{ $new->id }}"
+                                       data-url="{{ route('admin.news.set-hero', $new) }}">
+                                        @if ($new->is_hero)
+                                            <i id="hero-icon-{{ $new->id }}" class="fas fa-crown text-success" aria-hidden="true"></i>
+                                        @else
+                                            <i id="hero-icon-{{ $new->id }}" class="fas fa-crown text-muted" aria-hidden="true"></i>
+                                        @endif
+                                    </a>
+                                </td>
+                                <td class="text-center">
+                                    <div class="custom-control custom-switch justify-content-center">
                                         <input type="checkbox"
                                                class="custom-control-input status-switch"
                                                data-id="{{ $new->id }}"
                                                data-url="{{ route('admin.news.update.status', $new) }}"
                                                id="statusSwitch{{ $new->id }}"
-                                               {{ $new->status ? 'checked' : '' }}>
+                                               {{ $new->is_published ? 'checked' : '' }}>
                                         <label class="custom-control-label" for="statusSwitch{{ $new->id }}"></label>
                                     </div>
                                 </td>
-                                <td>{{ $new->published_at
+                                <td class="d-none d-lg-table-cell">{{ $new->published_at
         ? $new->published_at
             ->locale('es')                         {{-- cambia idioma --}}
             ->translatedFormat('d-M-Y')            {{-- muestra 25-nov-2025 --}}
@@ -377,7 +410,7 @@
                         'Accept': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest'
                     },
-                    body: JSON.stringify({ status: isChecked })
+                    body: JSON.stringify({ is_published: isChecked })
                 })
                 .then(res => {
                     if (!res.ok) throw res;
@@ -445,6 +478,64 @@
                 .catch(err => {
                     console.error(err);
                     toastr.error('Ocurrió un error al actualizar.');
+                })
+                .finally(() => { el.style.pointerEvents = 'auto'; }); // Re-enable clicks
+            });
+        });
+
+        // ---- HERO (AJAX) ----
+        document.querySelectorAll('.hero-btn').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                const el = this;
+                const newsId = el.dataset.id;
+                const url = el.dataset.url;
+                
+                el.style.pointerEvents = 'none'; // Disable clicks
+
+                fetch(url, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({}) // No body needed, just the action
+                })
+                .then(res => {
+                    // We want to process the JSON body regardless of the status
+                    return res.json().then(data => ({ ok: res.ok, data }));
+                })
+                .then(({ ok, data }) => {
+                    if (ok && data.success) {
+                        // Unset all other hero icons
+                        document.querySelectorAll('.hero-btn i.fa-crown.text-success').forEach(icon => {
+                            if (icon.id !== 'hero-icon-' + newsId) {
+                                icon.classList.remove('text-success');
+                                icon.classList.add('text-muted');
+                            }
+                        });
+
+                        const icon = document.getElementById('hero-icon-' + newsId);
+                        const isHero = data.is_hero;
+                        toastr.success(`La noticia ahora es ${isHero ? 'el héroe' : 'no es el héroe'}.`);
+                        aria(`Noticia ${isHero ? 'es el héroe' : 'no es el héroe'}`);
+                        if (isHero) {
+                            icon.classList.remove('text-muted');
+                            icon.classList.add('text-success');
+                        } else {
+                            icon.classList.remove('text-success');
+                            icon.classList.add('text-muted');
+                        }
+                    } else {
+                        // Handle failure (either !ok or !data.success)
+                        toastr.error(data.message || 'Fallo al actualizar.');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    toastr.error('Ocurrió un error de red o al procesar la respuesta.');
                 })
                 .finally(() => { el.style.pointerEvents = 'auto'; }); // Re-enable clicks
             });

@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('vacancies', function (Blueprint $table) {
             
+            $table->id();
             // Información principal
             $table->string('title'); // Locutor / Presentador de Radio
             $table->string('company'); // Radio ABC Stereo

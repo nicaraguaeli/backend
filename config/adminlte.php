@@ -257,7 +257,7 @@ return [
     */
 
     'use_route_url' => false,
-    'dashboard_url' => 'home',
+    'dashboard_url' => 'dashboard',
     'logout_url' => 'logout',
     'login_url' => 'login',
     'register_url' => 'register',
@@ -320,15 +320,15 @@ return [
         'url'  => 'admin/blog',
         'can'  => 'manage-blog',
     ],
-    ['header' => 'account_settings'],
+    ['header' => 'Configuración de cuenta'],
     [
-        'text' => 'profile',
-        'url'  => 'admin/settings',
+        'text' => 'Perfil',
+        'route'  => 'admin.profile.edit',
         'icon' => 'fas fa-fw fa-user',
     ],
     [
-        'text' => 'change_password',
-        'url'  => 'admin/settings',
+        'text' => 'Cambiar contraseña',
+        'route'  => 'admin.password.edit',
         'icon' => 'fas fa-fw fa-lock',
     ],
     ['header' => 'Content'],
@@ -397,11 +397,25 @@ return [
                 'route'  => 'admin.vacancies.create',
             ],
         ]
-        
-        
-            
     ],
-],
+    [
+        'text' => 'Audio Reportajes',
+        'icon' => 'fas fa-microphone',
+        'submenu' => [
+            [
+                'text' => 'Mostrar audioreportajes',
+                'route'  => 'admin.audio_reports.index',
+            ],
+            [
+                'text' => 'Añadir audioreportaje',
+                'route'  => 'admin.audio_reports.create',
+            ],
+        ]
+    ],
+
+
+    ],
+
 
     /*
     |--------------------------------------------------------------------------

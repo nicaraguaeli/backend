@@ -3,325 +3,719 @@
 @section('title', 'Categories')
 
 @section('content_header')
-    <h1>Categorías</h1>
+    <h1>Gestión de Categorías</h1>
 @stop
 
 @section('content')
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h3 class="card-title">Listado</h3>
-
-            <!-- Inline create category form -->
-            <div class="d-flex align-items-center">
-                <div class="input-group">
-                    <input id="newCategoryName" type="text" class="form-control" placeholder="Nueva categoría">
-                    <div class="input-group-append">
-                        <button id="createCategoryBtn" class="btn btn-primary">Crear</button>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Listado de Categorías</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#categoryModal" id="btn-create-category">
+                            <i class="fas fa-plus"></i> Crear Categoría
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="categories-feedback" class="mb-2"></div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover" id="categoriesTable">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th class="text-center" style="width: 50px;"></th>
+                                    <th>#</th>
+                                    <th>Nombre</th>
+                                    <th class="text-center">Imagen</th>
+                                    <th class="text-center">Menú</th>
+                                    <th class="text-center">Activo</th>
+                                    <th class="text-center">Destacado</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sortable-categories" style="counter-reset: rowNumber 0;">                                @forelse($categories as $category)
+                                    @include('admin.categories.partials.category-row', ['category' => $category])
+                                @empty
+                                    <tr>
+                                        <td colspan="8" class="text-center text-muted">No hay categorías registradas.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                         {{ $categories->links() }}
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="card-body">
-            <div id="categoriesFeedback" class="mb-2"></div>
-
-            @if(isset($categories) && $categories->count())
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover" id="categoriesTable">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nombre</th>
-                                <th class="text-center">Noticias</th> {{-- nueva columna --}}
-                                <th class="text-center">Activo</th>
-                                <th class="text-center">Destacado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($categories as $category)
-                                <tr data-id="{{ $category->id }}" data-name="{{ $category->name }}" data-news-count="{{ $category->news_count }}" data-is-active="{{ $category->is_active }}" data-is-featured="{{ $category->is_featured }}">
-                                    <td class="align-middle">{{ $category->id }}</td>
-                                    <td class="align-middle category-name">{{ $category->name }}</td>
-                                    <td class="align-middle text-center news-count">{{ $category->news_count }}</td> {{-- mostrar conteo --}}
-                                    <td class="align-middle text-center">
-                                        <div class="custom-control custom-switch"><input type="checkbox" class="custom-control-input category-toggle" id="isActiveSwitch{{$category->id}}" data-field="is_active" {{ $category->is_active ? 'checked' : '' }}> <label class="custom-control-label" for="isActiveSwitch{{$category->id}}"></label></div>
-                                    </td>
-                                    <td class="align-middle text-center">
-                                        <div class="custom-control custom-switch"><input type="checkbox" class="custom-control-input category-toggle" id="isFeaturedSwitch{{$category->id}}" data-field="is_featured" {{ $category->is_featured ? 'checked' : '' }}> <label class="custom-control-label" for="isFeaturedSwitch{{$category->id}}"></label></div>
-                                    </td>
-                                    <td class="align-middle">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary edit-category-btn" data-id="{{ $category->id }}" data-name="{{ $category->name }}">Editar</button>
-
-                                        <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" class="d-inline delete-category-form" data-id="{{ $category->id }}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="button" class="btn btn-sm btn-outline-danger delete-category-btn" data-id="{{ $category->id }}">Borrar</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-                {{ $categories->links() }}
-            @else
-                <p class="text-muted">No hay categorías.</p>
-            @endif
-        </div>
     </div>
+</div>
 
-    <!-- Edit modal -->
-    <div class="modal fade" id="categoryEditModal" tabindex="-1" role="dialog" aria-labelledby="categoryEditModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-sm" role="document">
-            <form id="editCategoryForm" class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="categoryEditModalLabel">Editar categoría</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-
+<!-- Modal -->
+<div class="modal fade" id="categoryModal" tabindex="-1" role="dialog" aria-labelledby="categoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="categoryModalLabel">Crear Categoría</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="category-form" role="form" enctype="multipart/form-data">
                 <div class="modal-body">
-                    @csrf
-                    @method('PATCH')
-                    <input type="hidden" id="editCategoryId" name="id">
+                    <input type="hidden" id="category_id" name="id">
                     <div class="form-group">
-                        <label for="editCategoryName">Nombre</label>
-                        <input id="editCategoryName" name="name" type="text" class="form-control" required>
-                        <div class="invalid-feedback" id="editCategoryError"></div>
+                        <label for="name">Nombre</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="Ingrese el nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="slug">Slug</label>
+                        <input type="text" class="form-control" id="slug" name="slug" placeholder="Slug amigable" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="image_path">Imagen</label>
+                        <div class="input-group">
+                            <div class="custom-file">
+                                <input type="file" class="custom-file-input" id="image_path" name="image_path" accept="image/*">
+                                <label class="custom-file-label" for="image_path">Elegir imagen...</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group text-center">
+                        <img id="image-preview" src="#" alt="Vista previa" style="display: none; max-height: 150px; border-radius: 5px;"/>
                     </div>
                 </div>
-
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button id="saveCategoryBtn" type="submit" class="btn btn-primary">Guardar</button>
+                    <button type="submit" class="btn btn-primary" id="form-submit-btn">Guardar</button>
                 </div>
             </form>
         </div>
     </div>
+</div>
 @stop
 
-@section('js')
-<meta name="csrf-token" content="{{ csrf_token() }}">
+@push('js')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    // --- UTILITIES ---
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+    const slugify = text =>
+        text.toString().toLowerCase().trim()
+            .replace(/\s+/g, '-')           // Replace spaces with -
+            .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+            .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+            .replace(/^-+/, '')             // Trim - from start of text
+            .replace(/-+$/, '');            // Trim - from end of text
 
     function showToast(type, message) {
-        if (window.toastr) {
-            if (type === 'success') toastr.success(message);
-            else if (type === 'error') toastr.error(message);
-            else toastr.info(message);
-        } else {
-            const fb = document.getElementById('categoriesFeedback');
-            fb.innerHTML = `<div class="alert alert-${type==="success"?"success":"danger"}">${message}</div>`;
-            setTimeout(()=> fb.innerHTML='',4000);
-        }
+        // Uses AdminLTE's Toasts plugin, make sure it's enabled
+        $(document).Toasts('create', {
+            class: `bg-${type}`,
+            title: type === 'success' ? 'Éxito' : 'Error',
+            autohide: true,
+            delay: 3000,
+            body: message
+        });
     }
 
-    // CREATE category (AJAX)
-    document.getElementById('createCategoryBtn').addEventListener('click', function () {
-        const nameInput = document.getElementById('newCategoryName');
-        const name = nameInput.value.trim();
-        if (!name) { showToast('error','Ingrese un nombre.'); return; }
+    function debounce(func, delay) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), delay);
+        };
+    }
 
-        this.disabled = true;
-        fetch('{{ route("admin.categories.store") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': token,
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ name })
-        })
-        .then(async res => {
-            this.disabled = false;
-            if (!res.ok) {
-                const err = await res.json().catch(()=>null);
-                throw err && err.message ? err : new Error('Error al crear');
-            }
-            return res.json();
-        })
-        .then(data => {
-            showToast('success', 'Categoría creada.');
-            // prepend new row to table (if exists)
-            const tbody = document.querySelector('#categoriesTable tbody');
-            if (tbody) {
-                const cat = data.data || data;
-                const tr = document.createElement('tr');
-                tr.setAttribute('data-id', cat.id);
-                tr.setAttribute('data-name', cat.name);
-                tr.innerHTML = `<td class="align-middle">${cat.id}</td>
-                                <td class="align-middle category-name">${cat.name}</td>
-                                <td class="align-middle text-center news-count">${cat.news_count}</td>
-                                <td class="align-middle text-center"><div class="custom-control custom-switch"><input type="checkbox" class="custom-control-input category-toggle" id="isActiveSwitch${cat.id}" data-field="is_active" checked> <label class="custom-control-label" for="isActiveSwitch${cat.id}"></label></div></td>
-                                <td class="align-middle text-center"><div class="custom-control custom-switch"><input type="checkbox" class="custom-control-input category-toggle" id="isFeaturedSwitch${cat.id}" data-field="is_featured"> <label class="custom-control-label" for="isFeaturedSwitch${cat.id}"></label></div></td>
-                                <td class="align-middle">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary edit-category-btn" data-id="${cat.id}" data-name="${cat.name}">Editar</button>
-                                    <form action="/admin/categories/${cat.id}" method="POST" class="d-inline delete-category-form" data-id="${cat.id}">
-                                        <input type="hidden" name="_token" value="${token}">
-                                        <input type="hidden" name="_method" value="DELETE">
-                                        <button type="button" class="btn btn-sm btn-outline-danger delete-category-btn" data-id="${cat.id}">Borrar</button>
-                                    </form>
-                                </td>`;
-                if (tbody.firstChild) tbody.insertBefore(tr, tbody.firstChild);
-                else tbody.appendChild(tr);
-            } else {
-                // if no table present, reload
-                location.reload();
-            }
-            nameInput.value = '';
-        })
-        .catch(err => {
-            console.error(err);
-            showToast('error', err && err.errors ? Object.values(err.errors).flat()[0] : (err.message || 'Error al crear categoría.'));
-        });
+    // --- FORM ELEMENTS ---
+    const form = document.getElementById('category-form');
+    const modal = $('#categoryModal');
+    const modalTitle = document.getElementById('categoryModalLabel');
+    const categoryIdInput = document.getElementById('category_id');
+    const nameInput = document.getElementById('name');
+    const slugInput = document.getElementById('slug');
+    const imageInput = document.getElementById('image_path');
+    const imagePreview = document.getElementById('image-preview');
+    const submitBtn = document.getElementById('form-submit-btn');
+    const tableBody = document.querySelector('#categoriesTable tbody');
+
+    // --- FORM LOGIC ---
+    function resetForm() {
+        form.reset();
+        modalTitle.textContent = 'Crear Categoría';
+        submitBtn.textContent = 'Guardar';
+        categoryIdInput.value = '';
+        imagePreview.style.display = 'none';
+        imagePreview.src = '#';
+        document.querySelector('.custom-file-label').textContent = 'Elegir imagen...';
+        form.classList.remove('is-editing');
+    }
+
+    // Reset form when modal is opened via button (Create)
+    $('#btn-create-category').on('click', function() {
+        resetForm();
     });
 
-    // OPEN edit modal (delegated)
-    document.addEventListener('click', function (e) {
-        const btn = e.target.closest('.edit-category-btn');
-        if (!btn) return;
-        const id = btn.dataset.id;
-        const name = btn.dataset.name;
-        document.getElementById('editCategoryId').value = id;
-        document.getElementById('editCategoryName').value = name;
-        document.getElementById('editCategoryError').textContent = '';
-        $('#categoryEditModal').modal('show');
-    });
+    function prepareEditForm(category) {
+        resetForm();
+        form.classList.add('is-editing');
+        modalTitle.textContent = 'Editar Categoría';
+        submitBtn.textContent = 'Actualizar';
 
-    // SUBMIT edit (AJAX PATCH)
-    document.getElementById('editCategoryForm').addEventListener('submit', function (e) {
-        e.preventDefault();
-        const id = document.getElementById('editCategoryId').value;
-        const name = document.getElementById('editCategoryName').value.trim();
-        if (!name) {
-            document.getElementById('editCategoryError').textContent = 'Ingrese un nombre.';
-            document.getElementById('editCategoryName').classList.add('is-invalid');
-            return;
+        categoryIdInput.value = category.id;
+        nameInput.value = category.name;
+        slugInput.value = category.slug;
+
+        if (category.image_url) {
+            imagePreview.src = category.image_url;
+            imagePreview.style.display = 'block';
         }
-        const btn = document.getElementById('saveCategoryBtn');
-        btn.disabled = true;
+        
+        modal.modal('show');
+    }
+    
+    // Auto-slugify
+    nameInput.addEventListener('input', () => {
+        if (!form.classList.contains('is-editing')) {
+            slugInput.value = slugify(nameInput.value);
+        }
+    });
 
-        fetch('/admin/categories/' + id, {
-            method: 'POST', // method spoofing below
+    // Image preview
+    imageInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+            document.querySelector('.custom-file-label').textContent = file.name;
+        }
+    });
+
+    // --- AJAX OPERATIONS ---
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        submitBtn.disabled = true;
+
+        const formData = new FormData(form);
+        const id = categoryIdInput.value;
+        const url = id ? `/admin/categories/${id}` : '{{ route('admin.categories.store') }}';
+        
+        // For updates, we use POST but spoof the method with _method
+        if (id) {
+            formData.append('_method', 'PATCH');
+        }
+
+        fetch(url, {
+            method: 'POST', // Always POST for FormData with file uploads
             headers: {
-                'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': token,
-                'Accept': 'application/json'
+                'Accept': 'application/json',
             },
-            body: JSON.stringify({ _method: 'PATCH', name })
+            body: formData,
         })
-        .then(async res => {
-            btn.disabled = false;
-            if (!res.ok) {
-                const err = await res.json().catch(()=>null);
-                throw err && err.message ? err : new Error('Error al actualizar');
-            }
-            return res.json();
-        })
+        .then(response => response.json())
         .then(data => {
-            showToast('success','Categoría actualizada.');
-            // update row in table
-            const tr = document.querySelector('#categoriesTable tbody tr[data-id="'+id+'"]');
-            if (tr) {
-                tr.querySelector('.category-name').textContent = name;
-                tr.dataset.name = name;
-                tr.querySelectorAll('.edit-category-btn, .delete-category-btn').forEach(b => {
-                    if (b.dataset) b.dataset.name = name;
-                });
+            if (data.success) {
+                showToast('success', data.message);
+                const newRowHtml = data.row_html;
+
+                if (id) { // Update
+                    const row = document.querySelector(`tr[data-id='${id}']`);
+                    if(row) row.outerHTML = newRowHtml;
+                } else { // Create
+                    const emptyRow = tableBody.querySelector('td[colspan="8"]');
+                    if(emptyRow) emptyRow.parentElement.remove();
+                    tableBody.insertAdjacentHTML('afterbegin', newRowHtml);
+                }
+                modal.modal('hide');
+                resetForm();
             } else {
-                location.reload();
+                let errorMessage = data.message || 'Ocurrió un error.';
+                if (data.errors) {
+                    errorMessage = Object.values(data.errors).map(e => e.join(' ')).join(' ');
+                }
+                showToast('danger', errorMessage);
             }
-            $('#categoryEditModal').modal('hide');
         })
-        .catch(err => {
-            console.error(err);
-            document.getElementById('editCategoryError').textContent = err && err.errors ? Object.values(err.errors).flat()[0] : (err.message || 'Error al actualizar.');
-            document.getElementById('editCategoryName').classList.add('is-invalid');
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('danger', 'No se pudo conectar con el servidor.');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
         });
     });
 
-    // DELETE (confirmation + AJAX)
-    document.addEventListener('click', function (e) {
-        const btn = e.target.closest('.delete-category-btn');
-        if (!btn) return;
-        const id = btn.dataset.id;
-        if (!confirm('¿Confirmar borrar esta categoría?')) return;
-
-        btn.disabled = true;
-        fetch('/admin/categories/' + id, {
-            method: 'POST',
+    // AJAX update for toggles and position (delegated)
+    const debouncedUpdate = debounce((id, data, element) => {
+        element.disabled = true;
+        fetch(`/admin/categories/${id}`, {
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': token,
-                'Accept': 'application/json'
+                'Accept': 'application/json',
             },
-            body: JSON.stringify({ _method: 'DELETE' })
+            body: JSON.stringify(data),
         })
-        .then(async res => {
-            btn.disabled = false;
-            if (!res.ok) {
-                const err = await res.json().catch(()=>null);
-                throw err && err.message ? err : new Error('Error al borrar');
-            }
-            return res.json();
-        })
+        .then(res => res.json())
         .then(data => {
-            showToast('success','Categoría borrada.');
-            const tr = document.querySelector('#categoriesTable tbody tr[data-id="'+id+'"]');
-            if (tr) tr.remove();
-            // optional: if table empty reload to refresh pagination
-            if (!document.querySelectorAll('#categoriesTable tbody tr').length) location.reload();
+            if (data.success) {
+                showToast('success', data.message || 'Actualizado.');
+            } else {
+                throw new Error(data.message || 'Falló la actualización.');
+            }
         })
         .catch(err => {
-            console.error(err);
-            showToast('error', err && err.message ? err.message : 'Error al borrar categoría.');
-        });
+            showToast('error', err.message);
+            if (element.type === 'checkbox') element.checked = !element.checked; // Revert
+        })
+        .finally(() => element.disabled = false );
+    }, 500);
+
+    tableBody.addEventListener('change', e => {
+        if (e.target.classList.contains('category-toggle')) {
+            const toggle = e.target;
+            const id = toggle.closest('tr').dataset.id;
+            const field = toggle.dataset.field;
+            debouncedUpdate(id, { [field]: toggle.checked }, toggle);
+        } else if (e.target.classList.contains('menu-order-input')) {
+            const input = e.target;
+            const id = input.closest('tr').dataset.id;
+            debouncedUpdate(id, { menu_order: input.value }, input);
+        }
     });
 
-    // TOGGLE is_active / is_featured
-    document.addEventListener('change', function(e) {
-        const toggle = e.target.closest('.category-toggle');
-        if (!toggle) return;
+    // Make table rows sortable (drag handle) and persist order via AJAX
+    (function(){
+        // Helper to load external scripts dynamically
+        function loadScript(url, integrity, crossorigin) {
+            return new Promise((resolve, reject) => {
+                const existing = document.querySelector(`script[src="${url}"]`);
+                if (existing) return resolve(existing);
+                const s = document.createElement('script');
+                s.src = url;
+                if (integrity) s.integrity = integrity;
+                if (crossorigin) s.crossOrigin = crossorigin;
+                s.onload = () => resolve(s);
+                s.onerror = (e) => reject(e);
+                document.head.appendChild(s);
+            });
+        }
 
-        const tr = toggle.closest('tr');
-        const id = tr.dataset.id;
-        const field = toggle.dataset.field;
-        const value = toggle.checked;
-
-        toggle.disabled = true;
-
-        fetch('/admin/categories/' + id, {
-            method: 'POST', // method spoofing
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': token,
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                _method: 'PATCH',
-                [field]: value
-            })
-        })
-        .then(async res => {
-            if (!res.ok) {
-                const err = await res.json().catch(() => null);
-                throw err || new Error('Error al actualizar');
+        // Ensure jQuery exists; if missing, try to load it from CDN
+        let _jqLoading = false;
+        async function ensureJQuery() {
+            if (typeof window.jQuery !== 'undefined') return true;
+            if (_jqLoading) return false;
+            _jqLoading = true;
+            try {
+                await loadScript('https://code.jquery.com/jquery-3.6.0.min.js', 'sha256-/xUj+3OJ+Q5w5Qv3C4wT9ZqLLc5bM6f7e3m6E4HY0Y=', 'anonymous');
+                console.log('jQuery cargado desde CDN.');
+                showToast('success', 'jQuery cargado desde CDN para habilitar funcionalidades de administración.');
+                return true;
+            } catch (err) {
+                console.warn('No se pudo cargar jQuery desde CDN:', err);
+                showToast('danger', 'No se pudo cargar jQuery. Revisa las dependencias de admin.');
+                return false;
             }
-            return res.json();
-        })
-        .then(data => {
-            showToast('success', 'Categoría actualizada.');
-            tr.dataset[field === 'is_active' ? 'isActive' : 'isFeatured'] = value;
-        })
-        .catch(err => {
-            showToast('error', err.message || 'No se pudo actualizar.');
-            toggle.checked = !value; // Revert toggle on error
-        }).finally(() => toggle.disabled = false);
+        }
+
+        // Try to load jQuery UI from CDN if Sortable isn't available
+        let _jqUiLoading = false;
+        async function ensureJQueryUI() {
+            if (typeof window.jQuery === 'undefined') return false;
+            if (window.jQuery && window.jQuery.fn && window.jQuery.fn.sortable) return true;
+            if (_jqUiLoading) return false;
+            _jqUiLoading = true;
+            try {
+                await loadScript('https://code.jquery.com/ui/1.13.2/jquery-ui.min.js', 'sha256-lYX8FQkNcm3wse6m2k4jX2SLd6Hn0i2x8mYp0iPqY60=', 'anonymous');
+                console.log('jQuery UI cargado desde CDN.');
+                showToast('success', 'jQuery UI cargado desde CDN.');
+                return true;
+            } catch (err) {
+                console.warn('No se pudo cargar jQuery UI desde CDN:', err);
+                showToast('danger', 'No se pudo cargar jQuery UI. La funcionalidad de ordenar estará limitada.');
+                return false;
+            }
+        }
+
+        function initSortable() {
+            if (typeof $ === 'undefined' || !$.fn || !$.fn.sortable) {
+                console.warn('jQuery o jQuery UI Sortable aún no disponibles. Retry pending...');
+                return false;
+            }
+
+            const $container = $('#sortable-categories');
+            if (!$container.length) return true;
+
+            // If already initialized, destroy and re-init to attach fresh handlers
+            if ($container.data('ui-sortable')) {
+                try { $container.sortable('destroy'); } catch (e) { /* ignore */ }
+            }
+
+            $container.sortable({
+                handle: '.drag-handle',
+                placeholder: 'sort-highlight',
+                axis: 'y',
+                forcePlaceholderSize: true,
+                start: function(e, ui) {
+                    ui.item.addClass('sorting');
+                    console.log('sortable:start', ui.item.data('id'));
+                },
+                stop: function(e, ui) {
+                    ui.item.removeClass('sorting');
+                    console.log('sortable:stop', ui.item.data('id'));
+                },
+                update: function(event, ui) {
+                    // Collect ordered IDs
+                    const order = $('#sortable-categories tr').map(function() { return $(this).data('id'); }).get();
+
+                    // Optimistically update displayed indices
+                    $('#sortable-categories tr').each(function(index) {
+                        $(this).find('.index-col').text(index + 1);
+                    });
+
+                    // Send new order to server
+                    fetch('{{ route('admin.categories.reorder') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': token,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ order })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast('success', data.message || 'Orden actualizado.');
+                        } else {
+                            throw new Error(data.message || 'Error al actualizar el orden.');
+                        }
+                    })
+                    .catch(err => {
+                        showToast('danger', err.message || 'No se pudo guardar el orden.');
+                        console.error('Reorder error:', err);
+                        // Optionally reload to restore server state
+                        // location.reload();
+                    });
+                }
+            }).disableSelection();
+
+            console.log('Sortable initialized on #sortable-categories');
+            return true;
+        }
+
+        // Retry initialization in case jQuery UI is loaded after this script
+        let attempts = 0;
+        async function tryInit() {
+            attempts++;
+            // Try to ensure jQuery first, then jQuery UI
+            const jqOk = await ensureJQuery();
+            const jqUiOk = jqOk ? await ensureJQueryUI() : false;
+
+            const ok = initSortable();
+            if (!ok && attempts < 10) {
+                console.log('Retrying sortable init, attempt', attempts);
+                setTimeout(tryInit, 400);
+            } else if (!ok) {
+                console.warn('No se pudo inicializar sortable después de varios intentos.');
+                showToast('warning', 'jQuery UI no disponible. Activando fallback nativo de arrastrar y ordenar (escritorio).');
+                // Initialize native fallback for desktop
+                initNativeSortableFallback();
+            }
+        }
+        tryInit();
+
+        // --- Native HTML5 Drag-and-Drop Fallback (desktop) ---
+        function initNativeSortableFallback() {
+            const tbody = document.getElementById('sortable-categories');
+            if (!tbody || tbody._nativeSortableInit) return;
+            tbody._nativeSortableInit = true;
+            let dragged = null;
+
+            // Make rows draggable and attach handlers
+            function attachDraggable(row) {
+                row.setAttribute('draggable', 'true');
+                row.addEventListener('dragstart', (e) => {
+                    if (!e.target.querySelector('.drag-handle:hover') && !e.target.matches(':hover')) {
+                        // allow dragging only when user grabbed the handle; but HTML5 doesn't give handle directly
+                    }
+                    dragged = row;
+                    row.classList.add('dragging');
+                    try { e.dataTransfer.setData('text/plain', row.dataset.id); } catch (_) {}
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+
+                row.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    const target = e.currentTarget;
+                    if (target && target !== dragged) {
+                        target.classList.add('drag-over');
+                    }
+                    return false;
+                });
+
+                row.addEventListener('dragleave', (e) => {
+                    e.currentTarget.classList.remove('drag-over');
+                });
+
+                row.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const target = e.currentTarget;
+                    if (!dragged || dragged === target) return;
+
+                    // Insert before or after depending on mouse position
+                    const rect = target.getBoundingClientRect();
+                    const halfway = rect.top + rect.height / 2;
+                    if (e.clientY < halfway) {
+                        tbody.insertBefore(dragged, target);
+                    } else {
+                        tbody.insertBefore(dragged, target.nextSibling);
+                    }
+
+                    cleanupVisuals();
+                    sendNativeOrder();
+                });
+
+                row.addEventListener('dragend', (e) => {
+                    if (dragged) dragged.classList.remove('dragging');
+                    cleanupVisuals();
+                    dragged = null;
+                });
+            }
+
+            function cleanupVisuals() {
+                tbody.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+                tbody.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+            }
+
+            function sendNativeOrder() {
+                const order = Array.from(tbody.querySelectorAll('tr')).map(tr => parseInt(tr.dataset.id));
+                // Update visible indices
+                tbody.querySelectorAll('tr').forEach((tr, i) => tr.querySelector('.index-col').textContent = i + 1);
+
+                fetch('{{ route('admin.categories.reorder') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': token,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ order })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('success', data.message || 'Orden actualizado (fallback).');
+                    } else {
+                        throw new Error(data.message || 'Error al actualizar el orden.');
+                    }
+                })
+                .catch(err => {
+                    showToast('danger', err.message || 'No se pudo guardar el orden (fallback).');
+                    console.error('Fallback reorder error:', err);
+                });
+            }
+
+            // Attach to existing rows and observe for new rows
+            tbody.querySelectorAll('tr').forEach(row => attachDraggable(row));
+
+            const observer = new MutationObserver(muts => {
+                muts.forEach(m => {
+                    m.addedNodes && m.addedNodes.forEach(n => {
+                        if (n.nodeType === 1 && n.tagName === 'TR') attachDraggable(n);
+                    });
+                });
+            });
+            observer.observe(tbody, { childList: true });
+
+            // Touch support (improved): long-press on the handle to start dragging
+            let touchDrag = null;
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let touchRow = null;
+            let longPressTimeout;
+            const LONG_PRESS_DELAY = 450; // ms
+            const MOVE_CANCEL_THRESHOLD = 10; // px
+
+            function onTouchStart(e) {
+                // Only start long-press when touching the drag handle
+                if (!e.target.closest('.drag-handle')) return;
+                const t = e.touches[0];
+                touchStartX = t.clientX;
+                touchStartY = t.clientY;
+                // row element
+                touchRow = e.target.closest('tr');
+
+                // Set a timeout to enter long-press mode
+                longPressTimeout = setTimeout(() => {
+                    if (!touchRow) return;
+                    // visual feedback for long-press ready
+                    touchRow.classList.add('long-press-ready');
+
+                    // small delay to transition into dragging state for clarity
+                    setTimeout(() => {
+                        // If user already started dragging or cancelled, skip
+                        if (!touchRow || !touchRow.classList.contains('long-press-ready')) return;
+                        touchDrag = touchRow;
+                        touchRow.classList.remove('long-press-ready');
+                        touchRow.classList.add('dragging');
+                        // short vibration feedback if supported
+                        if (navigator.vibrate) navigator.vibrate(10);
+                        showToast('info', 'Modo táctil: arrastra la fila hacia arriba/abajo y suéltala para ordenar.');
+                    }, 60);
+                }, LONG_PRESS_DELAY);
+            }
+
+            function onTouchMove(e) {
+                const t = e.touches[0];
+
+                // If long-press hasn't activated yet, cancel if user moves finger too much (likely a scroll)
+                if (!touchDrag) {
+                    const dx = Math.abs(t.clientX - touchStartX);
+                    const dy = Math.abs(t.clientY - touchStartY);
+                    if (dx > MOVE_CANCEL_THRESHOLD || dy > MOVE_CANCEL_THRESHOLD) {
+                        clearTimeout(longPressTimeout);
+                        if (touchRow) touchRow.classList.remove('long-press-ready');
+                        touchRow = null;
+                    }
+                    return;
+                }
+
+                // When dragging, prevent page scroll and perform reorder
+                e.preventDefault();
+                const el = document.elementFromPoint(t.clientX, t.clientY);
+                const row = el ? el.closest('#sortable-categories tr') : null;
+                if (row && row !== touchDrag) {
+                    const rect = row.getBoundingClientRect();
+                    const halfway = rect.top + rect.height / 2;
+                    if (t.clientY < halfway) tbody.insertBefore(touchDrag, row);
+                    else tbody.insertBefore(touchDrag, row.nextSibling);
+                }
+            }
+
+            function onTouchEnd(e) {
+                clearTimeout(longPressTimeout);
+                if (touchRow) touchRow.classList.remove('long-press-ready');
+                if (!touchDrag) return;
+                touchDrag.classList.remove('dragging');
+                sendNativeOrder();
+                touchDrag = null;
+                touchRow = null;
+            }
+
+            function onTouchCancel(e) {
+                clearTimeout(longPressTimeout);
+                if (touchRow) touchRow.classList.remove('long-press-ready');
+                if (touchDrag) touchDrag.classList.remove('dragging');
+                touchDrag = null;
+                touchRow = null;
+            }
+
+            // Attach touch handlers to the drag-handle (preferred) and row as fallback
+            tbody.querySelectorAll('tr').forEach(row => {
+                const handle = row.querySelector('.drag-handle');
+                const startTarget = handle || row;
+                startTarget.addEventListener('touchstart', onTouchStart, { passive: true });
+                row.addEventListener('touchmove', onTouchMove, { passive: false });
+                row.addEventListener('touchend', onTouchEnd, { passive: true });
+                row.addEventListener('touchcancel', onTouchCancel, { passive: true });
+            });
+
+            showToast('success', 'Fallback nativo de arrastrar/ordenar activado (escritorio y soporte táctil básico).');
+        }
+
+        // On touch devices, try to load jQuery UI Touch Punch for touch support
+        if ('ontouchstart' in window) {
+            // Only load once
+            if (!window._jqui_touch_punch_loaded) {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js';
+                script.crossOrigin = 'anonymous';
+                script.onload = () => {
+                    window._jqui_touch_punch_loaded = true;
+                    console.log('jQuery UI Touch Punch cargado para soporte táctil.');
+                    // Re-init sortable to bind touch support
+                    tryInit();
+                    showToast('success', 'Soporte táctil habilitado para arrastrar.');
+                };
+                script.onerror = () => {
+                    console.warn('No se pudo cargar jquery.ui.touch-punch desde CDN.');
+                };
+                document.head.appendChild(script);
+            }
+        }
+    })();
+
+    // Event delegation for Edit and Delete
+    tableBody.addEventListener('click', e => {
+        if (e.target.classList.contains('edit-btn')) {
+            e.preventDefault();
+            const category = JSON.parse(e.target.dataset.category);
+            prepareEditForm(category);
+        }
+        
+        if (e.target.closest('.delete-category-form')) {
+            e.preventDefault();
+            if (confirm('¿Está seguro de que desea eliminar esta categoría? Esta acción no se puede deshacer.')) {
+                 const form = e.target.closest('.delete-category-form');
+                 const id = form.closest('tr').dataset.id;
+                 
+                 fetch(form.action, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRF-TOKEN': token, 'Accept': 'application/json' }
+                 })
+                 .then(res => res.json())
+                 .then(data => {
+                    if (data.success) {
+                        showToast('success', 'Categoría eliminada.');
+                        form.closest('tr').remove();
+                    } else {
+                        throw new Error('No se pudo eliminar.');
+                    }
+                 })
+                 .catch(err => showToast('error', err.message));
+            }
+        }
     });
 });
 </script>
-@stop
+@endpush
+
+@section('css')
+<style>
+    .table-responsive {
+        min-height: 400px;
+    }
+    .custom-file-label::after {
+        content: "Buscar";
+    }
+    /* Auto-numbering CSS */
+    #categoriesTable tbody tr {
+        counter-increment: rowNumber;
+    }
+    #categoriesTable tbody tr td.index-col::before {
+        content: counter(rowNumber);
+    }
+
+    /* Drag handle improvements: larger hit area and touch friendliness */
+    .drag-handle { cursor: move; -webkit-user-select: none; -ms-user-select: none; user-select: none; touch-action: none; text-align: center; width: 44px; }
+    .drag-handle i { font-size: 14px; color: #6c757d; }
+
+    /* Long-press feedback for touch devices */
+    tr.long-press-ready { outline: 2px dashed rgba(0,123,255,0.18); background: rgba(0,123,255,0.03); }
+    tr.dragging { box-shadow: 0 6px 14px rgba(0,0,0,0.12); transform: translateZ(0); }
+
+    .sorting { opacity: 0.96; background: rgba(0,0,0,0.02); }
+
+</style>
+@endsection

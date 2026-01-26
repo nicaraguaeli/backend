@@ -14,7 +14,7 @@ use App\Models\City;
 use App\Models\Tag;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Option;
-
+use Inertia\Inertia;
 
 class NewsController extends Controller
 
@@ -291,10 +291,10 @@ if ($imagePath) {
     public function updateStatus(Request $request, News $news)
     {
         $request->validate([
-            'status' => 'required|boolean',
+            'is_published' => 'required|boolean',
         ]);
 
-        $news->status = $request->status;
+        $news->is_published = $request->is_published;
         $news->save();
 
         return response()->json(['success' => true, 'message' => 'News status updated successfully.']);
@@ -306,6 +306,36 @@ if ($imagePath) {
         $news->save();
 
         return response()->json(['success' => true, 'is_featured' => $news->is_featured]);
+    }
+
+    public function setHero(Request $request, News $news)
+    {
+        try {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($news) {
+                // Is the current news item the hero? We want to toggle it.
+                $isCurrentlyHero = $news->is_hero;
+
+                // If it's going to become the hero, first set everyone else to not be the hero.
+                if (!$isCurrentlyHero) {
+                    News::where('id', '!=', $news->id)->where('is_hero', true)->update(['is_hero' => false]);
+                }
+
+                // Now, toggle the state of the current news item.
+                $news->is_hero = !$isCurrentlyHero;
+                $news->save();
+            });
+
+            return response()->json(['success' => true, 'is_hero' => $news->is_hero]);
+
+        } catch (\Exception $e) {
+            // Log the full error
+            \Illuminate\Support\Facades\Log::error('Error in setHero for news ID ' . $news->id . ': ' . $e->getMessage());
+            // Return a generic message but also the real one for debugging
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error en el servidor. ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function quickUpdate(Request $request, News $news)
@@ -359,7 +389,7 @@ if ($imagePath) {
     $published_at = $status ? now() : null;
 
     News::whereIn('id', $ids)->update([
-        'status' => $status,
+        'is_published' => $status,
 
     ]);
 
@@ -381,9 +411,26 @@ public function related(Request $request)
         $tagIds,
         $excludeId,
         $limit
-    )->get(['id', 'title', 'slug', 'published_at']);
+    )->orderBy('published_at', 'desc')->get(['id', 'title', 'slug', 'published_at']);
 
     return response()->json($related);
+}
+
+public function preview(News $news)
+{
+   
+    // Solo usuarios autenticados pueden hacer preview
+    if (!auth()->check()) {
+        abort(403);
+    }
+
+     // Envío al frontend usando las mismas variables que el show
+    return Inertia::render('Article', [
+        'article' => $news,          // aquí usamos el mismo 'article'
+        'relatedNews' => $news->related ?? [],  // opcional, según tu lógica actual
+        'mostReadNews' => [],         // opcional, puedes usar tu método de most read
+        'preview' => true             // variable extra para frontend, indica que es preview
+    ]);
 }
 
 }

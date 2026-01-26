@@ -3,16 +3,21 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\Traits\HandlesImages;
 use Illuminate\Http\Request;
 use App\Models\Category;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
+    use HandlesImages;
+
     public function index(Request $request)
     {
-        // traer categorías con el conteo de noticias relacionadas
+        // Order primarily by menu_order (nulls pushed to the end), then by name
         $categories = Category::withCount('news')
+            ->orderByRaw('COALESCE(menu_order, 999999) asc')
             ->orderBy('name')
             ->paginate(25);
 
@@ -23,21 +28,28 @@ class CategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:191|unique:categories,name',
+            'slug' => 'required|string|max:191|unique:categories,slug',
+            'image_path' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
-        // Normalizar nombre y generar slug desde el mismo valor
-        $name = trim($validated['name']);
-        $slug = Str::slug($name);
-
         $data = [
-            'name' => $name,
-            'slug' => $slug,
+            'name' => trim($validated['name']),
+            'slug' => Str::slug($validated['slug']),
         ];
 
         try {
+            if ($request->hasFile('image_path')) {
+                $data['image_path'] = $this->handleImageUpload($request);
+            }
+
+            // If menu_order not provided, set it to the end (max + 1)
+            if (!isset($data['menu_order'])) {
+                $max = Category::max('menu_order');
+                $data['menu_order'] = $max ? $max + 1 : 1;
+            }
+
             $category = Category::create($data);
         } catch (\Exception $e) {
-            // para AJAX devolver JSON legible; otherwise redirect con error
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
@@ -49,8 +61,12 @@ class CategoryController extends Controller
         }
 
         if ($request->expectsJson()) {
-            $category->loadCount('news');
-            return response()->json(['success' => true, 'data' => $category], 201);
+            return response()->json([
+                'success' => true, 
+                'data' => $category, 
+                'message' => 'Categoría creada con éxito',
+                'row_html' => view('admin.categories.partials.category-row', compact('category'))->render()
+            ], 201);
         }
 
         return redirect()->route('admin.categories.index')->with('success', 'Categoría creada.');
@@ -58,37 +74,71 @@ class CategoryController extends Controller
 
     public function update(Request $request, Category $category)
     {
-        // Si la petición contiene 'is_active' o 'is_featured', se valida y actualiza solo ese campo.
-        if ($request->has('is_active') || $request->has('is_featured')) {
-            $field = $request->has('is_active') ? 'is_active' : 'is_featured';
+        $isToggleRequest = count($request->all()) === 1 && 
+            ($request->has('is_active') || $request->has('is_featured') || $request->has('show_in_menu') || $request->has('menu_order'));
+
+        if ($isToggleRequest) {
             $validated = $request->validate([
-                $field => 'required|boolean',
+                'is_active' => 'sometimes|boolean',
+                'is_featured' => 'sometimes|boolean',
+                'show_in_menu' => 'sometimes|boolean',
+                'menu_order' => 'sometimes|integer',
             ]);
             $category->update($validated);
         } else {
-            // De lo contrario, se valida y actualiza el nombre.
             $validated = $request->validate([
                 'name' => 'required|string|max:191|unique:categories,name,' . $category->id,
+                'slug' => 'required|string|max:191|unique:categories,slug,' . $category->id,
+                'image_path' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             ]);
-            $category->update([
-                'name' => $validated['name'],
-                'slug' => Str::slug($validated['name']),
-            ]);
+
+            $data = [
+                'name' => trim($validated['name']),
+                'slug' => Str::slug($validated['slug']),
+            ];
+
+            if ($request->hasFile('image_path')) {
+                $data['image_path'] = $this->handleImageUpload($request, $category->image_path);
+            }
+            
+            $category->update($data);
         }
 
         if ($request->expectsJson()) {
-            return response()->json(['success' => true, 'data' => $category]);
+             return response()->json([
+                'success' => true, 
+                'data' => $category, 
+                'message' => 'Categoría actualizada con éxito.',
+                'row_html' => view('admin.categories.partials.category-row', compact('category'))->render()
+            ]);
         }
 
         return redirect()->route('admin.categories.index')->with('success', 'Categoría actualizada.');
     }
 
+    public function reorder(Request $request)
+    {
+        $validated = $request->validate([
+            'order' => 'required|array',
+            'order.*' => 'required|integer|exists:categories,id',
+        ]);
+
+        foreach ($validated['order'] as $index => $categoryId) {
+            Category::where('id', $categoryId)->update(['menu_order' => $index + 1]);
+        }
+
+        return response()->json(['success' => true, 'message' => 'El orden de las categorías ha sido actualizado.']);
+    }
+
     public function destroy(Request $request, Category $category)
     {
+        if ($category->image) {
+            Storage::disk('public')->delete($category->image);
+        }
         $category->delete();
 
         if ($request->expectsJson()) {
-            return response()->json(['success' => true]);
+            return response()->json(['success' => true, 'message' => 'Categoría eliminada.']);
         }
 
         return redirect()->route('admin.categories.index')->with('success', 'Categoría eliminada con éxito.');

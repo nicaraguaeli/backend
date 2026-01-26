@@ -11,10 +11,71 @@ class NewsController extends Controller
 
 
     //
-    public function index()
+    public function index(Request $request)
     {
-        $news = \App\Models\News::with('categories', 'author', 'tags')->get();
+        $query = \App\Models\News::with('categories', 'author', 'tags');
+
+        if ($request->has('category')) {
+            $slug = $request->query('category');
+            $query->whereHas('categories', function($q) use ($slug) {
+                $q->where('slug', $slug);
+            });
+        }
+
+        $news = $query->get();
         return response()->json($news);
+    }
+
+    public function show($slug)
+    {
+        
+        $news = News::with(['author', 'categories', 'tags'])
+            ->where('slug', $slug)
+            ->firstOrFail();
+
+        if (!$news->is_published && !auth()->check()) {
+            abort(404);
+        }
+
+        // Increment views
+        $news->increment('views');
+
+        // Fetch most read news (for sidebar)
+        $mostReadNews = News::with(['categories', 'author'])
+            ->where('is_published', true)
+            ->where('id', '!=', $news->id)
+            ->orderBy('views', 'desc')
+            ->take(5)
+            ->get();
+
+        // Fetch related news (for bottom section - based on category)
+        $relatedNews = News::with(['categories', 'author'])
+            ->where('is_published', true)
+            ->where('id', '!=', $news->id)
+            ->whereHas('categories', function ($query) use ($news) {
+                $query->whereIn('categories.id', $news->categories->pluck('id'));
+            })
+            ->orderBy('published_at', 'desc')
+            ->take(4)
+            ->get();
+            
+        // If not enough related news, fill with latest
+        if ($relatedNews->count() < 4) {
+             $moreNews = News::with(['categories', 'author'])
+                ->where('is_published', true)
+                ->where('id', '!=', $news->id)
+                ->whereNotIn('id', $relatedNews->pluck('id'))
+                ->orderBy('published_at', 'desc')
+                ->take(4 - $relatedNews->count())
+                ->get();
+             $relatedNews = $relatedNews->merge($moreNews);
+        }
+
+        return \Inertia\Inertia::render('Article', [
+            'article' => $news,
+            'mostReadNews' => $mostReadNews,
+            'relatedNews' => $relatedNews
+        ]);
     }
 
     /**
@@ -32,7 +93,7 @@ class NewsController extends Controller
             return response()->json(['success' => true, 'data' => []]);
         }
 
-        $news = News::with(['author','journalist','categories','tags','country','city'])
+        $news = News::with(['author','journalist','categories','tags'])
             ->relatedBy($categoryIds, $tagIds, $exclude, $limit)
             ->get()
             ->map(function ($item) {
@@ -52,5 +113,25 @@ class NewsController extends Controller
             });
 
         return response()->json(['success' => true, 'data' => $news]);
+    }
+
+    /**
+     * Suggestions endpoint for typeahead search (returns small set of matches)
+     * GET /api/news/suggestions?q=term
+     */
+    public function suggestions(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+        if (strlen($q) < 2) {
+            return response()->json([]);
+        }
+
+        $results = News::where('is_published', true)
+            ->where('title', 'like', "%{$q}%")
+            ->orderByRaw("CASE WHEN title LIKE ? THEN 0 ELSE 1 END", ["{$q}%"]) // prefer prefix matches
+            ->limit(8)
+            ->get(['id', 'title', 'slug', 'excerpt']);
+
+        return response()->json($results);
     }
 }

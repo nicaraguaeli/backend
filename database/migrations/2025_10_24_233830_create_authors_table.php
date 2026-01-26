@@ -21,7 +21,7 @@ return new class extends Migration
             $table->text('bio')->nullable();
             $table->string('avatar')->nullable();
             $table->enum('type', ['Periodista', 'Colaborador'])->default('Colaborador');
-            $table->boolean('status')->default(true);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
             
         });

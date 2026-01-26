@@ -1,12 +1,5 @@
 {{-- resources/views/admin/news/form.blade.php --}}
-<button class="btn btn-info mb-3" type="button" id="toggleRelatedBtn">
-    Mostrar noticias relacionadas ▼
-</button>
 
-<div id="relatedContainer" class="border rounded p-3" style="display:none;">
-    <h4 class="mb-3">Noticias Relacionadas</h4>
-    <div id="relatedResults"></div>
-</div>
 <div class="row">
     <div class="col-md-8">
         <div class="form-group">
@@ -21,7 +14,7 @@
                 <input type="text" name="slug" id="slug" class="form-control"
                        value="{{ old('slug', $news->slug ?? '') }}">
             </div>
-            <div class="form-group col-md-6">
+        <div class="form-group col-md-6">
                 <label for="excerpt">Resumen corto</label>
                 <input type="text" name="excerpt" id="excerpt" class="form-control"
                        value="{{ old('excerpt', $news->excerpt ?? '') }}">
@@ -216,9 +209,38 @@
                             <small class="small-help">Escriba y presione Enter para crear tags.</small>
                         </div>
 
+                        {{-- Botón para ver relacionadas --}}
+                        <button type="button" class="btn btn-outline-info btn-block mt-3" data-toggle="modal" data-target="#relatedNewsModal" onclick="fetchRelatedNews()">
+                            <i class="fas fa-search mr-1"></i> Ver noticias relacionadas
+                        </button>
+
 
         {{-- Los selects de país, ciudad, autor, categorías y tags igual puedes mantenerlos con old(...) --}}
         {{-- (omite el JS aquí, porque se mantiene en el create/edit principal) --}}
+    </div>
+</div>
+
+{{-- Modal de Noticias Relacionadas --}}
+<div class="modal fade" id="relatedNewsModal" tabindex="-1" role="dialog" aria-labelledby="relatedNewsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="relatedNewsModalLabel">Noticias Relacionadas</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="relatedResults" class="row">
+                    <div class="col-12 text-center text-muted py-3">
+                        <i class="fas fa-spinner fa-spin"></i> Cargando sugerencias...
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
     </div>
 </div>
 
