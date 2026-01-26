@@ -1,9 +1,13 @@
+interface PrimaryButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    children: React.ReactNode;
+}
+
 export default function PrimaryButton({
     className = '',
     disabled,
     children,
     ...props
-}) {
+}: PrimaryButtonProps) {
     return (
         <button
             {...props}

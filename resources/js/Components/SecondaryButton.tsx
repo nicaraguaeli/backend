@@ -1,10 +1,14 @@
+interface SecondaryButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    children: React.ReactNode;
+}
+
 export default function SecondaryButton({
     type = 'button',
     className = '',
     disabled,
     children,
     ...props
-}) {
+}: SecondaryButtonProps) {
     return (
         <button
             {...props}

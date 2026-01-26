@@ -1,11 +1,16 @@
 import PrimaryButton from '@/Components/PrimaryButton';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { route } from 'ziggy-js';
 
-export default function VerifyEmail({ status }) {
+interface VerifyEmailProps {
+    status?: string;
+}
+
+export default function VerifyEmail({ status }: VerifyEmailProps) {
     const { post, processing } = useForm({});
 
-    const submit = (e) => {
+    const submit = (e: React.FormEvent) => {
         e.preventDefault();
 
         post(route('verification.send'));

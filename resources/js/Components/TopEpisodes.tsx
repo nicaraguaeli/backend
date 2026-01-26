@@ -116,7 +116,7 @@ export default function TopEpisodes({ episodes, onPlay }: TopEpisodesProps) {
                 <div
                   key={ep.id}
                   className="episode d-flex gap-3 align-items-start"
-                  ref={(el) => (containerRefs.current[String(ep.id)] = el)}
+                  ref={(el) => { containerRefs.current[String(ep.id)] = el; }}
                 >
                   <div className="thumb-wrapper position-relative card-thumb" style={{ flex: '0 0 72px' }}>
                     <img

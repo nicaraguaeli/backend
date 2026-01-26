@@ -1,11 +1,18 @@
 import { Link } from '@inertiajs/react';
+import { ReactNode } from 'react';
+
+interface NavLinkProps {
+    active?: boolean;
+    className?: string;
+    children: ReactNode;
+}
 
 export default function NavLink({
     active = false,
     className = '',
     children,
     ...props
-}) {
+}: NavLinkProps & React.ComponentProps<typeof Link>) {
     return (
         <Link
             {...props}

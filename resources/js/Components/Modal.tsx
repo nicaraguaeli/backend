@@ -5,13 +5,21 @@ import {
     TransitionChild,
 } from '@headlessui/react';
 
+interface ModalProps {
+    children: React.ReactNode;
+    show?: boolean;
+    maxWidth?: string;
+    closeable?: boolean;
+    onClose?: () => void;
+}
+
 export default function Modal({
     children,
     show = false,
     maxWidth = '2xl',
     closeable = true,
     onClose = () => {},
-}) {
+}: ModalProps) {
     const close = () => {
         if (closeable) {
             onClose();

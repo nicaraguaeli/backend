@@ -1,9 +1,14 @@
+interface InputLabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
+    value?: string;
+    children?: React.ReactNode;
+}
+
 export default function InputLabel({
     value,
     className = '',
     children,
     ...props
-}) {
+}: InputLabelProps) {
     return (
         <label
             {...props}
