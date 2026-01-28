@@ -3,8 +3,8 @@ import laravel from 'laravel-vite-plugin';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-export default defineConfig({
-    base: '/radioabc/public/',
+export default defineConfig(({ command }) => ({
+    base: command === 'build' ? '/radioabc/public/build/' : '/',
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './resources/js'),
@@ -26,4 +26,4 @@ export default defineConfig({
             host: '192.168.1.166',
         },
     },
-});
+}));

@@ -40,16 +40,18 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
   // Load Categories on Mount
   useEffect(() => {
     const loadMenu = async () => {
+      try {
         const categories = await fetchCategories();
-        
-        // Filter by is_active AND show_in_menu
-        const visibleCategories = categories.filter(cat => 
-            (cat.is_active === true || cat.is_active === 1) &&
-            (cat.show_in_menu === true || cat.show_in_menu === 1)
-        );
 
-        // Sort by menu_order
-        visibleCategories.sort((a, b) => a.menu_order - b.menu_order);
+        // Filter by is_active AND show_in_menu (tolerant to '1'/'0' strings)
+        const visibleCategories = categories.filter(cat => {
+          const isActive = Boolean(Number(cat.is_active));
+          const showInMenu = Boolean(Number(cat.show_in_menu));
+          return isActive && showInMenu;
+        });
+
+        // Sort by menu_order (safe when null/undefined)
+        visibleCategories.sort((a, b) => (Number(a.menu_order) || 0) - (Number(b.menu_order) || 0));
 
         const MAX_VISIBLE_ITEMS = 7;
         let dynamicNavItems: NavItem[];
@@ -94,6 +96,10 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
         }
 
         setNavItems(finalNavItems);
+        } catch (err) {
+          console.error('Error loading menu categories:', err);
+          setNavItems([]);
+        }
     };
 
     loadMenu();

@@ -26,7 +26,7 @@ interface WelcomeProps {
 const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = [], featuredCategories = [], nacionalesNews = [], internationalNews = [] }: WelcomeProps) => {
     return (
           <>
-         <Head title="Inicio" />
+         <Head title="Radio ABC Stereo | Inicio | ABC Stereo" />
         
          <Hero 
                 post={latestNews} 
