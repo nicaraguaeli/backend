@@ -5,6 +5,11 @@ import path from 'path';
 
 export default defineConfig(({ command }) => ({
     base: command === 'build' ? '/radioabc/public/build/' : '/',
+    build: {
+        outDir: 'public/build',
+        emptyOutDir: true,
+        assetsDir: 'assets',
+    },
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './resources/js'),
