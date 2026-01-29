@@ -12,6 +12,16 @@
 
         <!-- Scripts -->
         @routes
+        <script>
+            // Force Ziggy to use the subdirectory path
+            if (Ziggy && Ziggy.url) {
+                // Ensure we don't double append if somehow it's already there
+                const subPath = '/radioabc/public';
+                if (!Ziggy.url.endsWith(subPath)) {
+                    Ziggy.url = Ziggy.url.replace(/\/$/, '') + subPath;
+                }
+            }
+        </script>
         @viteReactRefresh
         @vite(['resources/js/app.tsx', "resources/js/Pages/{$page['component']}.tsx"])
         @inertiaHead
