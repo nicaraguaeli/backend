@@ -116,6 +116,7 @@ class NewsController extends Controller
 
         // Manejar la subida de imagen usando el trait
         $imagePath = $this->handleImageUpload($request);
+        
 
         if ($imagePath) {
             $data['image_path'] = $imagePath;

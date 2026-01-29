@@ -1,6 +1,7 @@
 import React from 'react';
 import { Calendar, User, MapPin, ArrowRight } from 'lucide-react';
 import { ArticleData } from '../types';
+import { Ziggy } from '../ziggy';
 
 interface HeroProps {
   post: ArticleData | null;
@@ -18,11 +19,13 @@ export default function Hero({ post, onReadMore }: HeroProps) {
     );
   }
 
+  const imageUrl = post.image_path ? `${Ziggy.url}/storage/${post.image_path}` : '';
+
   return (
     <div 
       className="hero-section position-relative d-flex align-items-center"
       style={{
-        backgroundImage: `url("${post.image_path ? `/storage/${post.image_path}` : ''}")`,
+        backgroundImage: `url("${imageUrl}")`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',

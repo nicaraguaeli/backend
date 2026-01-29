@@ -12,6 +12,7 @@ import FeaturedCategories from '@/Components/FeaturedCategories';
 import NacionalesSection from '@/Components/NacionalesSection';
 import { ArticleData, Category } from '@/types';
 import { Calendar } from 'lucide-react';
+import { route } from 'ziggy-js';
 
 interface WelcomeProps {
     latestNews: ArticleData | null;
@@ -30,7 +31,7 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
         
          <Hero 
                 post={latestNews} 
-                onReadMore={() => latestNews && router.visit(`/news/${latestNews.slug}`)}
+                onReadMore={() => latestNews && router.visit(route('news.show', { slug: latestNews.slug }))}
             />
       
                         
@@ -70,11 +71,11 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
        
           <FeaturedSection 
                 posts={featuredNews || []} 
-                onPostClick={(slug) => router.visit(`/news/${slug}`)} 
+                onPostClick={(slug) => router.visit(route('news.show', { slug }))} 
             />
              <FeaturedCategories 
                 categories={featuredCategories}
-                onCategoryClick={(slug) => router.visit(`/category/${slug}`)}
+                onCategoryClick={(slug) => router.visit(route('category.show', { slug }))}
             />
 
             <NacionalesSection news={nacionalesNews} />

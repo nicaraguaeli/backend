@@ -19,6 +19,7 @@ trait HandlesImages
         if ($request->filled('cropped_image')) {
 
             $base64 = $request->input('cropped_image');
+            
 
             if (strpos($base64, ',') !== false) {
                 [, $data] = explode(',', $base64, 2);
@@ -27,7 +28,9 @@ trait HandlesImages
             }
 
             $binary = base64_decode($data);
+
             if ($binary === false) {
+               
                 return null;
             }
 
@@ -54,8 +57,12 @@ trait HandlesImages
     if ($oldPath) {
         Storage::disk('public')->delete($oldPath);
     }
+     // 📅 Carpeta por mes-año (01-2026)
+    $folder = 'news/' . now()->format('m-Y');
 
-    $filename = 'news/' . Str::random(40) . '.jpg';
+     // 🖼️ Nombre final del archivo
+    $filename = $folder . '/' . Str::random(40) . '.jpg';
+    
 
     try {
 
@@ -63,7 +70,7 @@ trait HandlesImages
 
         $manager = ImageManager::gd();
         $img = $manager->read($binary);
-
+       
         // ✅ SOLO modificación
         if ($applyWatermark) {
 
@@ -98,6 +105,7 @@ trait HandlesImages
             $img->toJpeg(90)
         );
 
+       
         return $filename;
 
     } catch (\Throwable $e) {
