@@ -95,8 +95,8 @@ export default function PostGrid({ posts, columns, compact = false }: PostGridPr
                 </div>
               )}
               
-                <h3 className={`card-title fw-bold font-serif mb-3 text-dark ${compact ? 'h6' : 'h5'}`}>
-                <a href={window.route ? window.route('news.show', { slug: post.slug }) : `/news/${post.slug}`} className="text-decoration-none text-dark stretched-link hover-text-abc-blue">
+              <h3 className={`card-title fw-bold font-serif mb-3 text-dark ${compact ? 'h6' : 'h5'}`}>
+                <a href={`/radioabc/public/news/${post.slug}`} className="text-decoration-none text-dark stretched-link hover-text-abc-blue">
                     {post.title}
                 </a>
               </h3>
@@ -109,11 +109,11 @@ export default function PostGrid({ posts, columns, compact = false }: PostGridPr
               
               <div className="mt-3 position-relative" style={{ zIndex: 2 }}>
                 <a 
-                  href={window.route ? window.route('news.show', { slug: post.slug }) : `/news/${post.slug}`}
-                  className="text-decoration-none text-abc-red fw-bold text-uppercase d-inline-flex align-items-center gap-1" 
-                  style={{ fontSize: '0.8rem', letterSpacing: '0.5px' }}
+                    href={`/radioabc/public/news/${post.slug}`}
+                    className="text-decoration-none text-abc-red fw-bold text-uppercase d-inline-flex align-items-center gap-1" 
+                    style={{ fontSize: '0.8rem', letterSpacing: '0.5px' }}
                 >
-                  Leer Noticia <ArrowRight size={14} />
+                    Leer Noticia <ArrowRight size={14} />
                 </a>
               </div>
             </div>

@@ -5,25 +5,14 @@ import axios from 'axios';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
-import { route } from 'ziggy-js';
-// app.js
-import { Ziggy } from './ziggy.js';
-
-(window as any).route = (name, params, absolute) =>
-    route(name, params, absolute, {
-        ...Ziggy,
-    });
-
 
 // Configure axios base URL for production subfolder
-if (import.meta.env.PROD) {
-    axios.defaults.baseURL = '/radioabc/public';
-}
+//axios.defaults.baseURL = '/radioabc/public';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
-    title: (title) => `${title} | en las mejores calificaciones`,
+    title: (title) => `${title} - ${appName}`,
     resolve: (name) =>
         resolvePageComponent(
             `./Pages/${name}.tsx`,
