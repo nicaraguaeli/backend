@@ -59,7 +59,7 @@ export default function PostGrid({ posts, columns, compact = false }: PostGridPr
       {posts.map((post) => {
         const categoryName = post.categories && post.categories.length > 0 ? post.categories[0].name : 'General';
         const authorName = post.author && post.author.length > 0 ? post.author.map(a => a.name).join(', ') : 'Redacción';
-        const imageUrl = post.image_path ? `/storage/${post.image_path}` : '/img/placeholder.jpg';
+        const imageUrl = post.image_path ? `storage/${post.image_path}` : '/img/placeholder.jpg';
 
         return (
         <div key={post.id} className="col">
