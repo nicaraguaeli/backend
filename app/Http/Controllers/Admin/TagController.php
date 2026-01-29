@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Tag;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Str;
 
 class TagController extends Controller
 {
@@ -20,6 +21,8 @@ class TagController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:191',
         ]);
+
+        $data['slug'] = Str::slug($data['name']);
 
         try {
             $tag = Tag::create($data);
@@ -49,6 +52,8 @@ class TagController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:191',
         ]);
+
+        $data['slug'] = Str::slug($data['name']);
 
         try {
             $tag->update($data);

@@ -33,7 +33,7 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [activeSuggestion, setActiveSuggestion] = useState<number | null>(null);
   const searchRef = React.useRef<HTMLInputElement | null>(null);
-  
+
   // Determinar si el botón debe mostrar "Sonando" (Solo si es LIVE y está PLAYING)
   const isLivePlaying = audioState.type === 'live' && audioState.isPlaying;
 
@@ -58,48 +58,48 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
         let remainingItems: NavItem[] = [];
 
         if (visibleCategories.length > MAX_VISIBLE_ITEMS) {
-            // Take the first 7 items for the main nav
-            dynamicNavItems = visibleCategories.slice(0, MAX_VISIBLE_ITEMS).map(cat => ({
-                label: cat.name,
-                href: `/category/${cat.slug}`,
-            }));
-            
-            // The rest go into the '+Contenido' dropdown
-            remainingItems = visibleCategories.slice(MAX_VISIBLE_ITEMS).map(cat => ({
-                label: cat.name,
-                href: `/category/${cat.slug}`,
-            }));
+          // Take the first 7 items for the main nav
+          dynamicNavItems = visibleCategories.slice(0, MAX_VISIBLE_ITEMS).map(cat => ({
+            label: cat.name,
+            href: `/category/${cat.slug}`,
+          }));
+
+          // The rest go into the '+Contenido' dropdown
+          remainingItems = visibleCategories.slice(MAX_VISIBLE_ITEMS).map(cat => ({
+            label: cat.name,
+            href: `/category/${cat.slug}`,
+          }));
 
         } else {
-            // If 7 or fewer, all are in the main nav
-            dynamicNavItems = visibleCategories.map(cat => ({
-                label: cat.name,
-                href: `/category/${cat.slug}`,
-            }));
+          // If 7 or fewer, all are in the main nav
+          dynamicNavItems = visibleCategories.map(cat => ({
+            label: cat.name,
+            href: `/category/${cat.slug}`,
+          }));
         }
 
         const megaMenuItems = [
-            ...remainingItems
+          ...remainingItems
         ];
 
         const finalNavItems = [
-            ...dynamicNavItems,
+          ...dynamicNavItems,
         ];
-        
+
         // Only add "+Contenido" if there are items for it
         if (megaMenuItems.length > 0) {
-            finalNavItems.push({
-                label: '+Contenido',
-                href: '#',
-                subItems: megaMenuItems
-            });
+          finalNavItems.push({
+            label: '+Contenido',
+            href: '#',
+            subItems: megaMenuItems
+          });
         }
 
         setNavItems(finalNavItems);
-        } catch (err) {
-          console.error('Error loading menu categories:', err);
-          setNavItems([]);
-        }
+      } catch (err) {
+        console.error('Error loading menu categories:', err);
+        setNavItems([]);
+      }
     };
 
     loadMenu();
@@ -118,17 +118,17 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
 
   const handleNavClick = (e: React.MouseEvent, label: string, hasSubItems: boolean = false, targetView?: string, href?: string) => {
     e.preventDefault();
-    
+
     if (href && href.startsWith('/category/')) {
-        router.visit(href);
-        setIsMobileMenuOpen(false);
-        return;
+      router.visit(href);
+      setIsMobileMenuOpen(false);
+      return;
     }
 
     if (targetView && onNavigate) {
-        onNavigate(targetView);
-        setIsMobileMenuOpen(false);
-        return;
+      onNavigate(targetView);
+      setIsMobileMenuOpen(false);
+      return;
     }
     if (hasSubItems) return;
     if (label === 'Reportajes ABC' && onNavigate) {
@@ -220,7 +220,7 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
     }
   };
 
-  const navigateToVideos = (e: React.MouseEvent) => { e.preventDefault(); onNavigate && onNavigate('videos'); setIsMobileMenuOpen(false); }; 
+  const navigateToVideos = (e: React.MouseEvent) => { e.preventDefault(); onNavigate && onNavigate('videos'); setIsMobileMenuOpen(false); };
   const navigateToPodcast = (e: React.MouseEvent) => {
     e.preventDefault();
     if (onNavigate) {
@@ -229,8 +229,12 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
       router.visit('/podcast');
     }
     setIsMobileMenuOpen(false);
-  }; 
-  const navigateToJobs = (e: React.MouseEvent) => { e.preventDefault(); onNavigate && onNavigate('jobs'); setIsMobileMenuOpen(false); };
+  };
+  const navigateToJobs = (e: React.MouseEvent) => {
+    e.preventDefault();
+    router.visit('/empleos');
+    setIsMobileMenuOpen(false);
+  };
   const navigateToAbout = (e: React.MouseEvent) => { e.preventDefault(); onNavigate && onNavigate('about'); setIsMobileMenuOpen(false); };
 
   return (
@@ -265,7 +269,7 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
       {/* Main Bar */}
       <div className="container position-relative">
         <div className="d-flex align-items-center justify-content-between py-3">
-          
+
           {/* Left: Mobile Toggle + Logo */}
           <div className="d-flex align-items-center gap-3">
             <button className="btn btn-link p-0 text-abc-blue d-lg-none" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
@@ -278,7 +282,7 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
 
           {/* Center: Search */}
           <div className="d-none d-xl-block flex-grow-1 mx-5 search-container position-relative">
-             <form onSubmit={handleSearch} className="input-group" role="search" aria-label="Buscar noticias">
+            <form onSubmit={handleSearch} className="input-group" role="search" aria-label="Buscar noticias">
               <input ref={searchRef} type="text" className="form-control bg-light border-end-0 rounded-start-pill ps-4" placeholder="Buscar noticias..." aria-label="Buscar noticias" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={handleKeyDown} onBlur={() => setTimeout(() => setShowSuggestions(false), 150)} onFocus={() => { if (suggestions.length) setShowSuggestions(true); }} />
               <button type="submit" className="btn btn-light border-start-0 rounded-end-pill pe-3"><Search size={18} className="text-primary" /></button>
             </form>
@@ -298,15 +302,15 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
 
           {/* Right: Live Button */}
           <div className="d-flex align-items-center gap-3">
-            <button 
+            <button
               onClick={onPlayLive}
               className={`btn ${isLivePlaying ? 'btn-outline-danger' : 'btn-abc-red'} rounded-pill d-flex align-items-center gap-2 px-3 py-2 shadow-sm border-0`}
             >
               <div className="position-relative d-flex align-items-center justify-content-center" style={{ width: '20px', height: '20px' }}>
-                 {isLivePlaying && <span className="position-absolute w-100 h-100 bg-danger rounded-circle opacity-25 spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>}
-                 <div className={`rounded-circle p-1 d-flex justify-content-center align-items-center ${isLivePlaying ? 'bg-danger text-white' : 'bg-white text-danger'}`} style={{ width: '16px', height: '16px' }}>
-                    {isLivePlaying ? <Pause size={8} fill="currentColor" /> : <Play size={8} fill="currentColor" />}
-                 </div>
+                {isLivePlaying && <span className="position-absolute w-100 h-100 bg-danger rounded-circle opacity-25 spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>}
+                <div className={`rounded-circle p-1 d-flex justify-content-center align-items-center ${isLivePlaying ? 'bg-danger text-white' : 'bg-white text-danger'}`} style={{ width: '16px', height: '16px' }}>
+                  {isLivePlaying ? <Pause size={8} fill="currentColor" /> : <Play size={8} fill="currentColor" />}
+                </div>
               </div>
               <div className="d-flex flex-column align-items-start lh-1">
                 <span className={`text-uppercase fw-bold ${isLivePlaying ? 'text-danger' : 'text-white-50'}`} style={{ fontSize: '9px' }}>Radio</span>
@@ -327,33 +331,33 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
               {navItems.length === 0 ? (
                 // Loading Skeleton for Menu
                 <div className="d-flex justify-content-center w-100 py-2">
-                   <div className="spinner-border spinner-border-sm text-light" role="status"></div>
+                  <div className="spinner-border spinner-border-sm text-light" role="status"></div>
                 </div>
               ) : (
                 navItems.map((item) => {
-                    const hasSubItems = !!item.subItems;
-                    const isMegaMenu = item.label === '+Contenido';
-                    return (
+                  const hasSubItems = !!item.subItems;
+                  const isMegaMenu = item.label === '+Contenido';
+                  return (
                     <li key={item.label} className={`nav-item ${hasSubItems ? 'dropdown-hover position-relative' : ''}`}>
-                        <a 
-                        href={item.href} 
+                      <a
+                        href={item.href}
                         className="nav-link nav-link-custom d-flex align-items-center gap-1 text-white text-uppercase fw-bold px-3 py-3"
                         style={{ fontSize: '0.75rem' }}
                         onClick={(e) => handleNavClick(e, item.label, hasSubItems, undefined, item.href)}
-                        >
+                      >
                         {item.label}
                         {hasSubItems && <ChevronDown size={12} />}
-                        </a>
-                        {hasSubItems && (
-                            <div className="dropdown-menu border-0 shadow-lg rounded-0 mt-0 py-2">
-                                {item.subItems?.map(sub => {
-                                    const isSpecial = SPECIAL_HIGHLIGHTS.includes(sub.label);
-                                    return <a key={sub.label} href={sub.href} className={`dropdown-item py-2 px-4 small ${isSpecial ? 'text-gray fw-bold' : ''}`} onClick={(e) => handleNavClick(e, sub.label, false, sub.target, sub.href)}>{sub.label}</a>;
-                                })}
-                            </div>
-                        )}
+                      </a>
+                      {hasSubItems && (
+                        <div className="dropdown-menu border-0 shadow-lg rounded-0 mt-0 py-2">
+                          {item.subItems?.map(sub => {
+                            const isSpecial = SPECIAL_HIGHLIGHTS.includes(sub.label);
+                            return <a key={sub.label} href={sub.href} className={`dropdown-item py-2 px-4 small ${isSpecial ? 'text-gray fw-bold' : ''}`} onClick={(e) => handleNavClick(e, sub.label, false, sub.target, sub.href)}>{sub.label}</a>;
+                          })}
+                        </div>
+                      )}
                     </li>
-                    );
+                  );
                 })
               )}
             </ul>
@@ -365,70 +369,70 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
       {isMobileMenuOpen && (
         <div className="d-lg-none">
           {/* Backdrop with fade-in animation */}
-          <div 
-            className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 animate-fade-in-overlay" 
-            style={{ zIndex: 1040 }} 
+          <div
+            className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 animate-fade-in-overlay"
+            style={{ zIndex: 1040 }}
             onClick={() => setIsMobileMenuOpen(false)}
           ></div>
-          
+
           {/* Menu Drawer with sliding animation */}
-          <div 
-            className="position-fixed top-0 start-0 h-100 bg-white shadow animate-slide-right" 
+          <div
+            className="position-fixed top-0 start-0 h-100 bg-white shadow animate-slide-right"
             style={{ zIndex: 1050, width: '320px', overflowY: 'auto' }}
           >
-             <div className="d-flex align-items-center justify-content-between p-3 bg-abc-blue text-white">
-                <h5 className="m-0">Menú</h5>
-                <button className="btn btn-link text-white p-0" onClick={() => setIsMobileMenuOpen(false)}><X size={24} /></button>
-             </div>
-             <div className="p-3 bg-light border-bottom position-relative">
-                <form onSubmit={handleSearch} className="input-group input-group-sm" role="search" aria-label="Buscar">
-                  <input type="text" className="form-control" placeholder="Buscar..." aria-label="Buscar" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={handleKeyDown} onBlur={() => setTimeout(() => setShowSuggestions(false), 150)} onFocus={() => { if (suggestions.length) setShowSuggestions(true); }} />
-                  <button className="btn btn-outline-secondary" type="submit"><Search size={16}/></button>
-                </form>
+            <div className="d-flex align-items-center justify-content-between p-3 bg-abc-blue text-white">
+              <h5 className="m-0">Menú</h5>
+              <button className="btn btn-link text-white p-0" onClick={() => setIsMobileMenuOpen(false)}><X size={24} /></button>
+            </div>
+            <div className="p-3 bg-light border-bottom position-relative">
+              <form onSubmit={handleSearch} className="input-group input-group-sm" role="search" aria-label="Buscar">
+                <input type="text" className="form-control" placeholder="Buscar..." aria-label="Buscar" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={handleKeyDown} onBlur={() => setTimeout(() => setShowSuggestions(false), 150)} onFocus={() => { if (suggestions.length) setShowSuggestions(true); }} />
+                <button className="btn btn-outline-secondary" type="submit"><Search size={16} /></button>
+              </form>
 
-                {showSuggestions && suggestions.length > 0 && (
-                  <div className="search-suggestions dropdown-menu show mt-1 w-100 shadow-sm" style={{ left: 0 }} role="listbox" aria-label="Sugerencias de búsqueda">
-                    {suggestions.map((s, idx) => (
-                      <button key={s.id} type="button" role="option" aria-selected={activeSuggestion === idx} className={`dropdown-item text-truncate ${activeSuggestion === idx ? 'active' : ''}`} onMouseDown={(e) => { e.preventDefault(); router.visit(`/news/${s.slug}`); setShowSuggestions(false); setSuggestions([]); setSearchQuery(''); setIsMobileMenuOpen(false); }}>
-                        <strong className="d-block">{s.title}</strong>
-                        {s.excerpt && <small className="text-muted d-block">{s.excerpt}</small>}
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="search-suggestions dropdown-menu show mt-1 w-100 shadow-sm" style={{ left: 0 }} role="listbox" aria-label="Sugerencias de búsqueda">
+                  {suggestions.map((s, idx) => (
+                    <button key={s.id} type="button" role="option" aria-selected={activeSuggestion === idx} className={`dropdown-item text-truncate ${activeSuggestion === idx ? 'active' : ''}`} onMouseDown={(e) => { e.preventDefault(); router.visit(`/news/${s.slug}`); setShowSuggestions(false); setSuggestions([]); setSearchQuery(''); setIsMobileMenuOpen(false); }}>
+                      <strong className="d-block">{s.title}</strong>
+                      {s.excerpt && <small className="text-muted d-block">{s.excerpt}</small>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="list-group list-group-flush">
+              {navItems.map((item) => {
+                if (item.subItems) {
+                  const subItems = item.subItems;
+                  return (
+                    <div key={item.label} className="list-group-item bg-light p-0 border-bottom">
+                      <button className="p-3 fw-bold text-abc-blue d-flex align-items-center justify-content-between w-100 btn btn-link" onClick={() => toggleSection(item.label)}>
+                        <span className="text-start">{item.label}</span>
+                        <ChevronDown size={16} className={openSections[item.label] ? 'rotate-180' : ''} />
                       </button>
-                    ))}
-                  </div>
-                )}
-             </div>
-             <div className="list-group list-group-flush">
-               {navItems.map((item) => {
-                 if (item.subItems) {
-                    const subItems = item.subItems;
-                    return (
-                        <div key={item.label} className="list-group-item bg-light p-0 border-bottom">
-                            <button className="p-3 fw-bold text-abc-blue d-flex align-items-center justify-content-between w-100 btn btn-link" onClick={() => toggleSection(item.label)}>
-                              <span className="text-start">{item.label}</span>
-                              <ChevronDown size={16} className={openSections[item.label] ? 'rotate-180' : ''} />
-                            </button>
-                            {openSections[item.label] && (
-                              <div className="bg-white ps-3">
-                                {subItems.map((sub: any) => {
-                                    const isSpecial = SPECIAL_HIGHLIGHTS.includes(sub.label);
-                                    return (
-                                        <a key={sub.label} href={sub.href} className={`list-group-item list-group-item-action border-0 ps-3 py-2 ${isSpecial ? 'text-gray fw-bold' : 'text-secondary'}`} onClick={(e) => handleNavClick(e, sub.label, false, sub.target, sub.href)}>
-                                            {sub.label}
-                                        </a>
-                                    );
-                                })}
-                              </div>
-                            )}
+                      {openSections[item.label] && (
+                        <div className="bg-white ps-3">
+                          {subItems.map((sub: any) => {
+                            const isSpecial = SPECIAL_HIGHLIGHTS.includes(sub.label);
+                            return (
+                              <a key={sub.label} href={sub.href} className={`list-group-item list-group-item-action border-0 ps-3 py-2 ${isSpecial ? 'text-gray fw-bold' : 'text-secondary'}`} onClick={(e) => handleNavClick(e, sub.label, false, sub.target, sub.href)}>
+                                {sub.label}
+                              </a>
+                            );
+                          })}
                         </div>
-                    );
-                 }
-                 return <a key={item.label} href={item.href} className="list-group-item list-group-item-action fw-bold text-secondary" onClick={(e) => handleNavClick(e, item.label, false, undefined, item.href)}>{item.label}</a>;
-               })}
-               <a href="#" className="list-group-item list-group-item-action fw-bold text-abc-gold" onClick={navigateToVideos}>AbcTV</a>
-               <a href="#" className="list-group-item list-group-item-action fw-bold text-secondary" onClick={navigateToPodcast}>AUDIOREPORTAJES</a>
-                <a href="#" className="list-group-item list-group-item-action fw-bold text-secondary" onClick={navigateToJobs}>Empleos</a>
-               <a href="#" className="list-group-item list-group-item-action fw-bold text-secondary" onClick={navigateToAbout}>Quiénes Somos</a>
-             </div>
+                      )}
+                    </div>
+                  );
+                }
+                return <a key={item.label} href={item.href} className="list-group-item list-group-item-action fw-bold text-secondary" onClick={(e) => handleNavClick(e, item.label, false, undefined, item.href)}>{item.label}</a>;
+              })}
+              <a href="#" className="list-group-item list-group-item-action fw-bold text-abc-gold" onClick={navigateToVideos}>AbcTV</a>
+              <a href="#" className="list-group-item list-group-item-action fw-bold text-secondary" onClick={navigateToPodcast}>AUDIOREPORTAJES</a>
+              <a href="#" className="list-group-item list-group-item-action fw-bold text-secondary" onClick={navigateToJobs}>Empleos</a>
+              <a href="#" className="list-group-item list-group-item-action fw-bold text-secondary" onClick={navigateToAbout}>Quiénes Somos</a>
+            </div>
           </div>
         </div>
       )}

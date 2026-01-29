@@ -282,8 +282,8 @@
                         @endforeach
                     </tbody>
                 </table>
-                <div class="d-flex justify-content-left mt-4">
-    {{ $news->links() }}
+               <div class="d-flex justify-content-start mt-4">
+    {{ $news->links('pagination::bootstrap-4') }}
 </div>
 
 

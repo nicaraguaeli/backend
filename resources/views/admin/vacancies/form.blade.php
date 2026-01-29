@@ -77,10 +77,10 @@
             <select name="employment_type" id="employment_type" class="form-control @error('employment_type') is-invalid @enderror">
                 <option value="">-- Seleccionar --</option>
                 @foreach($vacancies_types ?? [] as $key => $value)
-                    <option value="{{ $key }}" @selected(old('type', $vacancy->type ?? '') == $key)>{{ $value }}</option>
+                    <option value="{{ $key }}" @selected(old('employment_type', $vacancy->employment_type ?? '') == $key)>{{ $value }}</option>
                 @endforeach
             </select>
-            @error('type')
+            @error('employment_type')
                 <span class="invalid-feedback" role="alert">
                     <strong>{{ $message }}</strong>
                 </span>
@@ -92,11 +92,11 @@
             <select name="city" id="city" class="form-control @error('city') is-invalid @enderror">
                 <option value="">-- Seleccione una ciudad --</option>
                 @foreach($cities ?? [] as $city)
-                    <option value="{{ $city->name }}" @selected(old('location', $vacancy->location ?? '') == $city->name)>{{ $city->name }}
+                    <option value="{{ $city->name }}" @selected(old('city', $vacancy->city ?? '') == $city->name)>{{ $city->name }}
                     </option>
                 @endforeach
             </select>
-            @error('location')
+            @error('city')
                 <span class="invalid-feedback" role="alert">
                     <strong>{{ $message }}</strong>
                 </span>

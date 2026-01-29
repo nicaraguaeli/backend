@@ -15,12 +15,8 @@ class VacancyController extends Controller
 {
 
     protected $types = [
-        'full_time' => 'Tiempo Completo',
-        'part_time' => 'Medio Tiempo',
-        'contract' => 'Contrato',
-        'internship' => 'Pasantía',
-        'temporary' => 'Temporal',
-        'project' => 'Por proyecto',
+        'con_experiencia' => 'Con Experiencia',
+        'sin_experiencia' => 'Sin Experiencia',
     ];
     
     
@@ -69,19 +65,25 @@ class VacancyController extends Controller
     public function edit(Vacancy $vacancy)
     {
         // cargar ciudades también para edición
-        $cities = City::orderBy('name')->get();
-        return view('admin.vacancies.edit', compact('vacancy', 'cities'));
+        $cities = Country::where('name', 'Nicaragua')
+        ->firstOrFail()
+        ->cities()
+        ->orderBy('name')
+        ->get();
+        
+        $vacancies_types = $this->types;
+        return view('admin.vacancies.edit', compact('vacancy', 'cities', 'vacancies_types'));
     }
 
     public function update(Request $request, Vacancy $vacancy)
     {
         $data = $request->validate([
             'title' => 'required|string|max:255',
-            'company_name' => 'nullable|string|max:255',
-            'location' => 'nullable|exists:cities,id',
-            'type' => 'nullable|string|max:100',
+            'company' => 'nullable|string|max:255',
+            'city' => 'nullable|string',
+            'employment_type' => 'nullable|string|max:100',
             'description' => 'nullable|string',
-            'salary' => 'nullable|string|max:100',
+            'expires_at' => 'required|date',
             'is_active' => 'nullable|boolean',
         ]);
 

@@ -79,6 +79,9 @@ Route::get('/', function () {
         ->take(4)
         ->get();
 
+    // 7. Banners
+    $banners = \App\Models\Banner::where('is_active', true)->get();
+
     return Inertia::render('Welcome', [
         'latestNews' => $latestNews,
         'mostReadNews' => $mostReadNews,
@@ -87,6 +90,7 @@ Route::get('/', function () {
         'featuredCategories' => $featuredCategories,
         'nacionalesNews' => $nacionalesNews,
         'internationalNews' => $internationalNews,
+        'banners' => $banners,
     ]);
 });
 
@@ -136,6 +140,18 @@ Route::get('api/audioreportajes', [App\Http\Controllers\Api\AudioReportControlle
 // Suggestions endpoint for search typeahead
 Route::get('api/news/suggestions', [App\Http\Controllers\Blog\NewsController::class, 'suggestions'])->name('api.news.suggestions');
 
+// Ruta para Empleos (React)
+Route::get('/empleos', function () {
+    $vacancies = \App\Models\Vacancy::where('is_active', true)
+        ->whereDate('expires_at', '>=', now())
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+    return Inertia::render('Jobs', [
+        'vacancies' => $vacancies
+    ]);
+})->name('jobs.index');
+
 // Grupo de Rutas Admin (Blade)
 Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], function () {
     
@@ -168,6 +184,9 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], fu
 
     // Rutas para Audio Reportajes
     Route::resource('audio_reports', App\Http\Controllers\Admin\AudioReportController::class);
+
+    // Rutas para Banners (Publicidad)
+    Route::resource('banners', App\Http\Controllers\Admin\BannerController::class);
 
     // Rutas de Perfil y Contraseña
     Route::get('profile', [App\Http\Controllers\Admin\ProfileController::class, 'edit'])->name('profile.edit');

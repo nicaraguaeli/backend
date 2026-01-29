@@ -14,6 +14,15 @@ import { ArticleData, Category } from '@/types';
 import { Calendar } from 'lucide-react';
 import { route } from 'ziggy-js';
 
+interface Banner {
+    id: number;
+    file_path: string;
+    link: string | null;
+    position: string | null;
+    mime_type: string;
+    is_active: boolean;
+}
+
 interface WelcomeProps {
     latestNews: ArticleData | null;
     mostReadNews?: ArticleData[];
@@ -22,65 +31,117 @@ interface WelcomeProps {
     featuredCategories?: Category[];
     nacionalesNews?: ArticleData[];
     internationalNews?: ArticleData[];
+    banners?: Banner[];
 }
 
-const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = [], featuredCategories = [], nacionalesNews = [], internationalNews = [] }: WelcomeProps) => {
+const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = [], featuredCategories = [], nacionalesNews = [], internationalNews = [], banners = [] }: WelcomeProps) => {
+
+    const getBanner = (position: string) => {
+        const positionBanners = banners.filter(b => b.position === position);
+        if (positionBanners.length === 0) return null;
+        // Return a random banner from the available ones for this position
+        return positionBanners[Math.floor(Math.random() * positionBanners.length)];
+    };
+
+    const homeTopBanner = getBanner('home_top');
+    const sidebarBanner = getBanner('sidebar');
+    const contentBanner = getBanner('content');
+    const footerBanner = getBanner('footer');
+
     return (
-          <>
-         <Head title="Radio ABC Stereo | Inicio | ABC Stereo" />
-        
-         <Hero 
-                post={latestNews} 
+        <>
+            <Head title="Radio ABC Stereo | Inicio | ABC Stereo" />
+
+            {homeTopBanner && (
+                <div className="container mt-4 mb-2">
+                    <AdSpace
+                        variant="horizontal"
+                        imageUrl={`/storage/${homeTopBanner.file_path}`}
+                        link={homeTopBanner.link || '#'}
+                        label="Publicidad"
+                    />
+                </div>
+            )}
+
+            <Hero
+                post={latestNews}
                 onReadMore={() => latestNews && router.visit(route('news.show', { slug: latestNews.slug }))}
             />
-      
-                        
-                <div className="container py-5">
+
+
+            <div className="container py-5">
                 <div className="row g-4">
                     {/* Main Content: More News */}
                     <div className="col-lg">
-                       
+
 
                         <div className="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
                             <h2 className="h2 mb-0 fw-bold text-abc-blue font-serif ps-3 border-start border-4 border-secondary">
                                 Más Noticias
                             </h2>
                         </div>
-                        
+
                         <PostGrid posts={moreNews || []} columns={3} />
+
+                        {contentBanner && (
+                            <div className="mt-5">
+                                <AdSpace
+                                    variant="horizontal"
+                                    imageUrl={`/storage/${contentBanner.file_path}`}
+                                    link={contentBanner.link || '#'}
+                                    label="Publicidad"
+                                />
+                            </div>
+                        )}
                     </div>
 
                     {/* Sidebar: Most Read & Widgets */}
                     <aside className="col-lg-auto" style={{ width: '350px' }}>
                         <div className="d-flex flex-column gap-4 sticky-top" style={{ top: '100px', zIndex: 10 }}>
+
+
                             {/* Most Read Widget */}
                             <MostRead items={mostReadNews || []} />
 
                             {/* International News Widget */}
                             <InternationalNews items={internationalNews || []} />
-                            
-                            {/* Ad Space Placeholder */}
-                            <div className="bg-light p-5 text-center rounded border border-dashed d-flex flex-column align-items-center justify-content-center text-muted" style={{ height: '250px' }}>
-                                <span className="fw-bold mb-1">ESPACIO PUBLICITARIO</span>
-                                <small>300 x 250</small>
-                            </div>
+
+                            {/* Ad Space Sidebar */}
+                            <AdSpace
+                                variant="sidebar"
+                                imageUrl={sidebarBanner ? `/storage/${sidebarBanner.file_path}` : undefined}
+                                link={sidebarBanner?.link || '#'}
+                                label="Publicidad"
+                            />
+
                         </div>
                     </aside>
                 </div>
             </div>
-       
-          <FeaturedSection 
-                posts={featuredNews || []} 
-                onPostClick={(slug) => router.visit(route('news.show', { slug }))} 
+
+            <FeaturedSection
+                posts={featuredNews || []}
+                onPostClick={(slug) => router.visit(route('news.show', { slug }))}
             />
-             <FeaturedCategories 
+            <FeaturedCategories
                 categories={featuredCategories}
                 onCategoryClick={(slug) => router.visit(route('category.show', { slug }))}
             />
 
+            {footerBanner && (
+                <div className="container my-5">
+                    <AdSpace
+                        variant="horizontal"
+                        imageUrl={`/storage/${footerBanner.file_path}`}
+                        link={footerBanner.link || '#'}
+                        label="Publicidad"
+                    />
+                </div>
+            )}
+
             <NacionalesSection news={nacionalesNews} />
         </>
-      
+
     );
 };
 

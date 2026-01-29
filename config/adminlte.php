@@ -412,6 +412,20 @@ return [
             ],
         ]
     ],
+    [
+        'text' => 'Publicidad',
+        'icon' => 'fas fa-ad',
+        'submenu' => [
+            [
+                'text' => 'Listar Banners',
+                'route'  => 'admin.banners.index',
+            ],
+            [
+                'text' => 'Crear Nuevo',
+                'route'  => 'admin.banners.create',
+            ],
+        ]
+    ],
 
 
     ],

@@ -10,7 +10,8 @@ class Tag extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'slug'];
+
 
     protected function name(): Attribute
     {

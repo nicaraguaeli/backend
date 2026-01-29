@@ -177,11 +177,9 @@ document.addEventListener('DOMContentLoaded', function () {
         modal.modal('show');
     }
     
-    // Auto-slugify
-    nameInput.addEventListener('input', () => {
-        if (!form.classList.contains('is-editing')) {
-            slugInput.value = slugify(nameInput.value);
-        }
+    // Auto-slugify on name input using event delegation for robustness
+    $(document).on('input', '#name', function() {
+        $('#slug').val(slugify($(this).val()));
     });
 
     // Image preview
