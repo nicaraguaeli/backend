@@ -1,4 +1,6 @@
 import React from 'react';
+import { asset } from '@/url';
+import { route } from 'ziggy-js';
 import { ArticleData } from '../types';
 import { Calendar, ArrowRight, MapPin } from 'lucide-react';
 
@@ -16,7 +18,7 @@ export default function NacionalesSection({ news }: NacionalesSectionProps) {
           <h2 className="h3 fw-bold text-abc-blue font-serif border-start border-4 border-abc-red ps-3 mb-0">
             Nacionales
           </h2>
-          <a href="/category/nacionales" className="btn btn-link text-decoration-none text-secondary d-flex align-items-center gap-1 small fw-bold">
+          <a href={route('category.show', { slug: 'nacionales' })} className="btn btn-link text-decoration-none text-secondary d-flex align-items-center gap-1 small fw-bold">
             Ver más <ArrowRight size={16} />
           </a>
         </div>
@@ -26,8 +28,8 @@ export default function NacionalesSection({ news }: NacionalesSectionProps) {
             <div key={item.id} className="col-md-6 col-lg-3">
               <article className="card h-100 border-0 shadow-sm hover-shadow transition-all">
                 <div className="position-relative overflow-hidden" style={{ paddingTop: '60%' }}>
-                  <img 
-                    src={item.image_path ? `/storage/${item.image_path}` : 'https://via.placeholder.com/400x300?text=No+Image'} 
+                  <img
+                    src={item.image_path ? asset(`storage/${item.image_path}`) : 'https://via.placeholder.com/400x300?text=No+Image'}
                     alt={item.title}
                     className="position-absolute top-0 start-0 w-100 h-100 object-fit-cover transition-transform hover-scale"
                   />
@@ -44,13 +46,13 @@ export default function NacionalesSection({ news }: NacionalesSectionProps) {
                       {new Date(item.published_at).toLocaleDateString()}
                     </span>
                     {item.city && (
-                        <span className="d-flex align-items-center gap-1">
-                            <MapPin size={14} /> {item.city}
-                        </span>
+                      <span className="d-flex align-items-center gap-1">
+                        <MapPin size={14} /> {item.city}
+                      </span>
                     )}
                   </div>
                   <h3 className="h6 fw-bold text-dark mb-3 line-clamp-3 flex-grow-1 font-serif">
-                    <a href={`/news/${item.slug}`} className="text-decoration-none text-dark stretched-link hover-text-red">
+                    <a href={route('news.show', { slug: item.slug })} className="text-decoration-none text-dark stretched-link hover-text-red">
                       {item.title}
                     </a>
                   </h3>

@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
+import { route } from 'ziggy-js';
+import { asset } from '@/url';
 import { Menu, X, Search, Play, Pause, Facebook, Twitter, Instagram, Youtube, ChevronDown } from 'lucide-react';
 import { NavItem, AudioState } from '../../types';
 import { fetchCategories } from '../../services/newsService';
@@ -61,20 +63,20 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
           // Take the first 7 items for the main nav
           dynamicNavItems = visibleCategories.slice(0, MAX_VISIBLE_ITEMS).map(cat => ({
             label: cat.name,
-            href: `/category/${cat.slug}`,
+            href: route('category.show', { slug: cat.slug }),
           }));
 
           // The rest go into the '+Contenido' dropdown
           remainingItems = visibleCategories.slice(MAX_VISIBLE_ITEMS).map(cat => ({
             label: cat.name,
-            href: `/category/${cat.slug}`,
+            href: route('category.show', { slug: cat.slug }),
           }));
 
         } else {
           // If 7 or fewer, all are in the main nav
           dynamicNavItems = visibleCategories.map(cat => ({
             label: cat.name,
-            href: `/category/${cat.slug}`,
+            href: route('category.show', { slug: cat.slug }),
           }));
         }
 
@@ -119,7 +121,7 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
   const handleNavClick = (e: React.MouseEvent, label: string, hasSubItems: boolean = false, targetView?: string, href?: string) => {
     e.preventDefault();
 
-    if (href && href.startsWith('/category/')) {
+    if (href && href.startsWith(route('home'))) {
       router.visit(href);
       setIsMobileMenuOpen(false);
       return;
@@ -153,7 +155,7 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
     // If user has an active suggestion, go to it first
     if (activeSuggestion !== null && suggestions[activeSuggestion]) {
       const s = suggestions[activeSuggestion];
-      router.visit(`/news/${s.slug}`);
+      router.visit(route('news.show', { slug: s.slug }));
       setSuggestions([]);
       setShowSuggestions(false);
       setSearchQuery('');
@@ -162,7 +164,7 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
     }
 
     // Navigate to a /search route with query param
-    router.visit(`/search?q=${encodeURIComponent(q)}`);
+    router.visit(asset(`search?q=${encodeURIComponent(q)}`));
     setIsMobileMenuOpen(false);
     setSearchQuery('');
     setSuggestions([]);
@@ -208,7 +210,7 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
       if (activeSuggestion !== null && suggestions[activeSuggestion]) {
         e.preventDefault();
         const s = suggestions[activeSuggestion];
-        router.visit(`/news/${s.slug}`);
+        router.visit(route('news.show', { slug: s.slug }));
         setSearchQuery('');
         setShowSuggestions(false);
         setSuggestions([]);
@@ -232,7 +234,7 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
   };
   const navigateToJobs = (e: React.MouseEvent) => {
     e.preventDefault();
-    router.visit('/empleos');
+    router.visit(route('jobs.index'));
     setIsMobileMenuOpen(false);
   };
   const navigateToAbout = (e: React.MouseEvent) => { e.preventDefault(); onNavigate && onNavigate('about'); setIsMobileMenuOpen(false); };
@@ -275,7 +277,7 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
             <button className="btn btn-link p-0 text-abc-blue d-lg-none" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
             </button>
-            <a href="/" onClick={(e) => { e.preventDefault(); router.visit('/'); }} className="navbar-brand m-0 brand-logo-wrapper">
+            <a href={route('home')} onClick={(e) => { e.preventDefault(); router.visit(route('home')); }} className="navbar-brand m-0 brand-logo-wrapper">
               <img src="https://radioabcstereo.com/img/brand.png" alt="Radio ABC Stereo" className="brand-logo" />
             </a>
           </div>
@@ -290,7 +292,7 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
             {showSuggestions && suggestions.length > 0 && (
               <div className="search-suggestions dropdown-menu show mt-1 w-100 shadow-sm" role="listbox" aria-label="Sugerencias de búsqueda">
                 {suggestions.map((s, idx) => (
-                  <button key={s.id} type="button" role="option" aria-selected={activeSuggestion === idx} className={`dropdown-item text-truncate ${activeSuggestion === idx ? 'active' : ''}`} onMouseDown={(e) => { e.preventDefault(); router.visit(`/news/${s.slug}`); setShowSuggestions(false); setSuggestions([]); setSearchQuery(''); }}>
+                  <button key={s.id} type="button" role="option" aria-selected={activeSuggestion === idx} className={`dropdown-item text-truncate ${activeSuggestion === idx ? 'active' : ''}`} onMouseDown={(e) => { e.preventDefault(); router.visit(route('news.show', { slug: s.slug })); setShowSuggestions(false); setSuggestions([]); setSearchQuery(''); }}>
                     <strong className="d-block">{s.title}</strong>
                     {s.excerpt && <small className="text-muted d-block">{s.excerpt}</small>}
                   </button>
@@ -393,7 +395,7 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
               {showSuggestions && suggestions.length > 0 && (
                 <div className="search-suggestions dropdown-menu show mt-1 w-100 shadow-sm" style={{ left: 0 }} role="listbox" aria-label="Sugerencias de búsqueda">
                   {suggestions.map((s, idx) => (
-                    <button key={s.id} type="button" role="option" aria-selected={activeSuggestion === idx} className={`dropdown-item text-truncate ${activeSuggestion === idx ? 'active' : ''}`} onMouseDown={(e) => { e.preventDefault(); router.visit(`/news/${s.slug}`); setShowSuggestions(false); setSuggestions([]); setSearchQuery(''); setIsMobileMenuOpen(false); }}>
+                    <button key={s.id} type="button" role="option" aria-selected={activeSuggestion === idx} className={`dropdown-item text-truncate ${activeSuggestion === idx ? 'active' : ''}`} onMouseDown={(e) => { e.preventDefault(); router.visit(route('news.show', { slug: s.slug })); setShowSuggestions(false); setSuggestions([]); setSearchQuery(''); setIsMobileMenuOpen(false); }}>
                       <strong className="d-block">{s.title}</strong>
                       {s.excerpt && <small className="text-muted d-block">{s.excerpt}</small>}
                     </button>

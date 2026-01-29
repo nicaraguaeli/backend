@@ -1,4 +1,6 @@
 import React from 'react';
+import { asset } from '@/url';
+import { route } from 'ziggy-js';
 import { ArticleData } from '../types';
 import { Clock, ArrowRight, Star, TrendingUp } from 'lucide-react';
 
@@ -16,60 +18,60 @@ export default function FeaturedSection({ posts, onPostClick }: FeaturedSectionP
 
   return (
     <section className="featured-section-dark py-5 bg-abc-blue position-relative overflow-hidden">
-        {/* Decorative BG */}
-        <div className="position-absolute top-0 end-0 p-5 opacity-5">
-            <TrendingUp size={400} strokeWidth={0.4} color="white" />
-        </div>
+      {/* Decorative BG */}
+      <div className="position-absolute top-0 end-0 p-5 opacity-5">
+        <TrendingUp size={400} strokeWidth={0.4} color="white" />
+      </div>
 
       <div className="container position-relative z-2">
         {/* Section Header */}
         <div className="d-flex align-items-end justify-content-between mb-4 border-bottom border-white border-opacity-25 pb-3">
-            <div>
-                <span className="text-abc-gold text-uppercase fw-bold small letter-spacing-2 mb-1 d-block">
-                    Contenido Exclusivo
-                </span>
-                <h2 className="display-5 fw-bold text-white font-serif mb-0">
-                    Noticias Destacadas
-                </h2>
-            </div>
+          <div>
+            <span className="text-abc-gold text-uppercase fw-bold small letter-spacing-2 mb-1 d-block">
+              Contenido Exclusivo
+            </span>
+            <h2 className="display-5 fw-bold text-white font-serif mb-0">
+              Noticias Destacadas
+            </h2>
+          </div>
         </div>
 
         <div className="row g-4">
-          
+
           {/* Main Featured Article (Full width) */}
           <div className="col-12">
-            <div 
-                className="card text-white border-0 rounded-4 overflow-hidden shadow-lg featured-card-main-dark cursor-pointer"
-                onClick={() => onPostClick(mainPost.slug)}
+            <div
+              className="card text-white border-0 rounded-4 overflow-hidden shadow-lg featured-card-main-dark cursor-pointer"
+              onClick={() => onPostClick(mainPost.slug)}
             >
               <div className="position-relative" style={{ minHeight: '500px' }}>
-                <img 
-                  src={mainPost.image_path ? `/storage/${mainPost.image_path}` : 'https://placehold.co/1200x500?text=ABC'} 
-                  alt={mainPost.title} 
+                <img
+                  src={mainPost.image_path ? asset(`storage/${mainPost.image_path}`) : 'https://placehold.co/1200x500?text=ABC'}
+                  alt={mainPost.title}
                   className="w-100 h-100 object-fit-cover transition-transform position-absolute top-0 start-0"
                   onError={(e) => (e.target as HTMLImageElement).src = 'https://placehold.co/1200x500?text=ABC'}
                 />
                 <div className="overlay-gradient-dark position-absolute top-0 start-0 w-100 h-100"></div>
-                
+
                 <div className="card-content position-absolute bottom-0 start-0 w-100 p-4 p-md-5">
-                   <div className="d-flex align-items-center gap-2 mb-3">
-                        <span className="badge bg-abc-red shadow-sm text-uppercase px-3 py-2 rounded-pill">
-                            <Star size={14} className="me-1 fill-white" /> Destacado
-                        </span>
-                   </div>
-                   <h3 className="display-4 fw-bold font-serif mb-3 text-shadow lh-sm" style={{maxWidth: '85%'}}>
-                      {mainPost.title}
-                   </h3>
-                   <p className="lead fs-5 text-white-75 mb-4 d-none d-md-block" style={{maxWidth: '70%'}}>
-                      {mainPost.excerpt}
-                   </p>
-                   <div className="d-flex align-items-center gap-3 small fw-medium">
-                      <span className="text-abc-gold fw-bold text-uppercase">{mainPost.author?.[0]?.name || 'Redacción'}</span>
-                      <span className="text-white-50">•</span>
-                      <div className="d-flex align-items-center gap-1 text-white-50">
-                        <Clock size={14} /> {new Date(mainPost.published_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
-                      </div>
-                   </div>
+                  <div className="d-flex align-items-center gap-2 mb-3">
+                    <span className="badge bg-abc-red shadow-sm text-uppercase px-3 py-2 rounded-pill">
+                      <Star size={14} className="me-1 fill-white" /> Destacado
+                    </span>
+                  </div>
+                  <h3 className="display-4 fw-bold font-serif mb-3 text-shadow lh-sm" style={{ maxWidth: '85%' }}>
+                    {mainPost.title}
+                  </h3>
+                  <p className="lead fs-5 text-white-75 mb-4 d-none d-md-block" style={{ maxWidth: '70%' }}>
+                    {mainPost.excerpt}
+                  </p>
+                  <div className="d-flex align-items-center gap-3 small fw-medium">
+                    <span className="text-abc-gold fw-bold text-uppercase">{mainPost.author?.[0]?.name || 'Redacción'}</span>
+                    <span className="text-white-50">•</span>
+                    <div className="d-flex align-items-center gap-1 text-white-50">
+                      <Clock size={14} /> {new Date(mainPost.published_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -78,38 +80,38 @@ export default function FeaturedSection({ posts, onPostClick }: FeaturedSectionP
           {/* Secondary Articles */}
           {secondaryPosts.map((post) => (
             <div key={post.id} className="col-lg-4 col-md-6">
-                <div 
-                    className="card h-100 border-0 rounded-4 overflow-hidden shadow-sm glass-card cursor-pointer"
-                    onClick={() => onPostClick(post.slug)}
-                >
-                    <div className="position-relative overflow-hidden" style={{height: '200px'}}>
-                        <img 
-                           src={post.image_path ? `/storage/${post.image_path}` : 'https://placehold.co/400x250?text=ABC'} 
-                           alt={post.title} 
-                           className="w-100 h-100 object-fit-cover transition-transform"
-                           onError={(e) => (e.target as HTMLImageElement).src = 'https://placehold.co/400x250?text=ABC'}
-                        />
-                         <div className="overlay-gradient-sm position-absolute top-0 start-0 w-100 h-100"></div>
-                        <span className="position-absolute top-0 end-0 m-2 badge bg-white bg-opacity-10 text-white shadow-sm small">
-                            {post.categories?.[0]?.name || 'Noticias'}
-                        </span>
-                    </div>
-                    
-                    <div className="card-body d-flex flex-column p-3">
-                        <h5 className="h6 fw-bold font-serif mb-2 text-white lh-base flex-grow-1">
-                            {post.title}
-                        </h5>
-                        
-                        <div className="mt-auto pt-2">
-                             <a href={`/news/${post.slug}`} className="text-abc-gold fw-bold d-flex align-items-center gap-1 small text-decoration-none stretched-link-surface">
-                                LEER MÁS <ArrowRight size={16} />
-                            </a>
-                        </div>
-                    </div>
+              <div
+                className="card h-100 border-0 rounded-4 overflow-hidden shadow-sm glass-card cursor-pointer"
+                onClick={() => onPostClick(post.slug)}
+              >
+                <div className="position-relative overflow-hidden" style={{ height: '200px' }}>
+                  <img
+                    src={post.image_path ? asset(`storage/${post.image_path}`) : 'https://placehold.co/400x250?text=ABC'}
+                    alt={post.title}
+                    className="w-100 h-100 object-fit-cover transition-transform"
+                    onError={(e) => (e.target as HTMLImageElement).src = 'https://placehold.co/400x250?text=ABC'}
+                  />
+                  <div className="overlay-gradient-sm position-absolute top-0 start-0 w-100 h-100"></div>
+                  <span className="position-absolute top-0 end-0 m-2 badge bg-white bg-opacity-10 text-white shadow-sm small">
+                    {post.categories?.[0]?.name || 'Noticias'}
+                  </span>
                 </div>
+
+                <div className="card-body d-flex flex-column p-3">
+                  <h5 className="h6 fw-bold font-serif mb-2 text-white lh-base flex-grow-1">
+                    {post.title}
+                  </h5>
+
+                  <div className="mt-auto pt-2">
+                    <a href={route('news.show', { slug: post.slug })} className="text-abc-gold fw-bold d-flex align-items-center gap-1 small text-decoration-none stretched-link-surface">
+                      LEER MÁS <ArrowRight size={16} />
+                    </a>
+                  </div>
+                </div>
+              </div>
             </div>
           ))}
-          
+
         </div>
       </div>
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { asset } from '@/url';
 import { ArticleData } from '../types';
 import { X, Zap, ArrowRight, TrendingUp } from 'lucide-react';
 
@@ -34,11 +35,11 @@ export default function NewsTicker({ news, onPostClick }: NewsTickerProps) {
   };
 
   return (
-    <div 
+    <div
       className="news-ticker-container position-fixed d-none d-md-block animate-slide-up"
-      style={{ 
+      style={{
         bottom: '90px', // Ajustado para estar encima del reproductor
-        right: '20px', 
+        right: '20px',
         zIndex: 1070, // Mayor que AudioPlayer (1060)
         maxWidth: '350px',
         width: '100%'
@@ -46,13 +47,13 @@ export default function NewsTicker({ news, onPostClick }: NewsTickerProps) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div 
+      <div
         className="card border-0 shadow-lg overflow-hidden cursor-pointer"
         onClick={() => onPostClick(currentPost.slug)}
         style={{ borderLeft: '4px solid var(--abc-red)' }}
       >
         <div className="card-body p-3 d-flex gap-3 align-items-start bg-white">
-          
+
           {/* Icon Section */}
           <div className="flex-shrink-0 pt-1">
             <div className="bg-abc-red bg-opacity-10 text-abc-red p-2 rounded-circle animate-pulse-slow">
@@ -63,40 +64,40 @@ export default function NewsTicker({ news, onPostClick }: NewsTickerProps) {
           {/* Content Section */}
           <div className="flex-grow-1 overflow-hidden">
             <div className="d-flex justify-content-between align-items-start mb-1">
-               <span className="badge bg-abc-blue text-uppercase" style={{fontSize: '0.6rem'}}>
-                 {currentPost.categories?.[0]?.name || 'Noticias'}
-               </span>
-               <button 
-                 onClick={handleClose}
-                 className="btn btn-link p-0 text-muted hover-red"
-                 title="Cerrar notificación"
-               >
-                 <X size={16} />
-               </button>
+              <span className="badge bg-abc-blue text-uppercase" style={{ fontSize: '0.6rem' }}>
+                {currentPost.categories?.[0]?.name || 'Noticias'}
+              </span>
+              <button
+                onClick={handleClose}
+                className="btn btn-link p-0 text-muted hover-red"
+                title="Cerrar notificación"
+              >
+                <X size={16} />
+              </button>
             </div>
-            
+
             <h6 className="fw-bold text-dark mb-1 line-clamp-2 font-serif" style={{ fontSize: '0.9rem', lineHeight: '1.3' }}>
               {currentPost.title}
             </h6>
-            
+
             <div className="d-flex align-items-center gap-1 text-abc-red small fw-bold mt-2" style={{ fontSize: '0.75rem' }}>
-               Leer ahora <ArrowRight size={12} />
+              Leer ahora <ArrowRight size={12} />
             </div>
           </div>
 
           {/* Image Thumbnail */}
-          <div className="d-none d-sm-block flex-shrink-0" style={{width: '60px', height: '60px'}}>
-             <img 
-               src={currentPost.image_path} 
-               alt="" 
-               className="w-100 h-100 object-fit-cover rounded"
-             />
+          <div className="d-none d-sm-block flex-shrink-0" style={{ width: '60px', height: '60px' }}>
+            <img
+              src={currentPost.image_path}
+              alt=""
+              className="w-100 h-100 object-fit-cover rounded"
+            />
           </div>
         </div>
-        
+
         {/* Progress Bar Animation */}
         {!isHovered && (
-            <div className="progress-bar-ticker bg-abc-red opacity-50"></div>
+          <div className="progress-bar-ticker bg-abc-red opacity-50"></div>
         )}
       </div>
 

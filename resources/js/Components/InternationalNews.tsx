@@ -1,5 +1,6 @@
 import React from 'react';
 import { router } from '@inertiajs/react';
+import { route } from 'ziggy-js';
 import { ArticleData } from '@/types';
 
 interface InternationalNewsProps {
@@ -8,7 +9,7 @@ interface InternationalNewsProps {
 
 export default function InternationalNews({ items }: InternationalNewsProps) {
     const onNewsClick = (slug: string) => {
-        router.visit(`/news/${slug}`);
+        router.visit(route('news.show', { slug }));
     };
 
     return (
@@ -19,12 +20,12 @@ export default function InternationalNews({ items }: InternationalNewsProps) {
             <div className="card-body p-0">
                 <ul className="list-group list-group-flush">
                     {items.map((news, index) => (
-                        <li key={news.id} 
+                        <li key={news.id}
                             className={`list-group-item bg-transparent py-3 px-3 border-bottom-0 ${index < items.length - 1 ? 'border-bottom' : ''}`}
                         >
-                            <a 
-                                href={`/news/${news.slug}`} 
-                                onClick={(e) => { e.preventDefault(); onNewsClick(news.slug); }} 
+                            <a
+                                href={route('news.show', { slug: news.slug })}
+                                onClick={(e) => { e.preventDefault(); onNewsClick(news.slug); }}
                                 className="text-decoration-none text-secondary hover-red d-block"
                             >
                                 {news.title}

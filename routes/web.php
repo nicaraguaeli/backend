@@ -92,7 +92,7 @@ Route::get('/', function () {
         'internationalNews' => $internationalNews,
         'banners' => $banners,
     ]);
-});
+})->name('home');
 
 // Rutas de Autenticación (Blade - para Admin)
 Auth::routes();

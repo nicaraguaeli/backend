@@ -1,4 +1,5 @@
 import { Head, router } from '@inertiajs/react';
+import { asset } from '@/url';
 import MainLayout from '@/Layouts/MainLayout';
 import React from 'react';
 import Hero from '@/Components/Hero';
@@ -56,7 +57,7 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
                 <div className="container mt-4 mb-2">
                     <AdSpace
                         variant="horizontal"
-                        imageUrl={`/storage/${homeTopBanner.file_path}`}
+                        imageUrl={asset(`storage/${homeTopBanner.file_path}`)}
                         link={homeTopBanner.link || '#'}
                         label="Publicidad"
                     />
@@ -87,7 +88,7 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
                             <div className="mt-5">
                                 <AdSpace
                                     variant="horizontal"
-                                    imageUrl={`/storage/${contentBanner.file_path}`}
+                                    imageUrl={asset(`storage/${contentBanner.file_path}`)}
                                     link={contentBanner.link || '#'}
                                     label="Publicidad"
                                 />
@@ -109,7 +110,7 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
                             {/* Ad Space Sidebar */}
                             <AdSpace
                                 variant="sidebar"
-                                imageUrl={sidebarBanner ? `/storage/${sidebarBanner.file_path}` : undefined}
+                                imageUrl={sidebarBanner ? asset(`storage/${sidebarBanner.file_path}`) : undefined}
                                 link={sidebarBanner?.link || '#'}
                                 label="Publicidad"
                             />
@@ -132,7 +133,7 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
                 <div className="container my-5">
                     <AdSpace
                         variant="horizontal"
-                        imageUrl={`/storage/${footerBanner.file_path}`}
+                        imageUrl={asset(`storage/${footerBanner.file_path}`)}
                         link={footerBanner.link || '#'}
                         label="Publicidad"
                     />

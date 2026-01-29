@@ -1,5 +1,7 @@
 import React from 'react';
 import { Eye, TrendingUp } from 'lucide-react';
+import { asset } from '@/url';
+import { route } from 'ziggy-js';
 import { ArticleData } from '../types';
 
 interface MostReadProps {
@@ -9,56 +11,56 @@ interface MostReadProps {
 
 // Fallback data for development/preview
 const MOCK_ITEMS: ArticleData[] = [
-    {
-        id: 101,
-        title: 'El nuevo puente que conectará la zona norte con el pacífico',
-        slug: 'puente-zona-norte',
-        excerpt: '',
-        content: '',
-        published_at: new Date().toISOString(),
-        image_path: '',
-        categories: [{ id: 1, name: 'Nacionales', slug: 'nacionales', is_active: 1, is_featured: 0, show_in_menu: 1, menu_order: 1 }]
-    },
-    {
-        id: 102,
-        title: 'Precio del combustible baja por tercera semana consecutiva',
-        slug: 'precio-combustible-baja',
-        excerpt: '',
-        content: '',
-        published_at: new Date().toISOString(),
-        image_path: '',
-        categories: [{ id: 2, name: 'Economía', slug: 'economia', is_active: 1, is_featured: 0, show_in_menu: 1, menu_order: 2 }]
-    },
-    {
-        id: 103,
-        title: 'Artista nacional gana premio Grammy Latino',
-        slug: 'artista-grammy',
-        excerpt: '',
-        content: '',
-        published_at: new Date().toISOString(),
-        image_path: '',
-        categories: [{ id: 3, name: 'Farándula', slug: 'farandula', is_active: 1, is_featured: 0, show_in_menu: 1, menu_order: 3 }]
-    },
-    {
-        id: 104,
-        title: 'Descubren sitio arqueológico en el occidente del país',
-        slug: 'sitio-arqueologico',
-        excerpt: '',
-        content: '',
-        published_at: new Date().toISOString(),
-        image_path: '',
-        categories: [{ id: 4, name: 'Cultura', slug: 'cultura', is_active: 1, is_featured: 0, show_in_menu: 1, menu_order: 4 }]
-    },
-    {
-        id: 105,
-        title: 'La selección nacional avanza a la siguiente ronda',
-        slug: 'seleccion-nacional',
-        excerpt: '',
-        content: '',
-        published_at: new Date().toISOString(),
-        image_path: '',
-        categories: [{ id: 5, name: 'Deportes', slug: 'deportes', is_active: 1, is_featured: 0, show_in_menu: 1, menu_order: 5 }]
-    }
+  {
+    id: 101,
+    title: 'El nuevo puente que conectará la zona norte con el pacífico',
+    slug: 'puente-zona-norte',
+    excerpt: '',
+    content: '',
+    published_at: new Date().toISOString(),
+    image_path: '',
+    categories: [{ id: 1, name: 'Nacionales', slug: 'nacionales', is_active: 1, is_featured: 0, show_in_menu: 1, menu_order: 1 }]
+  },
+  {
+    id: 102,
+    title: 'Precio del combustible baja por tercera semana consecutiva',
+    slug: 'precio-combustible-baja',
+    excerpt: '',
+    content: '',
+    published_at: new Date().toISOString(),
+    image_path: '',
+    categories: [{ id: 2, name: 'Economía', slug: 'economia', is_active: 1, is_featured: 0, show_in_menu: 1, menu_order: 2 }]
+  },
+  {
+    id: 103,
+    title: 'Artista nacional gana premio Grammy Latino',
+    slug: 'artista-grammy',
+    excerpt: '',
+    content: '',
+    published_at: new Date().toISOString(),
+    image_path: '',
+    categories: [{ id: 3, name: 'Farándula', slug: 'farandula', is_active: 1, is_featured: 0, show_in_menu: 1, menu_order: 3 }]
+  },
+  {
+    id: 104,
+    title: 'Descubren sitio arqueológico en el occidente del país',
+    slug: 'sitio-arqueologico',
+    excerpt: '',
+    content: '',
+    published_at: new Date().toISOString(),
+    image_path: '',
+    categories: [{ id: 4, name: 'Cultura', slug: 'cultura', is_active: 1, is_featured: 0, show_in_menu: 1, menu_order: 4 }]
+  },
+  {
+    id: 105,
+    title: 'La selección nacional avanza a la siguiente ronda',
+    slug: 'seleccion-nacional',
+    excerpt: '',
+    content: '',
+    published_at: new Date().toISOString(),
+    image_path: '',
+    categories: [{ id: 5, name: 'Deportes', slug: 'deportes', is_active: 1, is_featured: 0, show_in_menu: 1, menu_order: 5 }]
+  }
 ];
 
 export default function MostRead({ items, className = '' }: MostReadProps) {
@@ -76,54 +78,54 @@ export default function MostRead({ items, className = '' }: MostReadProps) {
         </h3>
         <span className="badge bg-light text-secondary border">Semana</span>
       </div>
-      
+
       <div>
         {displayItems.slice(0, 5).map((item, index) => {
-            const imageUrl = item.image_path 
-              ? `/storage/${item.image_path}` 
-              : `https://placehold.co/100x100/eee/ccc?text=${encodeURIComponent(item.categories?.[0]?.name.charAt(0) || 'N')}`;
-            
-            return (
-              <a 
-                key={item.id} 
-                href={`/news/${item.slug}`} 
-                className="most-read-item d-flex align-items-center gap-3 text-decoration-none p-3"
-              >
-                <div 
-                  className={`rank-number rank-${index + 1} flex-shrink-0 fw-bold font-serif d-flex align-items-center justify-content-center rounded-circle`}
-                >
-                  {index + 1}
-                </div>
-                
-                <img 
-                    src={imageUrl} 
-                    alt={item.title} 
-                    className="flex-shrink-0 rounded"
-                    width="60" 
-                    height="60"
-                    style={{ objectFit: 'cover', background: '#f0f0f0' }}
-                    onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.onerror = null;
-                        target.src='https://placehold.co/100x100/eee/ccc?text=Error';
-                    }}
-                />
+          const imageUrl = item.image_path
+            ? asset(`storage/${item.image_path}`)
+            : `https://placehold.co/100x100/eee/ccc?text=${encodeURIComponent(item.categories?.[0]?.name.charAt(0) || 'N')}`;
 
-                <div className="flex-grow-1" style={{minWidth: 0}}>
-                  <h6 className="mb-1 text-dark fw-bold line-clamp-2 lh-sm small">
-                    {item.title}
-                  </h6>
-                  <div className="d-flex align-items-center gap-1 text-muted" style={{ fontSize: '0.7rem' }}>
-                    <Eye size={11} /> 
-                    {/* Fake views for demo purposes */}
-                    {`${15 - (index * 2)}k lecturas`}
-                  </div>
+          return (
+            <a
+              key={item.id}
+              href={route('news.show', { slug: item.slug })}
+              className="most-read-item d-flex align-items-center gap-3 text-decoration-none p-3"
+            >
+              <div
+                className={`rank-number rank-${index + 1} flex-shrink-0 fw-bold font-serif d-flex align-items-center justify-content-center rounded-circle`}
+              >
+                {index + 1}
+              </div>
+
+              <img
+                src={imageUrl}
+                alt={item.title}
+                className="flex-shrink-0 rounded"
+                width="60"
+                height="60"
+                style={{ objectFit: 'cover', background: '#f0f0f0' }}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.onerror = null;
+                  target.src = 'https://placehold.co/100x100/eee/ccc?text=Error';
+                }}
+              />
+
+              <div className="flex-grow-1" style={{ minWidth: 0 }}>
+                <h6 className="mb-1 text-dark fw-bold line-clamp-2 lh-sm small">
+                  {item.title}
+                </h6>
+                <div className="d-flex align-items-center gap-1 text-muted" style={{ fontSize: '0.7rem' }}>
+                  <Eye size={11} />
+                  {/* Fake views for demo purposes */}
+                  {`${15 - (index * 2)}k lecturas`}
                 </div>
-              </a>
-            )
+              </div>
+            </a>
+          )
         })}
       </div>
-      
+
       <style>{`
         .most-read-widget {
           border-color: #f0f0f0 !important;
