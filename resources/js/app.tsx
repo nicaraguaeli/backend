@@ -5,8 +5,14 @@ import axios from 'axios';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
+import { route } from 'ziggy-js';
 // app.js
 import { Ziggy } from './ziggy.js';
+
+(window as any).route = (name, params, absolute) =>
+    route(name, params, absolute, {
+        ...Ziggy,
+    });
 
 
 // Configure axios base URL for production subfolder
