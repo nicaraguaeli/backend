@@ -95,7 +95,10 @@ Route::get('/', function () {
 })->name('home');
 
 // Rutas de Autenticación (Blade - para Admin)
-Auth::routes();
+Auth::routes(['login' => false]);
+
+Route::get('admin', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
+Route::post('admin', [App\Http\Controllers\Auth\LoginController::class, 'login']);
 
 Route::post('admin/summernote/upload', function (Illuminate\Http\Request $request) {
 

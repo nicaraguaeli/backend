@@ -25,7 +25,7 @@ export interface PodcastEpisode {
   author: string;
 }
 
-const API_URL = '/api/audioreportajes';
+const API_URL = '/radioabc/public/api/audioreportajes';
 const BASE_URL = window?.location?.origin ? `${window.location.origin}/` : '/';
 
 // Helper para formatear fecha
@@ -40,17 +40,17 @@ const formatDate = (dateString: string): string => {
 
 export const fetchPodcasts = async (): Promise<PodcastEpisode[]> => {
   try {
-  const response = await fetch(API_URL);
-  if (!response.ok) {
-    throw new Error("API Response not ok");
-  }
+    const response = await fetch(API_URL);
+    if (!response.ok) {
+      throw new Error("API Response not ok");
+    }
 
-  const data: AudioReportajeAPI[] = await response.json();
+    const data: AudioReportajeAPI[] = await response.json();
 
-  // Use response.url as base so relative paths from the API are resolved against the API host
-  const base = response.url;
+    // Use response.url as base so relative paths from the API are resolved against the API host
+    const base = response.url;
 
-  return data.map(item => {
+    return data.map(item => {
       // Corrección de imagen: Si no empieza con http, le pegamos el dominio
       let imageUrl = item.imagen || '';
       if (imageUrl && !imageUrl.startsWith('http')) {
@@ -67,12 +67,12 @@ export const fetchPodcasts = async (): Promise<PodcastEpisode[]> => {
       // Corrección de audio URL si fuera necesario (asumiendo que viene completa o relativa)
       let audioUrl = item.url || '';
       if (audioUrl && !audioUrl.startsWith('http')) {
-         try {
-           audioUrl = new URL(audioUrl, base).toString();
-         } catch (e) {
-           const cleanPath = audioUrl.startsWith('/') ? audioUrl.substring(1) : audioUrl;
-           audioUrl = `${BASE_URL}${cleanPath}`;
-         }
+        try {
+          audioUrl = new URL(audioUrl, base).toString();
+        } catch (e) {
+          const cleanPath = audioUrl.startsWith('/') ? audioUrl.substring(1) : audioUrl;
+          audioUrl = `${BASE_URL}${cleanPath}`;
+        }
       }
 
       return {
@@ -91,7 +91,7 @@ export const fetchPodcasts = async (): Promise<PodcastEpisode[]> => {
 
   } catch (error) {
     console.warn("Error fetching podcasts API, returning fallback data:", error);
-    
+
     return [
       {
         id: 'p1',
