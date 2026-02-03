@@ -12,17 +12,6 @@
 
         <!-- Scripts -->
         @routes
-        <script>
-            // Force Ziggy to use the subdirectory path (Legacy safe)
-            (function() {
-                if (typeof Ziggy !== 'undefined' && Ziggy.url) {
-                    var subPath = '/radioabc/public';
-                    if (Ziggy.url.indexOf(subPath) === -1) {
-                         Ziggy.url = Ziggy.url.replace(/\/$/, '') + subPath;
-                    }
-                }
-            })();
-        </script>
         @viteReactRefresh
         @vite(['resources/js/app.tsx', "resources/js/Pages/{$page['component']}.tsx"])
         @inertiaHead

@@ -82,6 +82,54 @@ Route::get('/', function () {
     // 7. Banners
     $banners = \App\Models\Banner::where('is_active', true)->get();
 
+    // 8. Videos (Mock Data)
+    $videos = [
+        [
+            'id' => 1,
+            'title' => 'Últimas Noticias del Día - Resumen Informativo',
+            'description' => 'Mantente informado con las noticias más importantes del día. Cobertura completa de los eventos nacionales e internacionales.',
+            'thumbnail' => 'https://via.placeholder.com/640x360/0066CC/FFFFFF?text=Noticias+del+D%C3%ADa',
+            'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            'views' => 15420,
+            'duration' => '12:34',
+            'published_at' => now()->subDays(1)->toDateTimeString(),
+            'category' => 'Noticias'
+        ],
+        [
+            'id' => 2,
+            'title' => 'Entrevista Exclusiva: Análisis Político Nacional',
+            'description' => 'Conversamos con expertos sobre la situación política actual del país.',
+            'thumbnail' => 'https://via.placeholder.com/640x360/CC0000/FFFFFF?text=Pol%C3%ADtica',
+            'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            'views' => 8930,
+            'duration' => '18:45',
+            'published_at' => now()->subDays(2)->toDateTimeString(),
+            'category' => 'Noticias'
+        ],
+        [
+            'id' => 3,
+            'title' => 'Resumen Deportivo: Lo Mejor de la Semana',
+            'description' => 'Todos los goles, jugadas y momentos destacados del deporte nacional e internacional.',
+            'thumbnail' => 'https://via.placeholder.com/640x360/00CC66/FFFFFF?text=Deportes',
+            'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            'views' => 23150,
+            'duration' => '15:20',
+            'published_at' => now()->subDays(3)->toDateTimeString(),
+            'category' => 'Deportes'
+        ],
+        [
+            'id' => 4,
+            'title' => 'Reportaje Especial: Cultura y Tradiciones',
+            'description' => 'Un viaje por las tradiciones y costumbres que nos definen como nación.',
+            'thumbnail' => 'https://via.placeholder.com/640x360/CC6600/FFFFFF?text=Cultura',
+            'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            'views' => 5670,
+            'duration' => '22:10',
+            'published_at' => now()->subDays(5)->toDateTimeString(),
+            'category' => 'Reportajes'
+        ]
+    ];
+
     return Inertia::render('Welcome', [
         'latestNews' => $latestNews,
         'mostReadNews' => $mostReadNews,
@@ -91,6 +139,7 @@ Route::get('/', function () {
         'nacionalesNews' => $nacionalesNews,
         'internationalNews' => $internationalNews,
         'banners' => $banners,
+        'videos' => $videos,
     ]);
 })->name('home');
 
@@ -117,6 +166,13 @@ Route::post('admin/summernote/upload', function (Illuminate\Http\Request $reques
 
 
 Route::get('/dashboard', [App\Http\Controllers\HomeController::class, 'index'])->name('dashboard');
+
+// Corporate Pages Routes
+Route::get('/quienes-somos', [App\Http\Controllers\CorporateController::class, 'about'])->name('corporate.about');
+Route::get('/anunciate', [App\Http\Controllers\CorporateController::class, 'advertise'])->name('corporate.advertise');
+Route::get('/contacto', [App\Http\Controllers\CorporateController::class, 'contact'])->name('corporate.contact');
+Route::get('/programacion', [App\Http\Controllers\CorporateController::class, 'programming'])->name('corporate.programming');
+
 
 // Ruta para Categorías (React)
 Route::get('/category/{slug}', function ($slug) {
@@ -154,6 +210,9 @@ Route::get('/empleos', function () {
         'vacancies' => $vacancies
     ]);
 })->name('jobs.index');
+
+// Ruta para Videos (ABC TV)
+Route::get('/videos', [App\Http\Controllers\VideoController::class, 'index'])->name('videos.index');
 
 // Grupo de Rutas Admin (Blade)
 Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], function () {

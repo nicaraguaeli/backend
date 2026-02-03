@@ -29,6 +29,7 @@ class AudioReportController extends Controller
 
             return [
                 'id' => $item->id,
+                'slug' => $item->slug,
                 'url' => $audio,
                 'titulo' => $item->title,
                 'entrada' => $item->excerpt,

@@ -8,17 +8,19 @@ interface Props {
     article: ArticleData;
     relatedNews?: ArticleData[];
     mostReadNews?: ArticleData[];
+    moreNews?: ArticleData[];
 }
 
-const ArticlePage = ({ article, relatedNews = [], mostReadNews = [] }: Props) => {
+const ArticlePage = ({ article, relatedNews = [], mostReadNews = [], moreNews = [] }: Props) => {
     return (
         <>
             <Head title={article.title} />
             <div className="container py-5">
-                <ArticleDetail 
-                    article={article} 
+                <ArticleDetail
+                    article={article}
                     relatedNews={relatedNews}
                     mostReadNews={mostReadNews}
+                    moreNews={moreNews}
                     onBack={() => router.visit('/')}
                 />
             </div>

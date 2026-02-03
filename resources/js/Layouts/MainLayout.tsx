@@ -5,6 +5,7 @@ import AudioPlayer from '../Components/AudioPlayer';
 import { AudioState } from '../types';
 import PodcastView from '../Components/PodcastView';
 import PodcastInfoSheet from '../Components/PodcastInfoSheet';
+import VideoReportajes from '../Components/VideoReportajes';
 
 interface MainLayoutProps {
     children: React.ReactNode;
@@ -35,8 +36,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
         }));
     };
 
-    // Simple in-layout view switcher to support Header onNavigate actions (e.g., podcast view)
-    const [currentView, setCurrentView] = useState<'default' | 'podcastview'>('default');
+    // Simple in-layout view switcher to support Header onNavigate actions (e.g., podcast view, video reportajes)
+    const [currentView, setCurrentView] = useState<'default' | 'podcastview' | 'videoreportajes'>('default');
 
     // Podcast info & playback states for the sheet and global player
     const [viewingPodcast, setViewingPodcast] = useState<any | null>(null);
@@ -45,6 +46,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const handleNavigation = (page: string) => {
         if (page === 'podcast' || page === 'podcastview') {
             setCurrentView('podcastview');
+            return;
+        }
+        if (page === 'videos' || page === 'videoreportajes') {
+            setCurrentView('videoreportajes');
             return;
         }
         // Reset to default for any other view (preserve current behavior)
@@ -74,17 +79,21 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     return (
         <div className="d-flex flex-column min-vh-100 bg-light">
-            <Header 
-                audioState={audioState} 
+            <Header
+                audioState={audioState}
                 onPlayLive={handlePlayLive}
                 onNavigate={handleNavigation}
             />
             <main className="flex-grow-1 main-content-offset" style={{ paddingBottom: '100px' }}>
                 {currentView === 'podcastview' ? (
-                    <PodcastView 
+                    <PodcastView
                         onBack={() => setCurrentView('default')}
                         onOpenPodcastInfo={(ep: any) => openPodcastInfo(ep)}
                         onPlayPodcast={(ep: any) => playPodcast(ep)}
+                    />
+                ) : currentView === 'videoreportajes' ? (
+                    <VideoReportajes
+                        onBack={() => setCurrentView('default')}
                     />
                 ) : (
                     children
@@ -98,11 +107,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 onPlay={(ep: any) => playPodcast(ep)}
             />
             <Footer />
-            
+
             {/* Persistent Audio Player */}
-            <AudioPlayer 
-                audioState={audioState} 
-                onTogglePlay={handleTogglePlay} 
+            <AudioPlayer
+                audioState={audioState}
+                onTogglePlay={handleTogglePlay}
             />
         </div>
     );

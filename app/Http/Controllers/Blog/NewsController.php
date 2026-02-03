@@ -61,20 +61,30 @@ class NewsController extends Controller
             
         // If not enough related news, fill with latest
         if ($relatedNews->count() < 4) {
-             $moreNews = News::with(['categories', 'author'])
+             $extraNews = News::with(['categories', 'author'])
                 ->where('is_published', true)
                 ->where('id', '!=', $news->id)
                 ->whereNotIn('id', $relatedNews->pluck('id'))
                 ->orderBy('published_at', 'desc')
                 ->take(4 - $relatedNews->count())
                 ->get();
-             $relatedNews = $relatedNews->merge($moreNews);
+             $relatedNews = $relatedNews->merge($extraNews);
         }
+
+        // Fetch generic 'More News' for the bottom grid
+        $moreNews = News::with(['categories', 'author'])
+            ->where('is_published', true)
+            ->where('id', '!=', $news->id)
+            ->whereNotIn('id', $relatedNews->pluck('id'))
+            ->orderBy('published_at', 'desc')
+            ->take(6)
+            ->get();
 
         return \Inertia\Inertia::render('Article', [
             'article' => $news,
             'mostReadNews' => $mostReadNews,
-            'relatedNews' => $relatedNews
+            'relatedNews' => $relatedNews,
+            'moreNews' => $moreNews
         ]);
     }
 

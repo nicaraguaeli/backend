@@ -38,7 +38,7 @@ class HomeController extends Controller
             ->get();
 
         // 3. Stream Status Check
-        $streamUrl = 'https://hoth.alonhosting.com:4205/stream';
+        $streamUrl = 'https://hoth.alonhosting.com:4205/';
         $streamStatus = false;
         try {
             // Using a short timeout to prevent blocking the dashboard load

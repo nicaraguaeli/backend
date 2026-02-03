@@ -1,7 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import { asset } from '@/url';
 import MainLayout from '@/Layouts/MainLayout';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Hero from '@/Components/Hero';
 import MostRead from '@/Components/MostRead';
 import InternationalNews from '@/Components/InternationalNews';
@@ -11,9 +11,12 @@ import NewsTicker from '@/Components/NewsTicket';
 import FeaturedSection from '@/Components/FeaturedSection';
 import FeaturedCategories from '@/Components/FeaturedCategories';
 import NacionalesSection from '@/Components/NacionalesSection';
-import { ArticleData, Category } from '@/types';
+import JobsCallToAction from '@/Components/JobsCallToAction';
+import VideoGallery from '@/Components/VideoGallery';
+import { ArticleData, Category, Video } from '@/types';
 import { Calendar } from 'lucide-react';
 import { route } from 'ziggy-js';
+import { fetchYoutubeVideos } from '@/services/youtubeService';
 
 interface Banner {
     id: number;
@@ -36,6 +39,24 @@ interface WelcomeProps {
 }
 
 const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = [], featuredCategories = [], nacionalesNews = [], internationalNews = [], banners = [] }: WelcomeProps) => {
+
+    const [videos, setVideos] = useState<Video[]>([]);
+    const [videosLoading, setVideosLoading] = useState(true);
+
+    // Load videos on mount
+    useEffect(() => {
+        const loadVideos = async () => {
+            try {
+                const fetchedVideos = await fetchYoutubeVideos('Radio ABC Stereo reportajes', 6);
+                setVideos(fetchedVideos);
+            } catch (error) {
+                console.error('Error loading videos:', error);
+            } finally {
+                setVideosLoading(false);
+            }
+        };
+        loadVideos();
+    }, []);
 
     const getBanner = (position: string) => {
         const positionBanners = banners.filter(b => b.position === position);
@@ -140,7 +161,29 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
                 </div>
             )}
 
+            <JobsCallToAction />
+
             <NacionalesSection news={nacionalesNews} />
+
+            {/* Video Gallery Section */}
+            {!videosLoading && videos.length > 0 && (
+                <div className="container my-5">
+                    <VideoGallery
+                        title="Reportajes ABC TV"
+                        videos={videos}
+                    />
+                </div>
+            )}
+
+            <NewsTicker
+                news={[
+                    ...(latestNews ? [latestNews] : []),
+                    ...featuredNews,
+                    ...moreNews
+                ].slice(0, 5)}
+                onPostClick={(slug) => router.visit(route('news.show', { slug }))}
+            />
+
         </>
 
     );

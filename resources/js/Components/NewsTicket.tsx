@@ -88,8 +88,8 @@ export default function NewsTicker({ news, onPostClick }: NewsTickerProps) {
           {/* Image Thumbnail */}
           <div className="d-none d-sm-block flex-shrink-0" style={{ width: '60px', height: '60px' }}>
             <img
-              src={currentPost.image_path}
-              alt=""
+              src={currentPost.image_path ? asset(`storage/${currentPost.image_path}`) : ''}
+              alt={currentPost.title}
               className="w-100 h-100 object-fit-cover rounded"
             />
           </div>

@@ -1,6 +1,7 @@
 // Interface cruda que viene de la API
 export interface AudioReportajeAPI {
   id: number | string;
+  slug: string;
   url: string;
   titulo: string;
   entrada: string;
@@ -14,6 +15,7 @@ export interface AudioReportajeAPI {
 // Interface mapeada para la vista
 export interface PodcastEpisode {
   id: string;
+  slug: string;
   title: string;
   excerpt: string;
   content: string;
@@ -25,7 +27,7 @@ export interface PodcastEpisode {
   author: string;
 }
 
-const API_URL = '/radioabc/public/api/audioreportajes';
+const API_URL = '/api/audioreportajes';
 const BASE_URL = window?.location?.origin ? `${window.location.origin}/` : '/';
 
 // Helper para formatear fecha
@@ -77,6 +79,7 @@ export const fetchPodcasts = async (): Promise<PodcastEpisode[]> => {
 
       return {
         id: String(item.id),
+        slug: item.slug || `audio-${item.id}`,
         title: item.titulo,
         excerpt: item.entrada,
         content: item.contenido,
@@ -95,6 +98,7 @@ export const fetchPodcasts = async (): Promise<PodcastEpisode[]> => {
     return [
       {
         id: 'p1',
+        slug: 'error-loading',
         title: 'Error cargando datos',
         excerpt: 'No se pudieron cargar los audioreportajes.',
         content: '',

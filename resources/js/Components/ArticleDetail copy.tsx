@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, User, MapPin, Share2, Facebook, Twitter, ArrowLeft, MessageSquare, Link, Check, Eye, Volume2, CircleStop, Printer, Minus, Plus, MessageCircle } from 'lucide-react';
+import { Calendar, User, MapPin, Share2, Facebook, Twitter, ArrowLeft, MessageSquare, Link, Check, Eye, Volume2, CircleStop } from 'lucide-react';
 
 import { ArticleData } from '../types';
 import MostRead from './MostRead';
@@ -9,12 +9,10 @@ interface ArticleDetailProps {
   article: ArticleData;
   relatedNews?: ArticleData[];
   mostReadNews?: ArticleData[];
-  moreNews?: ArticleData[];
-
   onBack: () => void;
 }
 
-export default function ArticleDetail({ article, relatedNews = [], mostReadNews = [], moreNews = [], onBack }: ArticleDetailProps) {
+export default function ArticleDetail({ article, relatedNews = [], mostReadNews = [], onBack }: ArticleDetailProps) {
   const [copied, setCopied] = useState(false);
 
   // SEO & Social Sharing Metadata Injection
@@ -75,7 +73,6 @@ export default function ArticleDetail({ article, relatedNews = [], mostReadNews 
 
   // Text-to-Speech Logic
   const [isReading, setIsReading] = useState(false);
-  const [fontSize, setFontSize] = useState(18); // Default 18px
 
   useEffect(() => {
     // Cleanup speech on unmount
@@ -195,7 +192,7 @@ export default function ArticleDetail({ article, relatedNews = [], mostReadNews 
               </div>
 
               {/* Social Actions */}
-              <div className="d-flex gap-2 align-self-start align-self-md-center pt-2 pt-md-0 flex-wrap">
+              <div className="d-flex gap-2 align-self-start align-self-md-center pt-2 pt-md-0">
                 <button
                   onClick={handleSpeech}
                   className={`btn btn-sm rounded-pill px-3 d-flex align-items-center gap-2 fw-bold transition-all ${isReading ? 'btn-abc-red text-white' : 'btn-outline-dark hover-red'}`}
@@ -204,38 +201,7 @@ export default function ArticleDetail({ article, relatedNews = [], mostReadNews 
                   {isReading ? <CircleStop size={18} /> : <Volume2 size={18} />}
                   <span className="d-none d-sm-inline">{isReading ? 'Detener' : 'Escuchar'}</span>
                 </button>
-
                 <div className="vr mx-2 d-none d-md-block"></div>
-
-                {/* Font Size Controls */}
-                <div className="btn-group btn-group-sm" role="group">
-                  <button
-                    onClick={() => setFontSize(Math.max(14, fontSize - 2))}
-                    className="btn btn-outline-secondary"
-                    title="Disminuir letra"
-                  >
-                    <Minus size={16} />
-                  </button>
-                  <button
-                    onClick={() => setFontSize(Math.min(26, fontSize + 2))}
-                    className="btn btn-outline-secondary"
-                    title="Aumentar letra"
-                  >
-                    <Plus size={16} />
-                  </button>
-                </div>
-
-                {/* Print Button */}
-                <button
-                  onClick={() => window.print()}
-                  className="btn btn-outline-secondary btn-sm rounded-circle p-2 border-0 bg-light"
-                  title="Imprimir"
-                >
-                  <Printer size={18} />
-                </button>
-
-                <div className="vr mx-2 d-none d-md-block"></div>
-
                 <button
                   onClick={handleCopyLink}
                   className="btn btn-outline-dark btn-sm rounded-circle p-2 border-0 bg-light position-relative"
@@ -268,7 +234,7 @@ export default function ArticleDetail({ article, relatedNews = [], mostReadNews 
           {/* Article Body */}
           <div
             className="article-content fs-5 text-dark"
-            style={{ lineHeight: '1.8', fontSize: `${fontSize}px` }}
+            style={{ lineHeight: '1.8' }}
             dangerouslySetInnerHTML={{ __html: article.content || '' }}
           />
 
@@ -322,7 +288,6 @@ export default function ArticleDetail({ article, relatedNews = [], mostReadNews 
           </div>
         </aside>
       </div>
-      <PostGrid posts={moreNews || []} columns={3} />
     </article>
   );
 }

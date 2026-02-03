@@ -30,5 +30,10 @@ export default defineConfig(({ command }) => ({
         hmr: {
             host: '192.168.1.166',
         },
+        cors: {
+            origin: '*',
+            methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+            allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+        },
     },
 }));
