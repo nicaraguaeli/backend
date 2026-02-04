@@ -80,12 +80,21 @@ class NewsController extends Controller
             ->take(6)
             ->get();
 
+        // Prepare Meta Data for SEO/Sharing
+        $meta = [
+            'title' => $news->title . ' | Radio ABC Stereo',
+            'description' => $news->lead ?? $news->excerpt,
+            'image' => $news->image_path ? asset('storage/' . $news->image_path) : asset('img/brand.png'),
+            'url' => route('news.show', $news->slug),
+            'type' => 'article'
+        ];
+
         return \Inertia\Inertia::render('Article', [
             'article' => $news,
             'mostReadNews' => $mostReadNews,
             'relatedNews' => $relatedNews,
             'moreNews' => $moreNews
-        ]);
+        ])->withViewData(['meta' => $meta]);
     }
 
     /**
