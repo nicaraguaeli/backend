@@ -11,6 +11,9 @@
         <link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
+        <script>
+            window.APP_URL = "{{ url('/') }}";
+        </script>
         @routes
         @viteReactRefresh
         @vite(['resources/js/app.tsx', "resources/js/Pages/{$page['component']}.tsx"])
