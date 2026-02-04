@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { asset } from '@/url';
 import { Calendar, User, MapPin, Share2, Facebook, Twitter, ArrowLeft, MessageSquare, Link, Check, Eye, Volume2, CircleStop, Printer, Minus, Plus, MessageCircle } from 'lucide-react';
 
 import { ArticleData } from '../types';
@@ -253,7 +254,7 @@ export default function ArticleDetail({ article, relatedNews = [], mostReadNews 
           {/* Featured Image */}
           <div className="mb-5 position-relative">
             <img
-              src={article.image_path ? `/storage/${article.image_path}` : ''}
+              src={article.image_path ? asset(`storage/${article.image_path}`) : ''}
               alt={article.title}
               className="img-fluid rounded shadow-sm w-100"
               onError={(e) => (e.target as HTMLImageElement).src = 'https://via.placeholder.com/1200x800?text=Sin+Imagen'}

@@ -11,6 +11,8 @@ export const fetchCategories = async (): Promise<Category[]> => {
     }
 };
 
+import { asset } from '@/url';
+
 export const fetchNewsByCategory = async (categorySlug: string): Promise<BlogPost[]> => {
     try {
         const response = await axios.get(`/api/news?category=${categorySlug}`);
@@ -23,7 +25,7 @@ export const fetchNewsByCategory = async (categorySlug: string): Promise<BlogPos
             author: item.author?.name || 'Redacción',
             date: item.published_at || item.created_at,
             category: item.categories?.[0]?.name || 'General',
-            imageUrl: item.image_path ? `/storage/${item.image_path}` : '',
+            imageUrl: item.image_path ? asset(`storage/${item.image_path}`) : '',
             imageCaption: '',
             views: item.views || 0
         }));

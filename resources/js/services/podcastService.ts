@@ -28,7 +28,8 @@ export interface PodcastEpisode {
 }
 
 const API_URL = '/api/audioreportajes';
-const BASE_URL = window?.location?.origin ? `${window.location.origin}/` : '/';
+// Use the injected global variable for the base URL, or fallback to current origin
+const BASE_URL = (window as any).APP_URL || (window?.location?.origin ? `${window.location.origin}` : '/');
 
 // Helper para formatear fecha
 const formatDate = (dateString: string): string => {
@@ -42,7 +43,10 @@ const formatDate = (dateString: string): string => {
 
 export const fetchPodcasts = async (): Promise<PodcastEpisode[]> => {
   try {
-    const response = await fetch(API_URL);
+    // Ensure API_URL is prefixed correctly if it's relative
+    const fetchUrl = API_URL.startsWith('/') ? `${BASE_URL}${API_URL}` : API_URL;
+    const response = await fetch(fetchUrl);
+
     if (!response.ok) {
       throw new Error("API Response not ok");
     }
@@ -53,28 +57,27 @@ export const fetchPodcasts = async (): Promise<PodcastEpisode[]> => {
     const base = response.url;
 
     return data.map(item => {
-      // Corrección de imagen: Si no empieza con http, le pegamos el dominio
+      // Corrección de imagen
       let imageUrl = item.imagen || '';
       if (imageUrl && !imageUrl.startsWith('http')) {
-        try {
-          imageUrl = new URL(imageUrl, base).toString();
-        } catch (e) {
-          const cleanPath = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
-          imageUrl = `${BASE_URL}${cleanPath}`;
-        }
+        // If it starts with storage/, prepend BASE_URL
+        // remove leading slash to avoid double slash if BASE_URL has one (though we try to keep BASE_URL without trailing slash in other places, let's be safe)
+        const cleanPath = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
+        // If BASE_URL ends with /, remove it from there or just control it here.
+        // Let's assume BASE_URL is "https://domain.com/subdir" (no trailing slash usually from our previous logic)
+        // But if it came from window.location.origin, it doesn't have trailing slash.
+
+        // Handle if cleanPath is "storage/..."
+        imageUrl = `${BASE_URL}/${cleanPath}`;
       } else if (!imageUrl) {
         imageUrl = 'https://via.placeholder.com/800x600?text=Audio';
       }
 
-      // Corrección de audio URL si fuera necesario (asumiendo que viene completa o relativa)
+      // Corrección de audio URL
       let audioUrl = item.url || '';
       if (audioUrl && !audioUrl.startsWith('http')) {
-        try {
-          audioUrl = new URL(audioUrl, base).toString();
-        } catch (e) {
-          const cleanPath = audioUrl.startsWith('/') ? audioUrl.substring(1) : audioUrl;
-          audioUrl = `${BASE_URL}${cleanPath}`;
-        }
+        const cleanPath = audioUrl.startsWith('/') ? audioUrl.substring(1) : audioUrl;
+        audioUrl = `${BASE_URL}/${cleanPath}`;
       }
 
       return {
