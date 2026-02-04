@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from '@inertiajs/react';
 import { Facebook, Twitter, Instagram, Youtube, Phone, MessageCircle, Building2, MapPin, Send } from 'lucide-react';
 
+import { SOCIAL_LINKS } from '../../constants';
+
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
@@ -30,14 +32,16 @@ export default function Footer() {
             </p>
             <div className="d-flex gap-2">
               {[
-                { Icon: Facebook, href: '#' },
-                { Icon: Twitter, href: '#' },
-                { Icon: Instagram, href: '#' },
-                { Icon: Youtube, href: '#' }
+                { Icon: Facebook, href: SOCIAL_LINKS.facebook },
+                { Icon: Twitter, href: SOCIAL_LINKS.twitter },
+                { Icon: Instagram, href: SOCIAL_LINKS.instagram },
+                { Icon: Youtube, href: SOCIAL_LINKS.youtube }
               ].map((social, idx) => (
                 <a
                   key={idx}
                   href={social.href}
+                  target="_blank"
+                  rel="noreferrer"
                   className="btn btn-outline-light btn-sm rounded-circle d-flex align-items-center justify-content-center p-0 text-white-50 border-secondary hover-scale"
                   style={{ width: '36px', height: '36px', transition: 'all 0.3s ease' }}
                 >

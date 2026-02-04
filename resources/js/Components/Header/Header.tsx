@@ -6,6 +6,7 @@ import { asset } from '@/url';
 import { Menu, X, Search, Play, Pause, Facebook, Twitter, Instagram, Youtube, ChevronDown } from 'lucide-react';
 import { NavItem, AudioState } from '../../types';
 import { fetchCategories } from '../../services/newsService';
+import { SOCIAL_LINKS } from '../../constants';
 
 // Data for the Mega Menu (kept simple now: no icons/colors, render as normal dropdown items)
 const MEGA_MENU_DATA = [
@@ -265,10 +266,10 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
             {/* Social Icons */}
             <div className="d-flex gap-3 align-items-center">
               <span className="text-light me-2" style={{ fontSize: '11px' }}>Síguenos:</span>
-              <a href="#" className="text-white hover-opacity"><Facebook size={16} fill="currentColor" /></a>
-              <a href="#" className="text-white hover-opacity"><Twitter size={16} fill="currentColor" /></a>
-              <a href="#" className="text-white hover-opacity"><Instagram size={16} /></a>
-              <a href="#" className="text-white hover-opacity"><Youtube size={16} fill="currentColor" /></a>
+              <a href={SOCIAL_LINKS.facebook} target="_blank" rel="noreferrer" className="text-white hover-opacity"><Facebook size={16} fill="currentColor" /></a>
+              <a href={SOCIAL_LINKS.twitter} target="_blank" rel="noreferrer" className="text-white hover-opacity"><Twitter size={16} fill="currentColor" /></a>
+              <a href={SOCIAL_LINKS.instagram} target="_blank" rel="noreferrer" className="text-white hover-opacity"><Instagram size={16} /></a>
+              <a href={SOCIAL_LINKS.youtube} target="_blank" rel="noreferrer" className="text-white hover-opacity"><Youtube size={16} fill="currentColor" /></a>
             </div>
           </div>
         </div>

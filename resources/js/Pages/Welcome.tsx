@@ -128,13 +128,7 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
                             {/* International News Widget */}
                             <InternationalNews items={internationalNews || []} />
 
-                            {/* Ad Space Sidebar */}
-                            <AdSpace
-                                variant="sidebar"
-                                imageUrl={sidebarBanner ? asset(`storage/${sidebarBanner.file_path}`) : undefined}
-                                link={sidebarBanner?.link || '#'}
-                                label="Publicidad"
-                            />
+
 
                         </div>
                     </aside>
