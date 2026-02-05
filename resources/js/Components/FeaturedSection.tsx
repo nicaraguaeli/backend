@@ -86,7 +86,7 @@ export default function FeaturedSection({ posts, onPostClick }: FeaturedSectionP
                   <div className="featured-meta">
                     <div className="d-flex align-items-center gap-3 flex-wrap">
                       <span className="author-name">
-                        {mainPost.author?.[0]?.name || 'Redacción'}
+                        {mainPost.author?.name || 'Redacción'}
                       </span>
                       <span className="meta-separator">•</span>
                       <div className="d-flex align-items-center gap-2 date-info">

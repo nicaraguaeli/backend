@@ -174,9 +174,20 @@ Route::get('/contacto', [App\Http\Controllers\CorporateController::class, 'conta
 Route::get('/programacion', [App\Http\Controllers\CorporateController::class, 'programming'])->name('corporate.programming');
 
 
+
+
 // Ruta para Categorías (React)
 Route::get('/category/{slug}', function ($slug) {
     $category = \App\Models\Category::where('slug', $slug)->firstOrFail();
+    
+    // Si es una categoría destacada, usar el layout especial
+    if ($category->is_featured) {
+        return Inertia::render('FeaturedCategory', [
+            'category' => $category
+        ]);
+    }
+    
+    // Categorías normales usan el layout estándar
     return Inertia::render('Category', [
         'category' => $slug,
         'categoryName' => $category->name

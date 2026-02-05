@@ -169,14 +169,10 @@ export default function ArticleDetail({ article, relatedNews = [], mostReadNews 
                   </div>
                   <div>
                     <span className="d-block fw-bold text-dark lh-1">
-                      {article.author && article.author.length > 0
-                        ? article.author.map(a => a.name).join(', ')
-                        : 'Redacción'}
+                      {article.author?.name || 'Redacción'}
                     </span>
                     <span className="text-secondary" style={{ fontSize: '0.75rem' }}>
-                      {article.author && article.author.length > 0
-                        ? article.author.map(a => a.type).join(', ')
-                        : 'Periodista'}
+                      {article.author?.type || 'Periodista'}
                     </span>
                   </div>
                 </div>

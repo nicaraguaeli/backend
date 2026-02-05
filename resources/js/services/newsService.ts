@@ -16,7 +16,9 @@ import { asset } from '@/url';
 export const fetchNewsByCategory = async (categorySlug: string): Promise<BlogPost[]> => {
     try {
         const response = await axios.get(`/api/news?category=${categorySlug}`);
-        return response.data.map((item: any) => ({
+        // Handle paginated response
+        const items = response.data.data || response.data;
+        return items.map((item: any) => ({
             id: item.id.toString(),
             slug: item.slug,
             title: item.title,

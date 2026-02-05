@@ -65,7 +65,7 @@ export default function Hero({ post, onReadMore }: HeroProps) {
               </div>
               <div className="d-flex align-items-center gap-1">
                 <User size={16} className="text-abc-gold" />
-                <span>Por {post.author && post.author.length > 0 ? post.author.map(a => a.name).join(', ') : 'Redacción'}</span>
+                <span>Por {post.author?.name || 'Redacción'}</span>
               </div>
               <div className="d-flex align-items-center gap-1">
                 <MapPin size={16} className="text-abc-gold" />

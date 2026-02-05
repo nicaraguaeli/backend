@@ -13,7 +13,8 @@ class NewsController extends Controller
     //
     public function index(Request $request)
     {
-        $query = \App\Models\News::with('categories', 'author', 'tags');
+        $query = \App\Models\News::with('categories', 'author', 'tags')
+            ->where('is_published', true);
 
         if ($request->has('category')) {
             $slug = $request->query('category');
@@ -22,7 +23,9 @@ class NewsController extends Controller
             });
         }
 
-        $news = $query->get();
+        $news = $query->orderBy('published_at', 'desc')
+            ->paginate(12);
+            
         return response()->json($news);
     }
 
@@ -40,6 +43,28 @@ class NewsController extends Controller
         // Increment views
         $news->increment('views');
 
+        // Check if article belongs to a featured category
+        $hasFeaturedCategory = $news->categories->contains(function ($category) {
+            return $category->is_featured;
+        });
+
+        // Prepare Meta Data for SEO/Sharing
+        $meta = [
+            'title' => $news->title . ' | Radio ABC Stereo',
+            'description' => $news->lead ?? $news->excerpt,
+            'image' => $news->image_path ? asset('storage/' . $news->image_path) : asset('img/brand.png'),
+            'url' => route('news.show', $news->slug),
+            'type' => 'article'
+        ];
+
+        // If article belongs to a featured category, use special layout
+        if ($hasFeaturedCategory) {
+            return \Inertia\Inertia::render('FeaturedArticle', [
+                'article' => $news
+            ])->withViewData(['meta' => $meta]);
+        }
+
+        // Regular article flow
         // Fetch most read news (for sidebar)
         $mostReadNews = News::with(['categories', 'author'])
             ->where('is_published', true)
@@ -79,15 +104,6 @@ class NewsController extends Controller
             ->orderBy('published_at', 'desc')
             ->take(6)
             ->get();
-
-        // Prepare Meta Data for SEO/Sharing
-        $meta = [
-            'title' => $news->title . ' | Radio ABC Stereo',
-            'description' => $news->lead ?? $news->excerpt,
-            'image' => $news->image_path ? asset('storage/' . $news->image_path) : asset('img/brand.png'),
-            'url' => route('news.show', $news->slug),
-            'type' => 'article'
-        ];
 
         return \Inertia\Inertia::render('Article', [
             'article' => $news,

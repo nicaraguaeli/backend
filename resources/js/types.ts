@@ -15,6 +15,9 @@ export interface Category {
   show_in_menu: boolean | number;
   menu_order: number;
   image_path?: string;
+  description?: string;
+  theme_color?: string;
+  theme_color_secondary?: string;
 }
 
 export interface BlogPost {
@@ -32,22 +35,23 @@ export interface BlogPost {
 }
 
 export interface ArticleData {
-    id: number;
-    title: string;
-    slug: string;
-    lead?: string;
-    excerpt: string;
-    content: string;
-    area?: string;
-    published_at: string;
-    image_path: string;
-    caption?: string;
-    city?: string;
-    type?: string;
-    country?: string;
-    author?: { name: string; type: string }[];
-    categories?: Category[];
-    tags?: { id: number; name: string }[];
+  id: number;
+  title: string;
+  slug: string;
+  lead?: string;
+  excerpt: string;
+  content: string;
+  area?: string;
+  published_at: string;
+  image_path: string;
+  caption?: string;
+  city?: string;
+  type?: string;
+  country?: string;
+  views?: number;
+  author?: { name: string; type?: string };
+  categories?: Category[];
+  tags?: { id: number; name: string }[];
 }
 
 // Raw API Interface

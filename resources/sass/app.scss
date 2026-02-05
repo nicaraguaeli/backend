@@ -190,6 +190,7 @@
         font-size: 0.75rem;
         text-transform: uppercase;
         font-family: 'Inter', sans-serif;
+        border-radius: 0 !important; /* Rectangular, no redondeado */
       }
 
       /* Main Content Offset for Fixed Header */

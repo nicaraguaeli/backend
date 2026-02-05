@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { BlogPost } from '../types';
-import { Clock, ArrowRight, ChevronLeft, ChevronRight, Home, Hash } from 'lucide-react';
+import { Clock, ArrowRight, ChevronLeft, ChevronRight, Home, TrendingUp, Calendar, Eye, User } from 'lucide-react';
 import { fetchNewsByCategory } from '../services/newsService';
 
 interface CategoryViewProps {
@@ -15,14 +14,13 @@ export default function CategoryView({ category, categoryName, onPostClick, onBa
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const itemsPerPage = 7; // 1 Destacada + 6 en Grilla
-  
+  const itemsPerPage = 7; // 1 Destacada + 6 en Grid
+
   const displayName = categoryName || category;
 
   useEffect(() => {
     const loadCategoryNews = async () => {
       setLoading(true);
-      // Simulamos una pequeña pausa para que se aprecie la transición si la API es muy rápida
       const data = await fetchNewsByCategory(category);
       setPosts(data);
       setCurrentPage(1);
@@ -44,239 +42,277 @@ export default function CategoryView({ category, categoryName, onPostClick, onBa
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
   const featuredPost = currentPosts[0];
   const gridPosts = currentPosts.slice(1);
 
   if (loading) {
     return (
-        <div className="container py-5">
-            {/* Skeleton Loader para dar sensación de velocidad */}
-            <div className="d-flex align-items-center gap-2 mb-4 text-muted opacity-50">
-               <div style={{width: '20px', height: '20px', background: '#e0e0e0', borderRadius: '50%'}}></div>
-               <div style={{width: '100px', height: '14px', background: '#e0e0e0', borderRadius: '4px'}}></div>
-            </div>
-            <div className="row mb-5">
-               <div className="col-lg-8">
-                  <div style={{width: '100%', height: '400px', background: '#f0f0f0', borderRadius: '8px'}}></div>
-               </div>
-               <div className="col-lg-4 d-flex flex-column gap-3 justify-content-center">
-                  <div style={{width: '60%', height: '20px', background: '#e0e0e0', borderRadius: '4px'}}></div>
-                  <div style={{width: '90%', height: '30px', background: '#e0e0e0', borderRadius: '4px'}}></div>
-                  <div style={{width: '80%', height: '15px', background: '#e0e0e0', borderRadius: '4px'}}></div>
-               </div>
-            </div>
+      <div className="container py-5">
+        <div className="text-center py-5">
+          <div className="spinner-border text-abc-red" role="status" style={{ width: '3rem', height: '3rem' }}>
+            <span className="visually-hidden">Cargando...</span>
+          </div>
+          <p className="mt-3 text-muted fw-bold">Cargando noticias...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (posts.length === 0) {
+    return (
+      <div className="container py-5">
+        <div className="mb-4">
+          <button onClick={onBack} className="btn btn-link text-decoration-none text-secondary ps-0 d-flex align-items-center gap-2">
+            <Home size={18} /> Volver al inicio
+          </button>
+        </div>
+        <div className="text-center py-5">
+          <div className="bg-light rounded-circle d-inline-flex p-4 mb-3">
+            <TrendingUp size={48} className="text-muted" />
+          </div>
+          <h3 className="text-abc-blue fw-bold">No hay noticias disponibles</h3>
+          <p className="text-muted">Aún no se han publicado noticias en esta categoría</p>
+        </div>
+      </div>
     );
   }
 
   return (
     <div className="animate-fade-in pb-5">
-      {/* Breadcrumb Header Mejorado */}
-      <div className="bg-light border-bottom py-3 mb-4 sticky-top" style={{top: '70px', zIndex: 900}}>
+      {/* Breadcrumb Header */}
+      <div className="bg-light border-bottom py-3 mb-4 sticky-top" style={{ top: '70px', zIndex: 900 }}>
         <div className="container">
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb mb-0 align-items-center">
               <li className="breadcrumb-item">
-                <button onClick={onBack} className="btn btn-link p-0 text-decoration-none text-secondary d-flex align-items-center gap-1 hover-primary">
+                <button onClick={onBack} className="btn btn-link p-0 text-decoration-none text-secondary d-flex align-items-center gap-1">
                   <Home size={16} /> Inicio
                 </button>
               </li>
-              <li className="breadcrumb-item active fw-bold text-abc-blue text-uppercase" aria-current="page">{displayName}</li>
+              <li className="breadcrumb-item active fw-bold text-abc-blue text-uppercase" aria-current="page">
+                {displayName}
+              </li>
             </ol>
           </nav>
         </div>
       </div>
 
       <div className="container">
-        
-        {/* Título de la Sección con Estilo */}
-        <div className="d-flex align-items-center gap-3 mb-4">
-            <div className="bg-abc-blue text-white p-2 rounded-2">
-                <Hash size={24} />
+        {/* Category Header */}
+        <div className="mb-5">
+          <div className="d-flex align-items-center gap-3 mb-3">
+            <div className="bg-abc-red text-white p-3 rounded-3 shadow">
+              <TrendingUp size={32} />
             </div>
             <div>
-                <span className="text-uppercase text-muted small fw-bold letter-spacing-1 d-block">Sección Informativa</span>
-                <h1 className="display-5 fw-bold font-serif text-dark m-0 lh-1">
-                {displayName}
-                </h1>
+              <span className="text-uppercase text-muted small fw-bold d-block mb-1">Categoría</span>
+              <h1 className="display-5 fw-bold font-serif text-abc-blue m-0">{displayName}</h1>
             </div>
-        </div>
-        
-        {/* Línea divisoria decorativa */}
-        <div className="mb-5 border-bottom border-2 border-light position-relative">
-            <div className="position-absolute bottom-0 start-0 bg-abc-red" style={{width: '100px', height: '2px'}}></div>
+          </div>
+          <div className="border-top border-3 border-abc-gold pt-3">
+            <p className="text-muted mb-0">
+              <strong>{posts.length}</strong> {posts.length === 1 ? 'noticia encontrada' : 'noticias encontradas'}
+            </p>
+          </div>
         </div>
 
-        {posts.length === 0 ? (
-           <div className="alert alert-light border shadow-sm text-center py-5">
-              <h4 className="text-muted">No hay noticias disponibles</h4>
-              <p className="mb-0">Lo sentimos, no hemos encontrado artículos en la categoría <strong>{category}</strong>.</p>
-           </div>
-        ) : (
-        <>
-            {/* Noticia Principal Destacada (Estilo Hero Card) */}
-            {featuredPost && (
-              <div className="card border-0 shadow-lg mb-5 overflow-hidden rounded-4 hover-lift">
-                <div className="row g-0">
-                  <div className="col-lg-8 position-relative">
-                    <div className="h-100" style={{ minHeight: '400px' }}>
-                      <img 
-                        src={featuredPost.imageUrl} 
-                        className="w-100 h-100 object-fit-cover transition-transform" 
-                        alt={featuredPost.title} 
-                        onError={(e) => (e.target as HTMLImageElement).src = 'https://via.placeholder.com/800x600?text=Sin+Imagen'}
-                      />
-                      <div className="position-absolute bottom-0 start-0 bg-abc-red text-white px-3 py-2 fw-bold text-uppercase shadow rounded-end-pill mb-4">
-                        Destacado
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-lg-4 bg-white">
-                    <div className="card-body p-4 p-lg-5 d-flex flex-column h-100 justify-content-center">
-                      <div className="d-flex align-items-center gap-2 mb-3 text-muted small text-uppercase fw-bold">
-                        <span className="text-abc-blue">{featuredPost.author}</span>
-                        <span>•</span>
-                        <Clock size={14} />
-                        <span>{featuredPost.date}</span>
-                      </div>
-                      <h2 className="card-title fw-bold font-serif mb-3 display-6 lh-sm">
-                        <a href="#" onClick={(e) => { e.preventDefault(); onPostClick(featuredPost.slug); }} className="text-decoration-none text-dark hover-blue transition-colors">
-                          {featuredPost.title}
-                        </a>
-                      </h2>
-                      <p className="card-text text-secondary mb-4 line-clamp-3 fs-5">
-                        {featuredPost.excerpt}
-                      </p>
-                      <button 
-                        onClick={() => onPostClick(featuredPost.slug)} 
-                        className="btn btn-outline-dark rounded-pill fw-bold text-uppercase px-4 py-2 w-auto align-self-start hover-bg-dark hover-text-white transition-all"
-                      >
-                        Leer Artículo Completo
-                      </button>
-                    </div>
-                  </div>
+        {/* Featured Post */}
+        {featuredPost && (
+          <div className="mb-5">
+            <div className="row g-0 bg-white shadow-lg rounded-3 overflow-hidden hover-card border border-2 border-abc-blue">
+              <div className="col-lg-7">
+                <div className="position-relative" style={{ height: '100%', minHeight: '400px' }}>
+                  <img
+                    src={featuredPost.imageUrl || 'https://placehold.co/800x600?text=Sin+Imagen'}
+                    alt={featuredPost.title}
+                    className="w-100 h-100 object-fit-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = 'https://placehold.co/800x600?text=Sin+Imagen';
+                    }}
+                  />
+                  <span className="position-absolute top-0 start-0 m-3 badge bg-abc-red text-white px-3 py-2 shadow">
+                    DESTACADA
+                  </span>
+                  <span className="position-absolute bottom-0 start-0 m-3 badge bg-abc-blue text-white px-3 py-2 shadow">
+                    {featuredPost.category}
+                  </span>
                 </div>
               </div>
-            )}
-
-            {/* Grilla de Noticias Secundarias */}
-            <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
-              {gridPosts.map((post) => (
-                <div key={post.id} className="col">
-                  <div className="card h-100 border-0 shadow-sm hover-card bg-white rounded-3 overflow-hidden">
-                    <div className="position-relative overflow-hidden" style={{ height: '220px' }}>
-                      <img 
-                        src={post.imageUrl} 
-                        className="w-100 h-100 object-fit-cover transition-transform" 
-                        alt={post.title} 
-                        onError={(e) => (e.target as HTMLImageElement).src = 'https://via.placeholder.com/600x400?text=Sin+Imagen'}
-                      />
+              <div className="col-lg-5 d-flex flex-column justify-content-center p-4 p-lg-5">
+                <div className="d-flex align-items-center gap-3 mb-3 text-muted small">
+                  <div className="d-flex align-items-center gap-1">
+                    <Calendar size={14} />
+                    <span>{formatDate(featuredPost.date)}</span>
+                  </div>
+                  {featuredPost.views && (
+                    <div className="d-flex align-items-center gap-1">
+                      <Eye size={14} />
+                      <span>{featuredPost.views.toLocaleString()}</span>
                     </div>
-                    <div className="card-body p-4">
-                      <div className="mb-2 text-muted small d-flex align-items-center gap-2">
-                        <Clock size={12} /> {post.date}
+                  )}
+                </div>
+
+                <h2 className="display-6 fw-bold font-serif text-abc-blue mb-3 lh-sm">
+                  {featuredPost.title}
+                </h2>
+
+                <p className="text-secondary mb-4 fs-6 lh-base">
+                  {featuredPost.excerpt}
+                </p>
+
+                <div className="d-flex align-items-center justify-content-between border-top pt-3">
+                  <div className="d-flex align-items-center gap-2 text-muted small">
+                    <User size={16} />
+                    <span className="fw-bold">{featuredPost.author}</span>
+                  </div>
+                  <button
+                    onClick={() => onPostClick(featuredPost.slug)}
+                    className="btn btn-abc-red text-white fw-bold px-4 py-2 rounded-pill d-flex align-items-center gap-2 shadow"
+                  >
+                    Leer Noticia <ArrowRight size={18} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Grid Posts */}
+        {gridPosts.length > 0 && (
+          <>
+            <div className="d-flex align-items-center gap-2 mb-4">
+              <div className="bg-abc-gold" style={{ width: '4px', height: '24px' }}></div>
+              <h3 className="h5 fw-bold text-abc-blue mb-0 font-serif">Más Noticias</h3>
+            </div>
+
+            <div className="row g-4 mb-5">
+              {gridPosts.map((post) => (
+                <div key={post.id} className="col-md-6 col-lg-4">
+                  <article className="card h-100 border-0 shadow hover-card bg-white">
+                    <div className="card-img-top-wrapper position-relative">
+                      <img
+                        src={post.imageUrl || 'https://placehold.co/600x400?text=Sin+Imagen'}
+                        className="card-img-top"
+                        alt={post.title}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = 'https://placehold.co/600x400?text=Sin+Imagen';
+                        }}
+                      />
+                      <span className="category-badge bg-abc-blue">{post.category}</span>
+                      <span className="position-absolute bottom-0 end-0 m-2 badge bg-dark bg-opacity-75 text-white shadow-sm d-flex align-items-center gap-1" style={{ fontSize: '0.7rem' }}>
+                        <Clock size={12} />
+                        {formatDate(post.date)}
+                      </span>
+                    </div>
+
+                    <div className="card-body d-flex flex-column p-4">
+                      <div className="d-flex align-items-center gap-2 mb-3 text-muted small">
+                        {post.views && (
+                          <div className="d-flex align-items-center gap-1">
+                            <Eye size={12} />
+                            <span>{post.views.toLocaleString()}</span>
+                          </div>
+                        )}
+                        <span className="text-abc-blue fw-bold">• {post.author}</span>
                       </div>
-                      <h5 className="card-title fw-bold font-serif mb-3 lh-sm">
-                        <a href="#" onClick={(e) => { e.preventDefault(); onPostClick(post.slug); }} className="text-decoration-none text-dark hover-blue transition-colors">
+
+                      <h3 className="card-title fw-bold font-serif mb-3 text-abc-blue h5 lh-sm">
+                        <a
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            onPostClick(post.slug);
+                          }}
+                          className="text-decoration-none text-abc-blue stretched-link"
+                        >
                           {post.title}
                         </a>
-                      </h5>
-                      <p className="card-text text-secondary small line-clamp-3">
+                      </h3>
+
+                      <p className="card-text text-secondary small flex-grow-1 lh-base" style={{
+                        display: '-webkit-box',
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden'
+                      }}>
                         {post.excerpt}
                       </p>
-                    </div>
-                    <div className="card-footer bg-white border-0 pt-0 pb-4 px-4">
-                      <button 
-                          onClick={() => onPostClick(post.slug)}
-                          className="btn btn-link p-0 text-decoration-none text-abc-red fw-bold text-uppercase d-flex align-items-center gap-1 hover-arrow"
-                          style={{ fontSize: '0.8rem' }}
+
+                      <div className="mt-3 position-relative" style={{ zIndex: 2 }}>
+                        <a
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            onPostClick(post.slug);
+                          }}
+                          className="text-decoration-none text-abc-red fw-bold text-uppercase d-inline-flex align-items-center gap-1 small"
                         >
-                          Leer más <ArrowRight size={14} className="arrow-icon" />
-                        </button>
+                          Leer Más <ArrowRight size={14} />
+                        </a>
+                      </div>
                     </div>
-                  </div>
+                  </article>
                 </div>
               ))}
             </div>
+          </>
+        )}
 
-            {/* Paginación */}
-            {totalPages > 1 && (
-              <nav aria-label="Page navigation" className="d-flex justify-content-center pt-4 border-top">
-                <ul className="pagination pagination-lg">
-                  <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                    <button 
-                      className="page-link border-0 text-secondary" 
-                      onClick={() => paginate(currentPage - 1)}
-                      disabled={currentPage === 1}
-                    >
-                      <ChevronLeft size={20} />
-                    </button>
-                  </li>
-                  
-                  {Array.from({ length: totalPages }).map((_, idx) => (
-                    <li key={idx} className={`page-item ${currentPage === idx + 1 ? 'active' : ''}`}>
-                      <button 
-                        className={`page-link border-0 rounded-circle mx-1 d-flex align-items-center justify-content-center fw-bold ${currentPage === idx + 1 ? 'bg-abc-blue text-white shadow' : 'text-secondary bg-light'}`}
-                        style={{ width: '45px', height: '45px' }}
-                        onClick={() => paginate(idx + 1)}
-                      >
-                        {idx + 1}
-                      </button>
-                    </li>
-                  ))}
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <nav aria-label="Paginación de noticias">
+            <ul className="pagination justify-content-center gap-2">
+              <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                <button
+                  className="page-link border-0 bg-abc-blue text-white rounded-pill px-4 shadow-sm"
+                  onClick={() => paginate(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft size={18} className="me-1" />
+                  Anterior
+                </button>
+              </li>
 
-                  <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                    <button 
-                      className="page-link border-0 text-secondary" 
-                      onClick={() => paginate(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                    >
-                      <ChevronRight size={20} />
-                    </button>
-                  </li>
-                </ul>
-              </nav>
-            )}
-        </>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
+                <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
+                  <button
+                    className={`page-link rounded-circle border-2 ${currentPage === number
+                        ? 'bg-abc-red text-white border-abc-red shadow'
+                        : 'bg-white text-abc-blue border-abc-blue'
+                      }`}
+                    onClick={() => paginate(number)}
+                    style={{ width: '40px', height: '40px', fontWeight: 'bold' }}
+                  >
+                    {number}
+                  </button>
+                </li>
+              ))}
+
+              <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                <button
+                  className="page-link border-0 bg-abc-blue text-white rounded-pill px-4 shadow-sm"
+                  onClick={() => paginate(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  Siguiente
+                  <ChevronRight size={18} className="ms-1" />
+                </button>
+              </li>
+            </ul>
+          </nav>
         )}
       </div>
-
-      <style>{`
-        .line-clamp-3 {
-          display: -webkit-box;
-          -webkit-line-clamp: 3;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-        .hover-blue:hover {
-          color: var(--abc-blue) !important;
-        }
-        .hover-primary:hover {
-          color: var(--abc-blue) !important;
-        }
-        .hover-lift {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .hover-lift:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
-        }
-        .hover-card:hover .transition-transform {
-            transform: scale(1.05);
-        }
-        .transition-transform {
-            transition: transform 0.5s ease;
-        }
-        .hover-arrow:hover .arrow-icon {
-            transform: translateX(3px);
-        }
-        .arrow-icon {
-            transition: transform 0.2s ease;
-        }
-        .letter-spacing-1 {
-            letter-spacing: 1px;
-        }
-      `}</style>
     </div>
   );
 }
