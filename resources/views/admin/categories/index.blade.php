@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const formData = new FormData(form);
         const id = categoryIdInput.value;
-        const url = id ? `/admin/categories/${id}` : '{{ route('admin.categories.store') }}';
+        const url = id ? '{{ url("admin/categories") }}/' + id : '{{ route('admin.categories.store') }}';
         
         // For updates, we use POST but spoof the method with _method
         if (id) {
@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // AJAX update for toggles and position (delegated)
     const debouncedUpdate = debounce((id, data, element) => {
         element.disabled = true;
-        fetch(`/admin/categories/${id}`, {
+        fetch('{{ url("admin/categories") }}/' + id, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',

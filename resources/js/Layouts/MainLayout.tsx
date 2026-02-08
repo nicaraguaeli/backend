@@ -83,7 +83,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 audioState={audioState}
                 onPlayLive={handlePlayLive}
                 onNavigate={handleNavigation}
-                onCategoryClick={() => setCurrentView('default')}
             />
             <main className="flex-grow-1 main-content-offset" style={{ paddingBottom: '100px' }}>
                 {currentView === 'podcastview' ? (
