@@ -284,7 +284,11 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
             <button className="btn btn-link p-0 text-abc-blue d-lg-none" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
             </button>
-            <a href={route('home')} onClick={(e) => { e.preventDefault(); router.visit(route('home')); }} className="navbar-brand m-0 brand-logo-wrapper">
+            <a href={route('home')} onClick={(e) => {
+              e.preventDefault();
+              if (onCategoryClick) onCategoryClick('');
+              router.visit(route('home'));
+            }} className="navbar-brand m-0 brand-logo-wrapper">
               <img src="https://radioabcstereo.com/img/brand.png" alt="Radio ABC Stereo" className="brand-logo" />
             </a>
           </div>
