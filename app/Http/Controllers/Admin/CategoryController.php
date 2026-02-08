@@ -30,11 +30,15 @@ class CategoryController extends Controller
             'name' => 'required|string|max:191|unique:categories,name',
             'slug' => 'required|string|max:191|unique:categories,slug',
             'image_path' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'theme_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
+            'theme_color_secondary' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
         ]);
 
         $data = [
             'name' => trim($validated['name']),
             'slug' => Str::slug($validated['slug']),
+            'theme_color' => $request->input('theme_color'),
+            'theme_color_secondary' => $request->input('theme_color_secondary'),
         ];
 
         try {
@@ -90,11 +94,15 @@ class CategoryController extends Controller
                 'name' => 'required|string|max:191|unique:categories,name,' . $category->id,
                 'slug' => 'required|string|max:191|unique:categories,slug,' . $category->id,
                 'image_path' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'theme_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
+                'theme_color_secondary' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
             ]);
 
             $data = [
                 'name' => trim($validated['name']),
                 'slug' => Str::slug($validated['slug']),
+                'theme_color' => $request->input('theme_color'),
+                'theme_color_secondary' => $request->input('theme_color_secondary'),
             ];
 
             if ($request->hasFile('image_path')) {

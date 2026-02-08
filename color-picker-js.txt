@@ -1,0 +1,45 @@
+
+    // --- COLOR PICKER LOGIC ---
+    const themeColorPicker = document.getElementById('theme_color');
+    const themeColorText = document.getElementById('theme_color_text');
+    const themeColorSecondaryPicker = document.getElementById('theme_color_secondary');
+    const themeColorSecondaryText = document.getElementById('theme_color_secondary_text');
+    const colorPreview = document.getElementById('color-preview');
+
+    // Sync color picker with text input
+    themeColorPicker.addEventListener('input', function() {
+        themeColorText.value = this.value.toUpperCase();
+        updateColorPreview();
+    });
+
+    themeColorText.addEventListener('input', function() {
+        const value = this.value.trim();
+        if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+            themeColorPicker.value = value;
+            updateColorPreview();
+        }
+    });
+
+    themeColorSecondaryPicker.addEventListener('input', function() {
+        themeColorSecondaryText.value = this.value.toUpperCase();
+        updateColorPreview();
+    });
+
+    themeColorSecondaryText.addEventListener('input', function() {
+        const value = this.value.trim();
+        if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+            themeColorSecondaryPicker.value = value;
+            updateColorPreview();
+        }
+    });
+
+    // Update color preview
+    function updateColorPreview() {
+        const color1 = themeColorPicker.value || '#6f42c1';
+        const color2 = themeColorSecondaryPicker.value || '#ffc107';
+        colorPreview.style.background = `linear-gradient(135deg, ${color1} 0%, ${color2} 100%)`;
+    }
+
+    // Initialize color preview
+    updateColorPreview();
+

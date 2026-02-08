@@ -18,7 +18,10 @@
                             <i class="fas fa-plus"></i> Crear Categoría
                         </button>
                     </div>
-                </div>
+                    
+                   
+                  
+
                 <div class="card-body">
                     <div id="categories-feedback" class="mb-2"></div>
                     <div class="table-responsive">
@@ -48,7 +51,8 @@
                     <div class="d-flex justify-content-center">
                          {{ $categories->links() }}
                     </div>
-                </div>
+                    
+
             </div>
         </div>
     </div>
@@ -87,7 +91,47 @@
                     <div class="form-group text-center">
                         <img id="image-preview" src="#" alt="Vista previa" style="display: none; max-height: 150px; border-radius: 5px;"/>
                     </div>
+                    
+                    <!-- Theme Colors (Only for Featured Categories) -->
+                    <div id="theme-colors-section" style="display: none;">
+                        <hr>
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-palette"></i> Colores de Tema (Categoría Destacada)
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="theme_color">Color Principal</label>
+                                    <div class="input-group">
+                                        <input type="color" class="form-control form-control-color" id="theme_color" name="theme_color" value="#6f42c1" title="Elige el color principal" style="max-width: 60px;">
+                                        <input type="text" class="form-control" id="theme_color_text" placeholder="#6f42c1" maxlength="7" pattern="^#[0-9A-Fa-f]{6}$">
+                                    </div>
+                                    <small class="form-text text-muted">Color para la temática de la categoría destacada</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="theme_color_secondary">Color Secundario</label>
+                                    <div class="input-group">
+                                        <input type="color" class="form-control form-control-color" id="theme_color_secondary" name="theme_color_secondary" value="#ffc107" title="Elige el color secundario" style="max-width: 60px;">
+                                        <input type="text" class="form-control" id="theme_color_secondary_text" placeholder="#ffc107" maxlength="7" pattern="^#[0-9A-Fa-f]{6}$">
+                                    </div>
+                                    <small class="form-text text-muted">Color secundario para gradientes</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Color Preview -->
+                        <div class="form-group">
+                            <label>Vista Previa del Tema</label>
+                            <div id="color-preview" class="p-4 rounded text-white text-center" style="background: linear-gradient(135deg, #6f42c1 0%, #ffc107 100%);">
+                                <h5 class="mb-0">Ejemplo de Categoría</h5>
+                                <small>Así se verá la categoría destacada</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary" id="form-submit-btn">Guardar</button>
@@ -142,6 +186,60 @@ document.addEventListener('DOMContentLoaded', function () {
     const submitBtn = document.getElementById('form-submit-btn');
     const tableBody = document.querySelector('#categoriesTable tbody');
 
+    // --- COLOR PICKER LOGIC ---
+    const themeColorPicker = document.getElementById('theme_color');
+    const themeColorText = document.getElementById('theme_color_text');
+    const themeColorSecondaryPicker = document.getElementById('theme_color_secondary');
+    const themeColorSecondaryText = document.getElementById('theme_color_secondary_text');
+    const colorPreview = document.getElementById('color-preview');
+    const themeColorsSection = document.getElementById('theme-colors-section');
+
+    // Toggle visibility of theme colors
+    function toggleThemeColors(isFeatured) {
+        if (isFeatured) {
+            themeColorsSection.style.display = 'block';
+        } else {
+            themeColorsSection.style.display = 'none';
+        }
+    }
+
+    // Sync color picker with text input
+    themeColorPicker.addEventListener('input', function() {
+        themeColorText.value = this.value.toUpperCase();
+        updateColorPreview();
+    });
+
+    themeColorText.addEventListener('input', function() {
+        const value = this.value.trim();
+        if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+            themeColorPicker.value = value;
+            updateColorPreview();
+        }
+    });
+
+    themeColorSecondaryPicker.addEventListener('input', function() {
+        themeColorSecondaryText.value = this.value.toUpperCase();
+        updateColorPreview();
+    });
+
+    themeColorSecondaryText.addEventListener('input', function() {
+        const value = this.value.trim();
+        if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+            themeColorSecondaryPicker.value = value;
+            updateColorPreview();
+        }
+    });
+
+    // Update color preview
+    function updateColorPreview() {
+        const color1 = themeColorPicker.value || '#6f42c1';
+        const color2 = themeColorSecondaryPicker.value || '#ffc107';
+        colorPreview.style.background = `linear-gradient(135deg, ${color1} 0%, ${color2} 100%)`;
+    }
+
+    // Initialize color preview
+    updateColorPreview();
+
     // --- FORM LOGIC ---
     function resetForm() {
         form.reset();
@@ -152,6 +250,14 @@ document.addEventListener('DOMContentLoaded', function () {
         imagePreview.src = '#';
         document.querySelector('.custom-file-label').textContent = 'Elegir imagen...';
         form.classList.remove('is-editing');
+        
+        // Hide colors by default and reset values
+        toggleThemeColors(false);
+        themeColorPicker.value = '#6f42c1';
+        themeColorText.value = '#6f42c1';
+        themeColorSecondaryPicker.value = '#ffc107';
+        themeColorSecondaryText.value = '#ffc107';
+        updateColorPreview();
     }
 
     // Reset form when modal is opened via button (Create)
@@ -173,6 +279,19 @@ document.addEventListener('DOMContentLoaded', function () {
             imagePreview.src = category.image_url;
             imagePreview.style.display = 'block';
         }
+        
+        // Show theme colors only if category is featured
+        toggleThemeColors(category.is_featured == 1 || category.is_featured === true);
+        
+        if (category.theme_color) {
+            themeColorPicker.value = category.theme_color;
+            themeColorText.value = category.theme_color.toUpperCase();
+        }
+        if (category.theme_color_secondary) {
+            themeColorSecondaryPicker.value = category.theme_color_secondary;
+            themeColorSecondaryText.value = category.theme_color_secondary.toUpperCase();
+        }
+        updateColorPreview();
         
         modal.modal('show');
     }
