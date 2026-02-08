@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import { asset } from '@/url';
+import { asset, url } from '@/url';
 import { Menu, X, Search, Play, Pause, Facebook, Twitter, Instagram, Youtube, ChevronDown } from 'lucide-react';
 import { NavItem, AudioState } from '../../types';
 import { fetchCategories } from '../../services/newsService';
@@ -165,7 +165,7 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
     }
 
     // Navigate to a /search route with query param
-    router.visit(asset(`search?q=${encodeURIComponent(q)}`));
+    router.visit(url(`search?q=${encodeURIComponent(q)}`));
     setIsMobileMenuOpen(false);
     setSearchQuery('');
     setSuggestions([]);
@@ -183,7 +183,7 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
 
     const controller = new AbortController();
     const id = setTimeout(() => {
-      fetch(`/api/news/suggestions?q=${encodeURIComponent(searchQuery.trim())}`, { signal: controller.signal })
+      fetch(url(`api/news/suggestions?q=${encodeURIComponent(searchQuery.trim())}`), { signal: controller.signal })
         .then(res => res.ok ? res.json() : [])
         .then((data) => {
           setSuggestions(Array.isArray(data) ? data : []);
