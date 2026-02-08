@@ -2,15 +2,8 @@ import React from 'react';
 import { Head, router } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
 import FeaturedCategoryView from '@/Components/FeaturedCategoryView';
-
-interface Category {
-    id: number;
-    name: string;
-    slug: string;
-    description?: string;
-    image_path?: string;
-    is_featured: boolean;
-}
+import { route } from 'ziggy-js';
+import { Category } from '@/types';
 
 interface Props {
     category: Category;
@@ -22,8 +15,8 @@ const FeaturedCategoryPage = ({ category }: Props) => {
             <Head title={category.name} />
             <FeaturedCategoryView
                 category={category}
-                onBack={() => router.visit('/')}
-                onPostClick={(slug) => router.visit(`/news/${slug}`)}
+                onBack={() => router.visit(route('home'))}
+                onPostClick={(slug) => router.visit(route('news.show', { slug }))}
             />
         </>
     );
