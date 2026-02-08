@@ -20,7 +20,8 @@ export default function FeaturedCategories({ categories = [], onCategoryClick, o
     title: cat.name,
     subtitle: 'Explora más', // Default subtitle since DB doesn't have it
     icon: ICONS[index % ICONS.length],
-    color: COLORS[index % COLORS.length],
+    color: cat.theme_color || COLORS[index % COLORS.length],
+    colorSecondary: cat.theme_color_secondary,
     image: cat.image_path ? asset(`storage/${cat.image_path}`) : 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=600&auto=format&fit=crop',
     target: cat.slug
   }));
@@ -72,6 +73,15 @@ export default function FeaturedCategories({ categories = [], onCategoryClick, o
               {displayCategories.length > 0 ? (
                 displayCategories.map((cat, index) => {
                   const isLarge = index < 2;
+                  // Construct dynamic gradient
+                  const gradientStyle = cat.colorSecondary
+                    ? `linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 50%, ${cat.color} 80%, ${cat.colorSecondary} 100%)`
+                    : `linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 50%, ${cat.color} 100%)`;
+
+                  const bottomBarStyle = cat.colorSecondary
+                    ? `linear-gradient(to right, ${cat.color}, ${cat.colorSecondary})`
+                    : cat.color;
+
                   return (
                     <div key={cat.id} className={isLarge ? "col-md-6" : "col-md-4"}>
                       <a href="#" onClick={(e) => handleClick(e, cat.target)} className="text-decoration-none h-100 d-block">
@@ -88,7 +98,7 @@ export default function FeaturedCategories({ categories = [], onCategoryClick, o
                           ></div>
                           <div
                             className="overlay position-absolute top-0 start-0 w-100 h-100"
-                            style={{ background: `linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 50%, ${cat.color} 100%)`, opacity: 0.85 }}
+                            style={{ background: gradientStyle, opacity: 0.85 }}
                           ></div>
 
                           {/* Content Vertical - Centered */}
@@ -106,7 +116,7 @@ export default function FeaturedCategories({ categories = [], onCategoryClick, o
                               </div>
                             </div>
                           </div>
-                          <div className="position-absolute bottom-0 start-0 w-100" style={{ height: '6px', backgroundColor: cat.color }}></div>
+                          <div className="position-absolute bottom-0 start-0 w-100" style={{ height: '6px', background: bottomBarStyle }}></div>
                         </div>
                       </a>
                     </div>
