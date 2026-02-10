@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Play, Clock, ChevronRight, Search, Mic2, ArrowLeft, Info, Radio, Headphones, Share2 } from 'lucide-react';
+import { router } from '@inertiajs/react';
 import { fetchPodcasts, PodcastEpisode } from '../services/podcastService';
 import TopEpisodes from './TopEpisodes';
 
@@ -110,13 +111,15 @@ export default function PodcastView({
   };
 
   const handleCardClick = (episode: PodcastEpisode) => {
-    // Navigate to the detail page
-    window.location.href = `/audioreportaje/${episode.slug}`;
+    // Use Inertia router for proper navigation in subdirectories
+    router.visit(`/audioreportaje/${episode.slug}`);
   };
 
   const handleShare = (e: React.MouseEvent, episode: PodcastEpisode) => {
     e.stopPropagation();
-    const shareUrl = `${window.location.origin}/audioreportaje/${episode.slug}`;
+    // Use APP_URL from window to build correct URL for subdirectories
+    const baseUrl = (window as any).APP_URL || window.location.origin;
+    const shareUrl = `${baseUrl}/audioreportaje/${episode.slug}`;
 
     // Try to use native share API if available
     if (navigator.share) {
