@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { Play, Clock, ChevronRight, Search, Mic2, ArrowLeft, Info, Radio, Headphones } from 'lucide-react';
+import { Play, Clock, ChevronRight, Search, Mic2, ArrowLeft, Info, Radio, Headphones, Share2 } from 'lucide-react';
 import { fetchPodcasts, PodcastEpisode } from '../services/podcastService';
 import TopEpisodes from './TopEpisodes';
 
@@ -110,8 +110,29 @@ export default function PodcastView({
   };
 
   const handleCardClick = (episode: PodcastEpisode) => {
-    onOpenPodcastInfo(episode);
+    // Navigate to the detail page
+    window.location.href = `/audioreportaje/${episode.slug}`;
   };
+
+  const handleShare = (e: React.MouseEvent, episode: PodcastEpisode) => {
+    e.stopPropagation();
+    const shareUrl = `${window.location.origin}/audioreportaje/${episode.slug}`;
+
+    // Try to use native share API if available
+    if (navigator.share) {
+      navigator.share({
+        title: episode.title,
+        text: episode.excerpt,
+        url: shareUrl,
+      }).catch((error) => console.log('Error sharing:', error));
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        alert('¡Link copiado al portapapeles!');
+      });
+    }
+  };
+
 
   return (
     <div className="bg-gradient-page min-vh-100 animate-fade-in pb-5 position-relative">
@@ -321,15 +342,26 @@ export default function PodcastView({
                                   <span className="fw-semibold">{episode.duration}</span>
                                 </div>
 
-                                <button
-                                  onClick={(e) => handlePlayFromList(e, episode)}
-                                  className="btn btn-play-small rounded-circle p-2 d-md-none shadow-sm"
-                                >
-                                  <Play size={16} fill="white" />
-                                </button>
+                                <div className="d-flex align-items-center gap-2">
+                                  <button
+                                    onClick={(e) => handleShare(e, episode)}
+                                    className="btn btn-outline-secondary btn-sm rounded-circle p-2 d-flex align-items-center justify-content-center"
+                                    style={{ width: '32px', height: '32px' }}
+                                    title="Compartir"
+                                  >
+                                    <Share2 size={14} />
+                                  </button>
 
-                                <div className="d-none d-md-flex align-items-center gap-1 text-abc-blue small fw-bold episode-more">
-                                  Ver más <ChevronRight size={16} />
+                                  <button
+                                    onClick={(e) => handlePlayFromList(e, episode)}
+                                    className="btn btn-play-small rounded-circle p-2 d-md-none shadow-sm"
+                                  >
+                                    <Play size={16} fill="white" />
+                                  </button>
+
+                                  <div className="d-none d-md-flex align-items-center gap-1 text-abc-blue small fw-bold episode-more">
+                                    Ver más <ChevronRight size={16} />
+                                  </div>
                                 </div>
                               </div>
                             </div>

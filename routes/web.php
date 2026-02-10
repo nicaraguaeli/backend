@@ -207,6 +207,9 @@ Route::get('api/categories', function () {
 // API para AudioReportajes (consumido por React)
 Route::get('api/audioreportajes', [App\Http\Controllers\Api\AudioReportController::class, 'index'])->name('api.audioreportajes.index');
 
+// Ruta para Detalle de AudioReportaje (React)
+Route::get('/audioreportaje/{slug}', [App\Http\Controllers\Api\AudioReportController::class, 'show'])->name('audioreportaje.show');
+
 // Suggestions endpoint for search typeahead
 Route::get('api/news/suggestions', [App\Http\Controllers\Blog\NewsController::class, 'suggestions'])->name('api.news.suggestions');
 

@@ -43,4 +43,41 @@ class AudioReportController extends Controller
 
         return response()->json($reports);
     }
+
+    public function show($slug)
+    {
+        $audioReport = AudioReport::with(['author', 'categories'])
+            ->where('slug', $slug)
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        // Map image path
+        $image = $audioReport->image_path ?: null;
+        if ($image && !str_starts_with($image, 'http')) {
+            $image = '/storage/' . ltrim($image, '/');
+        }
+
+        // Map audio URL
+        $audio = $audioReport->audio_url ?: null;
+        if ($audio && !str_starts_with($audio, 'http')) {
+            $audio = '/storage/' . ltrim($audio, '/');
+        }
+
+        $data = [
+            'id' => $audioReport->id,
+            'slug' => $audioReport->slug,
+            'url' => $audio,
+            'titulo' => $audioReport->title,
+            'entrada' => $audioReport->excerpt,
+            'contenido' => $audioReport->content,
+            'categoria' => $audioReport->categories->first()?->name ?? 'Reportajes',
+            'imagen' => $image,
+            'autor' => $audioReport->author?->name ?? null,
+            'created_at' => optional($audioReport->published_at ?? $audioReport->created_at)->toDateTimeString(),
+        ];
+
+        return \Inertia\Inertia::render('AudioReportajeDetail', [
+            'audioReport' => $data
+        ]);
+    }
 }
