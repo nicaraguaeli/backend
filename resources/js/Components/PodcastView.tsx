@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Play, Clock, ChevronRight, Search, Mic2, ArrowLeft, Info, Radio, Headphones, Share2 } from 'lucide-react';
 import { router } from '@inertiajs/react';
+import { url } from '@/url';
 import { fetchPodcasts, PodcastEpisode } from '../services/podcastService';
 import TopEpisodes from './TopEpisodes';
 
@@ -112,12 +113,12 @@ export default function PodcastView({
 
     const handleCardClick = (episode: PodcastEpisode) => {
         // Navigate to the detail page
-        window.location.href = `/audioreportaje/${episode.slug}`;
+        window.location.href = url(`audioreportaje/${episode.slug}`);
     };
 
     const handleShare = (e: React.MouseEvent, episode: PodcastEpisode) => {
         e.stopPropagation();
-        const shareUrl = `${window.location.origin}/audioreportaje/${episode.slug}`;
+        const shareUrl = url(`audioreportaje/${episode.slug}`);
 
         // Try to use native share API if available
         if (navigator.share) {
