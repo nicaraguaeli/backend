@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { Play, Pause, Volume2, VolumeX, Share2, Facebook, Twitter, Link2, ArrowLeft, Clock, User, Calendar } from 'lucide-react';
 import MainLayout from '@/Layouts/MainLayout';
+import { asset, url } from '@/url';
 
 interface AudioReportaje {
     id: number;
@@ -152,7 +153,7 @@ export default function AudioReportajeDetail({ audioReport }: Props) {
                     <div
                         className="position-absolute top-0 start-0 w-100 h-100"
                         style={{
-                            backgroundImage: `url(${audioReport.imagen})`,
+                            backgroundImage: `url(${asset(audioReport.imagen)})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                             filter: 'blur(20px)',
@@ -163,20 +164,20 @@ export default function AudioReportajeDetail({ audioReport }: Props) {
 
                     <div className="container position-relative py-5">
                         {/* Back Button */}
-                        <Link
-                            href="/#podcast"
+                        <button
+                            onClick={() => window.location.href = url('/#podcast')}
                             className="btn btn-light btn-sm rounded-pill mb-4 d-inline-flex align-items-center gap-2"
                         >
                             <ArrowLeft size={16} />
                             Volver a Audioreportajes
-                        </Link>
+                        </button>
 
                         <div className="row g-4 align-items-center">
                             {/* Image */}
                             <div className="col-lg-5">
                                 <div className="card border-0 shadow-lg rounded-4 overflow-hidden">
                                     <img
-                                        src={audioReport.imagen}
+                                        src={asset(audioReport.imagen)}
                                         alt={audioReport.titulo}
                                         className="w-100"
                                         style={{ aspectRatio: '1/1', objectFit: 'cover' }}
@@ -210,7 +211,7 @@ export default function AudioReportajeDetail({ audioReport }: Props) {
 
                                 {/* Audio Player */}
                                 <div className="card bg-dark bg-opacity-50 border-0 backdrop-blur rounded-4 p-4">
-                                    <audio ref={audioRef} src={audioReport.url} preload="metadata" />
+                                    <audio ref={audioRef} src={asset(audioReport.url)} preload="metadata" />
 
                                     {/* Play/Pause Button */}
                                     <div className="d-flex align-items-center gap-3 mb-3">
