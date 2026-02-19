@@ -307,11 +307,64 @@ export default function TopEpisodes({ episodes, onPlay }: TopEpisodesProps) {
 
         /* Responsive */
         @media (max-width: 991px) { .te-grid-columns { grid-template-columns: repeat(2, 1fr); } }
+
+        /* ── MOBILE: una sola fila horizontal, 2 cards visibles + 3ª asomada ── */
         @media (max-width: 575px) {
-          .te-grid-columns { grid-template-columns: 1fr; }
-          .te-thumb-wrapper { width: 70px; height: 70px; }
-          .te-thumb { width: 70px; height: 70px; }
-          .te-thumb-area { flex: 0 0 70px; }
+          .te-grid-columns {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            overflow-y: visible;
+            gap: 0.65rem;
+            padding-bottom: 10px;
+            padding-right: 16px;   /* espacio para que la 3ª se asome */
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+          }
+          .te-grid-columns::-webkit-scrollbar { display: none; }
+          .te-grid-columns { -ms-overflow-style: none; scrollbar-width: none; }
+
+          /* "Desenvuelve" las columnas: todos los episodes quedan en la misma fila */
+          .te-column {
+            display: contents;
+          }
+
+          /* Cada card ocupa 46vw → caben 2 completas + ~8vw de la 3ª asomada */
+          .te-episode {
+            flex: 0 0 46vw;
+            min-width: 0;
+            scroll-snap-align: start;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.5rem;
+          }
+
+          .te-thumb-area {
+            flex: none;
+            width: 100%;
+          }
+
+          .te-thumb-wrapper {
+            width: 100%;
+            height: 100px;
+            border-radius: 8px;
+          }
+
+          .te-thumb {
+            width: 100%;
+            height: 100px;
+            border-radius: 8px;
+          }
+
+          .te-title {
+            font-size: 0.8rem;
+            -webkit-line-clamp: 2;
+          }
+
+          .te-desc { display: none; }
+
+          .te-meta-row { font-size: 0.72rem; }
         }
 
         .top-episodes-section h3 { letter-spacing: -0.02em; }

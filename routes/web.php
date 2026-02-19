@@ -130,16 +130,23 @@ Route::get('/', function () {
         ]
     ];
 
+    // Serializar autor (many-to-many → objeto plano {id, name, type}) para todos los items
+    // Esto hace que React pueda acceder a post.author.name en lugar de recibir una colección vacía
+    $serializeAuthor = fn($news) => array_merge($news->toArray(), [
+        'author' => $news->serialized_author,
+    ]);
+    $serializeCollection = fn($col) => $col->map($serializeAuthor)->values();
+
     return Inertia::render('Welcome', [
-        'latestNews' => $latestNews,
-        'mostReadNews' => $mostReadNews,
-        'featuredNews' => $featuredNews,
-        'moreNews' => $moreNews,
+        'latestNews'         => $latestNews ? $serializeAuthor($latestNews) : null,
+        'mostReadNews'       => $serializeCollection($mostReadNews),
+        'featuredNews'       => $serializeCollection($featuredNews),
+        'moreNews'           => $serializeCollection($moreNews),
         'featuredCategories' => $featuredCategories,
-        'nacionalesNews' => $nacionalesNews,
-        'internationalNews' => $internationalNews,
-        'banners' => $banners,
-        'videos' => $videos,
+        'nacionalesNews'     => $serializeCollection($nacionalesNews),
+        'internationalNews'  => $serializeCollection($internationalNews),
+        'banners'            => $banners,
+        'videos'             => $videos,
     ]);
 })->name('home');
 
@@ -230,47 +237,134 @@ Route::get('/videos', [App\Http\Controllers\VideoController::class, 'index'])->n
 
 // Grupo de Rutas Admin (Blade)
 Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], function () {
-    
-    
+
     // Rutas para la marca de agua
-    Route::post('watermark/upload', [App\Http\Controllers\Admin\OptionController::class, 'uploadWatermark'])->name('watermark.upload');
-    Route::delete('watermark/delete', [App\Http\Controllers\Admin\OptionController::class, 'deleteWatermark'])->name('watermark.delete');
+    Route::post('marca-agua/subir', [App\Http\Controllers\Admin\OptionController::class, 'uploadWatermark'])->name('watermark.upload');
+    Route::delete('marca-agua/eliminar', [App\Http\Controllers\Admin\OptionController::class, 'deleteWatermark'])->name('watermark.delete');
 
-    Route::post('news/related', [NewsController::class, 'related'])->name('news.related');
-    Route::get('news/{news}/preview', [NewsController::class, 'preview'])
-    ->name('news.preview');
-    Route::resource('news', NewsController::class);
-    Route::patch('news/{news}/status', [NewsController::class, 'updateStatus'])->name('news.update.status');
-    Route::patch('news/{news}/highlight', [NewsController::class, 'highlight'])->name('news.highlight');
-    Route::patch('news/{news}/set-hero', [NewsController::class, 'setHero'])->name('news.set-hero');
-    Route::patch('news/quick-update/{news}', [NewsController::class, 'quickUpdate'])->name('news.quick_update');
-    Route::post('news/bulk-status', [NewsController::class, 'bulkStatusUpdate'])->name('news.bulk-status');
-    
-    Route::resource('categories', CategoryController::class);
-    Route::post('categories/reorder', [CategoryController::class, 'reorder'])->name('categories.reorder');
-    Route::resource('tags', TagController::class);
-    Route::resource('journalists', App\Http\Controllers\Admin\JournalistController::class);
-    Route::patch('journalists/{journalist}/status', [App\Http\Controllers\Admin\JournalistController::class, 'updateStatus'])->name('journalists.update.status');
-    Route::resource('users', App\Http\Controllers\Admin\UserController::class);
-    Route::patch('users/{user}/status', [App\Http\Controllers\Admin\UserController::class, 'updateStatus'])->name('users.update.status');
-    Route::get('countries/{country}/cities', [App\Http\Controllers\Admin\CountryController::class, 'cities'])->name('admin.countries.cities');
-    
-    // Rutas para Empleos (Vacancies)
-    Route::resource('vacancies', App\Http\Controllers\Admin\VacancyController::class);
+    // Noticias
+    Route::post('noticias/relacionadas', [NewsController::class, 'related'])->name('news.related');
+    Route::get('noticias/{news}/vista-previa', [NewsController::class, 'preview'])->name('news.preview');
+    Route::resource('noticias', NewsController::class)
+        ->parameters(['noticias' => 'news'])
+        ->names([
+            'index'   => 'news.index',
+            'create'  => 'news.create',
+            'store'   => 'news.store',
+            'show'    => 'news.show',
+            'edit'    => 'news.edit',
+            'update'  => 'news.update',
+            'destroy' => 'news.destroy',
+        ]);
+    Route::patch('noticias/{news}/estado', [NewsController::class, 'updateStatus'])->name('news.update.status');
+    Route::patch('noticias/{news}/destacar', [NewsController::class, 'highlight'])->name('news.highlight');
+    Route::patch('noticias/{news}/hero', [NewsController::class, 'setHero'])->name('news.set-hero');
+    Route::patch('noticias/actualizar-rapido/{news}', [NewsController::class, 'quickUpdate'])->name('news.quick_update');
+    Route::post('noticias/estado-masivo', [NewsController::class, 'bulkStatusUpdate'])->name('news.bulk-status');
 
-    // Rutas para Audio Reportajes
-    Route::resource('audio_reports', App\Http\Controllers\Admin\AudioReportController::class);
+    // Categorías
+    Route::resource('categorias', CategoryController::class)
+        ->parameters(['categorias' => 'category'])
+        ->names([
+            'index'   => 'categories.index',
+            'create'  => 'categories.create',
+            'store'   => 'categories.store',
+            'show'    => 'categories.show',
+            'edit'    => 'categories.edit',
+            'update'  => 'categories.update',
+            'destroy' => 'categories.destroy',
+        ]);
+    Route::post('categorias/reordenar', [CategoryController::class, 'reorder'])->name('categories.reorder');
 
-    // Rutas para Banners (Publicidad)
-    Route::resource('banners', App\Http\Controllers\Admin\BannerController::class);
+    // Etiquetas
+    Route::resource('etiquetas', TagController::class)
+        ->parameters(['etiquetas' => 'tag'])
+        ->names([
+            'index'   => 'tags.index',
+            'create'  => 'tags.create',
+            'store'   => 'tags.store',
+            'show'    => 'tags.show',
+            'edit'    => 'tags.edit',
+            'update'  => 'tags.update',
+            'destroy' => 'tags.destroy',
+        ]);
 
-    // Rutas de Perfil y Contraseña
-    Route::get('profile', [App\Http\Controllers\Admin\ProfileController::class, 'edit'])->name('profile.edit');
-    Route::put('profile', [App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('profile.update');
-    Route::get('password', [App\Http\Controllers\Admin\ProfileController::class, 'editPassword'])->name('password.edit');
-    Route::put('password', [App\Http\Controllers\Admin\ProfileController::class, 'updatePassword'])->name('password.update');
+    // Autores (antes: journalists)
+    Route::resource('autores', App\Http\Controllers\Admin\JournalistController::class)
+        ->parameters(['autores' => 'journalist'])
+        ->names([
+            'index'   => 'journalists.index',
+            'create'  => 'journalists.create',
+            'store'   => 'journalists.store',
+            'show'    => 'journalists.show',
+            'edit'    => 'journalists.edit',
+            'update'  => 'journalists.update',
+            'destroy' => 'journalists.destroy',
+        ]);
+    Route::patch('autores/{journalist}/estado', [App\Http\Controllers\Admin\JournalistController::class, 'updateStatus'])->name('journalists.update.status');
 
-   
+    // Usuarios
+    Route::resource('usuarios', App\Http\Controllers\Admin\UserController::class)
+        ->parameters(['usuarios' => 'user'])
+        ->names([
+            'index'   => 'users.index',
+            'create'  => 'users.create',
+            'store'   => 'users.store',
+            'show'    => 'users.show',
+            'edit'    => 'users.edit',
+            'update'  => 'users.update',
+            'destroy' => 'users.destroy',
+        ]);
+    Route::patch('usuarios/{user}/estado', [App\Http\Controllers\Admin\UserController::class, 'updateStatus'])->name('users.update.status');
+
+    // Países / Ciudades
+    Route::get('paises/{country}/ciudades', [App\Http\Controllers\Admin\CountryController::class, 'cities'])->name('admin.countries.cities');
+
+    // Empleos
+    Route::resource('empleos-admin', App\Http\Controllers\Admin\VacancyController::class)
+        ->parameters(['empleos-admin' => 'vacancy'])
+        ->names([
+            'index'   => 'vacancies.index',
+            'create'  => 'vacancies.create',
+            'store'   => 'vacancies.store',
+            'show'    => 'vacancies.show',
+            'edit'    => 'vacancies.edit',
+            'update'  => 'vacancies.update',
+            'destroy' => 'vacancies.destroy',
+        ]);
+
+    // Audioreportajes
+    Route::resource('audioreportajes-admin', App\Http\Controllers\Admin\AudioReportController::class)
+        ->parameters(['audioreportajes-admin' => 'audio_report'])
+        ->names([
+            'index'   => 'audio_reports.index',
+            'create'  => 'audio_reports.create',
+            'store'   => 'audio_reports.store',
+            'show'    => 'audio_reports.show',
+            'edit'    => 'audio_reports.edit',
+            'update'  => 'audio_reports.update',
+            'destroy' => 'audio_reports.destroy',
+        ]);
+
+    // Publicidad / Banners
+    Route::resource('publicidad', App\Http\Controllers\Admin\BannerController::class)
+        ->parameters(['publicidad' => 'banner'])
+        ->names([
+            'index'   => 'banners.index',
+            'create'  => 'banners.create',
+            'store'   => 'banners.store',
+            'show'    => 'banners.show',
+            'edit'    => 'banners.edit',
+            'update'  => 'banners.update',
+            'destroy' => 'banners.destroy',
+        ]);
+
+    // Perfil y Contraseña
+    Route::get('perfil', [App\Http\Controllers\Admin\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('perfil', [App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('profile.update');
+    Route::get('contrasena', [App\Http\Controllers\Admin\ProfileController::class, 'editPassword'])->name('password.edit');
+    Route::put('contrasena', [App\Http\Controllers\Admin\ProfileController::class, 'updatePassword'])->name('password.update');
+
 });
 
 // Comentamos las rutas de auth de Breeze para usar las de Blade

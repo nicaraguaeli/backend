@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
-import { Play, Search, Filter, Calendar, Eye, Clock, ArrowLeft, Grid, List, ChevronRight, Video as VideoIcon } from 'lucide-react';
+import { Play, Search, Filter, Calendar, Eye, Clock, ArrowLeft, Grid, List, ChevronRight, X, Video as VideoIcon } from 'lucide-react';
 import ShareButton from './ShareButton';
 
 interface VideoReportaje {
@@ -142,6 +142,9 @@ export default function VideoReportajes({ onBack }: VideoReportajesProps) {
   const [selectedVideo, setSelectedVideo] = useState<VideoReportaje | null>(null);
   const [displayedCount, setDisplayedCount] = useState(6);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [headerTop, setHeaderTop] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const observerTarget = useRef<HTMLDivElement>(null);
 
   // Generate dynamic categories
@@ -176,6 +179,28 @@ export default function VideoReportajes({ onBack }: VideoReportajesProps) {
   useEffect(() => {
     setDisplayedCount(6);
   }, [activeCategory, searchTerm]);
+
+  // Detectar altura del header del sitio para sticky offset
+  useEffect(() => {
+    const measureHeader = () => {
+      const siteHeader = document.querySelector('header.fixed-top') as HTMLElement;
+      if (siteHeader) setHeaderTop(siteHeader.offsetHeight);
+    };
+    measureHeader();
+    window.addEventListener('resize', measureHeader);
+    return () => window.removeEventListener('resize', measureHeader);
+  }, []);
+
+  // Scroll tracking para shrink effect y botón volver arriba
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      setIsScrolled(y > 60);
+      setShowScrollTop(y > 300);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   // Load more function
   const loadMore = useCallback(() => {
@@ -262,68 +287,113 @@ export default function VideoReportajes({ onBack }: VideoReportajesProps) {
         </div>
       )}
 
-      {/* Header */}
-      <div className="video-header sticky-top shadow-lg">
-        <div className="animated-bg"></div>
-        <div className="container py-4 position-relative" style={{ zIndex: 2 }}>
-          <div className="d-flex align-items-center justify-content-between mb-4">
+      {/* Header – sticky debajo del header del sitio */}
+      <div
+        className="header-gradient shadow-lg border-0"
+        style={{
+          position: 'sticky',
+          top: headerTop,
+          zIndex: 1020,
+          transition: 'padding 0.3s ease'
+        }}
+      >
+        <div className="animated-header-bg"></div>
+        <div
+          className="container position-relative"
+          style={{ zIndex: 2, paddingTop: isScrolled ? '10px' : '24px', paddingBottom: isScrolled ? '10px' : '24px', transition: 'padding 0.3s ease' }}
+        >
+          {/* Top row: back button + title + view-mode toggles */}
+          <div className="d-flex align-items-center justify-content-between mb-2">
             <button
               onClick={onBack}
-              className="btn btn-glass-dark rounded-circle p-2 text-white"
+              className="btn btn-glass rounded-circle p-2 text-white hover-scale transition"
             >
-              <ArrowLeft size={24} />
+              <ArrowLeft size={22} />
             </button>
+
             <div className="text-center">
               <div className="d-flex align-items-center gap-2 justify-content-center mb-1">
-                <VideoIcon size={24} className="text-abc-red animate-pulse-slow" />
-                <h1 className="h4 fw-bold text-white m-0">VIDEO REPORTAJES</h1>
-                <VideoIcon size={24} className="text-abc-red animate-pulse-slow" />
+                <VideoIcon size={18} className="text-warning animate-pulse" />
+                <h1 className="h5 fw-bold font-serif text-white m-0 tracking-wide text-shadow">VIDEO REPORTAJES</h1>
+                <VideoIcon size={18} className="text-warning animate-pulse" />
               </div>
-              <p className="text-white-75 small mb-0">ABC TV - Periodismo de Investigación</p>
+              {!isScrolled && (
+                <p className="text-white-75 small mb-0">ABC TV - Periodismo de Investigación</p>
+              )}
             </div>
+
+            {/* View-mode toggles */}
             <div className="d-flex gap-2">
               <button
-                className={`btn btn-glass-dark rounded-circle p-2 ${viewMode === 'grid' ? 'active' : ''}`}
+                className={`btn btn-glass rounded-circle p-2 text-white hover-scale${viewMode === 'grid' ? ' active' : ''}`}
                 onClick={() => setViewMode('grid')}
+                title="Vista cuadrícula"
               >
                 <Grid size={20} />
               </button>
               <button
-                className={`btn btn-glass-dark rounded-circle p-2 ${viewMode === 'list' ? 'active' : ''}`}
+                className={`btn btn-glass rounded-circle p-2 text-white hover-scale${viewMode === 'list' ? ' active' : ''}`}
                 onClick={() => setViewMode('list')}
+                title="Vista lista"
               >
                 <List size={20} />
               </button>
             </div>
           </div>
 
-          {/* Search Bar */}
-          <div className="search-bar-container mb-3">
-            <Search size={20} className="search-icon" />
-            <input
-              type="text"
-              className="search-input"
-              placeholder="Buscar reportajes..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          {/* Inline search – always visible (matches PodcastView) */}
+          <div className="podcast-search-wrap mb-2">
+            <div className="input-group podcast-search-group">
+              <span className="input-group-text podcast-search-icon">
+                <Search size={16} />
+              </span>
+              <input
+                type="text"
+                className="form-control podcast-search-input"
+                placeholder="Buscar reportajes..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              {searchTerm && (
+                <button className="btn podcast-search-clear" onClick={() => setSearchTerm('')}>
+                  <X size={14} />
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* Category Filters */}
-          <div className="d-flex gap-2 overflow-auto pb-2 scrollbar-hide">
+          {/* Category Pills */}
+          <div className="d-flex gap-2 overflow-auto pb-1 scrollbar-hide">
             {categories.map(cat => (
               <button
                 key={cat.name}
                 onClick={() => setActiveCategory(cat.name)}
-                className={`category-btn ${activeCategory === cat.name ? 'active' : ''}`}
+                className={`btn category-pill rounded-pill px-3 py-1 small fw-bold text-nowrap transition border-0 ${activeCategory === cat.name
+                  ? 'category-active'
+                  : 'category-inactive'
+                  }`}
               >
                 <span>{cat.name}</span>
-                <span className="badge bg-white bg-opacity-20 ms-2">{cat.count}</span>
+                <span className="badge bg-white bg-opacity-25 ms-2">{cat.count}</span>
               </button>
             ))}
           </div>
         </div>
       </div>
+
+      {/* Botón flotante: volver arriba */}
+      <button
+        className="scroll-top-btn"
+        style={{
+          opacity: showScrollTop ? 1 : 0,
+          pointerEvents: showScrollTop ? 'auto' : 'none',
+          transform: showScrollTop ? 'translateY(0)' : 'translateY(20px)',
+        }}
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        aria-label="Volver arriba"
+      >
+        ↑
+      </button>
 
       {/* Content */}
       <div className="container py-4">
@@ -470,131 +540,138 @@ export default function VideoReportajes({ onBack }: VideoReportajesProps) {
 
       <style>{`
         .video-reportajes-container {
-          background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+          background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         }
 
-        /* Header */
-        .video-header {
+        /* ── Header (matches PodcastView exactly) ── */
+        .header-gradient {
           background: linear-gradient(135deg, #dc2626 0%, #991b1b 50%, #7f1d1d 100%);
           position: relative;
           overflow: hidden;
         }
 
-        .animated-bg {
+        .animated-header-bg {
           position: absolute;
-          top: -50%;
-          left: -50%;
-          width: 200%;
-          height: 200%;
-          background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+          top: -50%; left: -50%;
+          width: 200%; height: 200%;
+          background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
           animation: rotate-slow 30s linear infinite;
         }
 
         @keyframes rotate-slow {
           from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+          to   { transform: rotate(360deg); }
         }
 
-        .text-white-75 {
-          color: rgba(255, 255, 255, 0.75);
-        }
+        .text-shadow      { text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        .text-white-75    { color: rgba(255,255,255,0.75); }
 
-        .btn-glass-dark {
-          background: rgba(0, 0, 0, 0.2);
+        /* Glass button */
+        .btn-glass {
+          background: rgba(255,255,255,0.2);
           backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          color: white;
-          transition: all 0.3s ease;
+          border: 1px solid rgba(255,255,255,0.3);
         }
+        .btn-glass:hover    { background: rgba(255,255,255,0.3); }
+        .btn-glass.active   { background: rgba(255,255,255,0.35); border-color: rgba(255,255,255,0.5); }
 
-        .btn-glass-dark:hover {
-          background: rgba(0, 0, 0, 0.3);
-          transform: scale(1.05);
+        .hover-scale               { transition: transform 0.3s ease; }
+        .hover-scale:hover         { transform: scale(1.05); }
+
+        /* Pulse animation */
+        .animate-pulse {
+          animation: pulse-glow 2s ease-in-out infinite;
         }
-
-        .btn-glass-dark.active {
-          background: rgba(255, 255, 255, 0.2);
-          border-color: rgba(255, 255, 255, 0.4);
-        }
-
-        .animate-pulse-slow {
-          animation: pulse-glow 3s ease-in-out infinite;
-        }
-
         @keyframes pulse-glow {
           0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
+          50%       { opacity: 0.5; }
         }
 
-        /* Search Bar */
-        .search-bar-container {
-          position: relative;
-          max-width: 600px;
-          margin: 0 auto;
-        }
-
-        .search-icon {
-          position: absolute;
-          left: 16px;
-          top: 50%;
-          transform: translateY(-50%);
-          color: rgba(255, 255, 255, 0.6);
-          pointer-events: none;
-        }
-
-        .search-input {
+        /* Search bar (identical to PodcastView) */
+        .podcast-search-wrap {
           width: 100%;
-          padding: 12px 16px 12px 48px;
-          background: rgba(255, 255, 255, 0.15);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 50px;
+          max-width: 480px;
+          margin: 0 auto;
+          display: flex;
+        }
+        .podcast-search-group {
+          background: rgba(255,255,255,0.18);
+          border-radius: 30px;
+          overflow: hidden;
+          border: 1px solid rgba(255,255,255,0.4);
+          backdrop-filter: blur(10px);
+          flex: 1;
+        }
+        .podcast-search-icon {
+          background: transparent;
+          border: none;
+          color: rgba(255,255,255,0.8);
+          padding-left: 14px;
+        }
+        .podcast-search-input {
+          background: transparent;
+          border: none;
           color: white;
-          font-size: 0.95rem;
-          transition: all 0.3s ease;
+          padding: 8px 4px;
+          font-size: 0.88rem;
         }
-
-        .search-input::placeholder {
-          color: rgba(255, 255, 255, 0.5);
-        }
-
-        .search-input:focus {
-          outline: none;
-          background: rgba(255, 255, 255, 0.25);
-          border-color: rgba(255, 255, 255, 0.4);
-        }
-
-        /* Category Buttons */
-        .category-btn {
-          background: rgba(255, 255, 255, 0.15);
-          border: 1px solid rgba(255, 255, 255, 0.2);
+        .podcast-search-input::placeholder { color: rgba(255,255,255,0.6); }
+        .podcast-search-input:focus {
+          background: transparent;
+          box-shadow: none;
           color: white;
-          padding: 8px 20px;
-          border-radius: 50px;
-          font-size: 0.9rem;
-          font-weight: 600;
-          white-space: nowrap;
-          transition: all 0.3s ease;
-          cursor: pointer;
         }
+        .podcast-search-clear {
+          background: transparent;
+          border: none;
+          color: rgba(255,255,255,0.7);
+          padding-right: 12px;
+        }
+        .podcast-search-clear:hover { color: white; }
 
-        .category-btn:hover {
-          background: rgba(255, 255, 255, 0.25);
+        /* Category pills (identical to PodcastView) */
+        .category-pill {
+          font-size: 0.82rem;
+          transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
+        .category-active {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          box-shadow: 0 4px 12px rgba(102,126,234,0.4);
           transform: translateY(-2px);
         }
-
-        .category-btn.active {
-          background: rgba(255, 255, 255, 0.3);
-          border-color: rgba(255, 255, 255, 0.5);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        .category-inactive {
+          background: rgba(255,255,255,0.9);
+          color: #64748b;
+        }
+        .category-inactive:hover {
+          background: white;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
+        /* Scroll-to-top (identical to PodcastView) */
+        .scroll-top-btn {
+          position: fixed;
+          bottom: 28px; right: 24px;
+          z-index: 2000;
+          width: 46px; height: 46px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border: none;
+          font-size: 1.1rem; font-weight: bold;
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          box-shadow: 0 4px 16px rgba(102, 126, 234, 0.45);
+          transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .scroll-top-btn:hover {
+          box-shadow: 0 6px 24px rgba(102, 126, 234, 0.65);
+          transform: translateY(-3px) !important;
         }
 
         /* Stat Badge */
@@ -943,6 +1020,37 @@ export default function VideoReportajes({ onBack }: VideoReportajesProps) {
           .video-thumbnail-list {
             width: 100%;
           }
+        }
+
+        /* Botón flotante volver arriba */
+        .scroll-top-btn {
+          position: fixed;
+          bottom: 28px;
+          right: 24px;
+          width: 46px;
+          height: 46px;
+          border-radius: 50%;
+          border: none;
+          background: linear-gradient(135deg, #dc2626, #991b1b);
+          color: white;
+          font-size: 1.3rem;
+          line-height: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          box-shadow: 0 4px 18px rgba(220,38,38,0.5);
+          z-index: 9999;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+          animation: fadeInScroll 0.3s ease;
+        }
+        .scroll-top-btn:hover {
+          transform: translateY(-3px) scale(1.08);
+          box-shadow: 0 8px 24px rgba(220,38,38,0.65);
+        }
+        @keyframes fadeInScroll {
+          from { opacity: 0; transform: translateY(10px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
       `}</style>
     </div>

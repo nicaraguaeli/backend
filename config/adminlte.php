@@ -355,15 +355,15 @@ return [
         ],
     ],
     [
-        'text' => 'Periodistas',
-        'icon' => 'fas fa-user-tie',
+        'text' => 'Autores',
+        'icon' => 'fas fa-user-edit',
         'submenu' => [
             [
-                'text' => 'Todos los periodistas',
+                'text' => 'Todos los autores',
                 'route'  => 'admin.journalists.index',
             ],
             [
-                'text' => 'Añadir periodista',
+                'text' => 'Añadir autor',
                 'route'  => 'admin.journalists.create',
             ],
         ]
@@ -388,13 +388,13 @@ return [
         'icon' => 'fas fa-briefcase',
         'submenu' => [
             [
-                'text' => 'Todas las empleos',
+                'text' => 'Todos los empleos',
                 'route'  => 'admin.vacancies.index',
                 
             ],
             [
                 'text' => 'Añadir empleo',
-                'route'  => 'admin.vacancies.create',
+                'route' => 'admin.vacancies.create',
             ],
         ]
     ],

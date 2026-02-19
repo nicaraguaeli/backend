@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Periodistas')
+@section('title', 'Autores')
 
 @section('content_header')
-    <h1>Periodistas</h1>
+    <h1>Autores</h1>
 @stop
 
 @section('content')
@@ -12,10 +12,10 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Listado de Periodistas</h3>
+                    <h3 class="card-title">Listado de Autores</h3>
                     <div class="card-tools">
                         <a href="{{ route('admin.journalists.create') }}" class="btn btn-primary btn-sm">
-                            <i class="fas fa-plus"></i> Crear Periodista
+                            <i class="fas fa-plus"></i> Crear Autor
                         </a>
                     </div>
                 </div>
@@ -67,7 +67,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="text-center text-muted">No hay periodistas registrados.</td>
+                                        <td colspan="8" class="text-center text-muted">No hay autores registrados.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
             const id = e.target.dataset.id;
             console.log('Deleting journalist with ID:', id);
-            if (confirm('¿Está seguro de que desea eliminar este periodista? Esta acción no se puede deshacer.')) {
+            if (confirm('¿Está seguro de que desea eliminar este autor? Esta acción no se puede deshacer.')) {
                 fetch(`{{ url('/admin/journalists') }}/${id}`, {
                     method: 'DELETE',
                     headers: {
@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (data.success) {
                         // Remove the row
                         e.target.closest('tr').remove();
-                        console.log('Periodista eliminado.');
+                        console.log('Autor eliminado.');
                     } else {
                         throw new Error('No se pudo eliminar.');
                     }

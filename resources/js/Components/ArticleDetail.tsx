@@ -94,6 +94,9 @@ export default function ArticleDetail({ article, relatedNews = [], mostReadNews 
 
     if (!article) return;
 
+    // Pause the global site audio player before starting TTS
+    window.dispatchEvent(new CustomEvent('abc:stop-audio'));
+
     // Create text to speak (Title + Lead + Content striped of HTML)
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = article.content || '';
@@ -168,12 +171,24 @@ export default function ArticleDetail({ article, relatedNews = [], mostReadNews 
                     <User size={20} className="text-abc-blue" />
                   </div>
                   <div>
-                    <span className="d-block fw-bold text-dark lh-1">
-                      {article.author?.name || 'Redacción'}
-                    </span>
-                    <span className="text-secondary" style={{ fontSize: '0.75rem' }}>
-                      {article.author?.type || 'Periodista'}
-                    </span>
+                    {article.coAuthors && article.coAuthors.length > 0 ? (
+                      <span className="d-block" style={{ fontSize: '0.85rem' }}>
+                        <span className="fw-semibold text-dark">
+                          {1 + article.coAuthors.length > 1 ? 'Autores' : 'Autor'}:
+                        </span>{' '}
+                        <span className="text-muted">
+                          {[
+                            article.author?.name || 'Redacción',
+                            ...article.coAuthors.map((a: any) => a.name)
+                          ].join(', ')}
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="d-block" style={{ fontSize: '0.85rem' }}>
+                        <span className="fw-semibold text-dark">Autor:</span>{' '}
+                        <span className="text-muted">{article.author?.name || 'Redacción'}</span>
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -204,23 +219,6 @@ export default function ArticleDetail({ article, relatedNews = [], mostReadNews 
 
                 <div className="vr mx-2 d-none d-md-block"></div>
 
-                {/* Font Size Controls */}
-                <div className="btn-group btn-group-sm" role="group">
-                  <button
-                    onClick={() => setFontSize(Math.max(14, fontSize - 2))}
-                    className="btn btn-outline-secondary"
-                    title="Disminuir letra"
-                  >
-                    <Minus size={16} />
-                  </button>
-                  <button
-                    onClick={() => setFontSize(Math.min(26, fontSize + 2))}
-                    className="btn btn-outline-secondary"
-                    title="Aumentar letra"
-                  >
-                    <Plus size={16} />
-                  </button>
-                </div>
 
                 {/* Print Button */}
                 <button

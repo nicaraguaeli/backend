@@ -39,6 +39,29 @@ class News extends Model
         return $this->belongsToMany(Author::class, 'author_news');
     }
 
+    /**
+     * Devuelve el primer autor como objeto plano {id, name, type}.
+     * Los componentes React esperan `article.author.name`, no una colección.
+     */
+    public function getSerializedAuthorAttribute(): ?array
+    {
+        $first = $this->author->first();
+        if (!$first) return null;
+        return ['id' => $first->id, 'name' => $first->name, 'type' => $first->type];
+    }
+
+    /**
+     * Devuelve los co-autores (todos menos el primero) como array plano.
+     */
+    public function getSerializedCoAuthorsAttribute(): array
+    {
+        return $this->author->slice(1)->values()->map(fn($a) => [
+            'id'   => $a->id,
+            'name' => $a->name,
+            'type' => $a->type,
+        ])->values()->toArray();
+    }
+
     public function tags()
     {
         return $this->belongsToMany(\App\Models\Tag::class, 'news_tag');

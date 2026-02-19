@@ -1,10 +1,10 @@
 
 @extends('adminlte::page')
 
-@section('title', 'Crear periodista')
+@section('title', 'Crear autor')
 
 @section('content_header')
-    <h1>Crear Periodista</h1>
+    <h1>Crear Autor</h1>
 @stop
 
 @section('content')

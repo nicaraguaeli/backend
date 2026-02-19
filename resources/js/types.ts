@@ -50,6 +50,7 @@ export interface ArticleData {
   country?: string;
   views?: number;
   author?: { name: string; type?: string };
+  coAuthors?: { id: number; name: string; type?: string }[];
   categories?: Category[];
   tags?: { id: number; name: string }[];
 }

@@ -105,11 +105,22 @@ class NewsController extends Controller
             ->take(6)
             ->get();
 
+        // Serializar autores usando los accessors del modelo
+        $articleData = array_merge($news->toArray(), [
+            'author'    => $news->serialized_author,
+            'coAuthors' => $news->serialized_co_authors,
+        ]);
+
+        // Helper para serializar una colección de noticias con autor plano
+        $serializeNews = fn($collection) => $collection->map(fn($item) => array_merge($item->toArray(), [
+            'author' => $item->serialized_author,
+        ]))->values();
+
         return \Inertia\Inertia::render('Article', [
-            'article' => $news,
-            'mostReadNews' => $mostReadNews,
-            'relatedNews' => $relatedNews,
-            'moreNews' => $moreNews
+            'article'      => $articleData,
+            'mostReadNews' => $serializeNews($mostReadNews),
+            'relatedNews'  => $serializeNews($relatedNews),
+            'moreNews'     => $serializeNews($moreNews),
         ])->withViewData(['meta' => $meta]);
     }
 

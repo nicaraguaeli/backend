@@ -59,6 +59,15 @@ export default function MainLayout({ children }: MainLayoutProps) {
         return () => window.removeEventListener('popstate', onPop);
     }, []);
 
+    // Listen for TTS "stop audio" event fired by ArticleDetail
+    useEffect(() => {
+        const stopGlobalAudio = () => {
+            setAudioState(prev => ({ ...prev, isPlaying: false }));
+        };
+        window.addEventListener('abc:stop-audio', stopGlobalAudio);
+        return () => window.removeEventListener('abc:stop-audio', stopGlobalAudio);
+    }, []);
+
     // Podcast info & playback states for the sheet and global player
     const [viewingPodcast, setViewingPodcast] = useState<any | null>(null);
     const [isPodcastInfoOpen, setIsPodcastInfoOpen] = useState(false);
