@@ -1,6 +1,7 @@
 import React, { useRef, useCallback } from 'react';
-import { Play } from 'lucide-react';
+import { Play, Headphones } from 'lucide-react';
 import { PodcastEpisode } from '../services/podcastService';
+import { url } from '@/url';
 
 interface TopEpisodesProps {
   episodes: PodcastEpisode[];
@@ -29,7 +30,7 @@ const relativeDate = (iso?: string) => {
 };
 
 const colorForIndex = (i: number) => {
-  const hue = (i * 47) % 360; // deterministic hue per index
+  const hue = (i * 47) % 360;
   return `hsl(${hue} 70% 48%)`;
 };
 
@@ -43,6 +44,7 @@ const formatPublishedDate = (iso?: string) => {
     return d.toISOString().split('T')[0];
   }
 };
+
 export default function TopEpisodes({ episodes, onPlay }: TopEpisodesProps) {
   const columns = splitIntoColumns(episodes, 3);
   const containerRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -63,7 +65,6 @@ export default function TopEpisodes({ episodes, onPlay }: TopEpisodesProps) {
         const alpha = data[i + 3];
         if (alpha < 128) continue;
         const rr = data[i], gg = data[i + 1], bb = data[i + 2];
-        // ignore pure white/very bright pixels to avoid washed backgrounds
         if (rr > 240 && gg > 240 && bb > 240) continue;
         r += rr; g += gg; b += bb; count++;
       }
@@ -79,7 +80,6 @@ export default function TopEpisodes({ episodes, onPlay }: TopEpisodesProps) {
     let col = getAverageColor(img);
     const cont = containerRefs.current[id];
     if (!cont) return;
-    // fallback: deterministic color from image path when canvas sampling fails (CORS)
     if (!col) {
       const src = img.currentSrc || img.src || id;
       const hash = Array.from(src).reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) | 0, 0);
@@ -90,62 +90,68 @@ export default function TopEpisodes({ episodes, onPlay }: TopEpisodesProps) {
       col = { r, g, b };
     }
     const { r, g, b } = col;
-    // subtle pastel background using low alpha
     cont.style.background = `linear-gradient(180deg, rgba(${r},${g},${b},0.08), rgba(${r},${g},${b},0.03))`;
-    // ensure subtle border tint
     cont.style.border = `1px solid rgba(${r},${g},${b},0.06)`;
-    // decide text color for contrast (keep dark text)
     cont.style.color = '#0b1220';
   }, []);
 
+  const handleCardClick = (ep: PodcastEpisode) => {
+    window.location.href = url(`audioreportaje/${ep.slug}`);
+  };
+
   return (
-    <section className="top-episodes container py-4">
+    <section className="top-episodes-section container py-4">
       <div className="d-flex align-items-end justify-content-between mb-3">
-        <h3 className="h4 fw-bold mb-0">Top episodios</h3>
-        <small className="text-muted">Lo más escuchado</small>
+        <h3 className="h4 fw-bold mb-0">Lo más escuchado</h3>
+        <small className="text-muted d-flex align-items-center gap-1">
+          <Headphones size={14} /> Audioreportajes populares
+        </small>
       </div>
 
-      <div className="grid-columns">
+      <div className="te-grid-columns">
         {columns.map((col, colIdx) => (
-          <div key={colIdx} className="column">
+          <div key={colIdx} className="te-column">
             {col.map((ep, idx) => {
-              const globalIndex = colIdx + idx * 3; // approximate rank index
+              const globalIndex = colIdx + idx * 3;
               const rank = globalIndex + 1;
               const accent = colorForIndex(rank);
               return (
                 <div
                   key={ep.id}
-                  className="episode d-flex gap-3 align-items-start"
+                  className="te-episode"
                   ref={(el) => { containerRefs.current[String(ep.id)] = el; }}
+                  onClick={() => handleCardClick(ep)}
+                  style={{ cursor: 'pointer' }}
                 >
-                  <div className="thumb-wrapper position-relative card-thumb" style={{ flex: '0 0 72px' }}>
-                    <img
-                      src={ep.image}
-                      alt={ep.title}
-                      className="thumb"
-                      onError={(e) => (e.currentTarget.src = 'https://via.placeholder.com/200?text=Audio')}
-                      onLoad={(e) => applyBgFromImage(String(ep.id), e.currentTarget as HTMLImageElement)}
-                    />
-
+                  {/* Thumbnail with rank overlay — play button is SEPARATE from image */}
+                  <div className="te-thumb-area" style={{ flex: '0 0 80px' }}>
+                    <div className="te-thumb-wrapper">
+                      <img
+                        src={ep.image}
+                        alt={ep.title}
+                        className="te-thumb"
+                        onError={(e) => (e.currentTarget.src = 'https://via.placeholder.com/200?text=Audio')}
+                        onLoad={(e) => applyBgFromImage(String(ep.id), e.currentTarget as HTMLImageElement)}
+                      />
+                      {/* Rank badge top-left */}
+                      <span className="te-rank-badge" style={{ background: accent }}>{rank}</span>
+                    </div>
+                    {/* Play button BELOW the image, not overlapping */}
                     <button
                       type="button"
-                      className="play-overlay"
-                      aria-label={`Reproducir ${ep.title}`}
-                      style={{ ['--accent' as any]: accent }}
-                      onClick={(e) => { e.stopPropagation(); onPlay?.(ep); }}
+                      className="te-play-btn"
+                      aria-label={`Escuchar ${ep.title}`}
+                      style={{ background: accent }}
+                      onClick={(e) => { e.stopPropagation(); window.location.href = url(`audioreportaje/${ep.slug}`); }}
                     >
-                      <div className="circle" style={{ backgroundColor: accent }}>
-                        <Play size={18} className="text-white" />
-                      </div>
+                      <Play size={14} className="text-white" fill="white" />
                     </button>
                   </div>
 
-                  <div className="rank text-muted">{rank}</div>
-
-                  <div className="meta flex-grow-1">
-                    <h4 className="title mb-1">{ep.title}</h4>
-                    <p className="desc mb-1 text-muted" title={ep.excerpt}>{ep.excerpt}</p>
-                    <div className="meta-row text-muted small d-flex justify-content-between">
+                  <div className="te-meta flex-grow-1">
+                    <h4 className="te-title mb-1">{ep.title}</h4>
+                    <p className="te-desc mb-1 text-muted" title={ep.excerpt}>{ep.excerpt}</p>
+                    <div className="te-meta-row text-muted small d-flex justify-content-between">
                       <span>
                         {formatPublishedDate(ep.date)}{relativeDate(ep.date) ? ` · ${relativeDate(ep.date)}` : ''}
                       </span>
@@ -160,46 +166,155 @@ export default function TopEpisodes({ episodes, onPlay }: TopEpisodesProps) {
       </div>
 
       <style>{`
-        .top-episodes { font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
-        .grid-columns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; width:100%; box-sizing:border-box; }
-        .column { display:flex; flex-direction: column; gap: 0.75rem; min-width:0; }
-        .episode { padding: 0.65rem; border-radius: 10px; background: #ffffff; box-shadow: 0 6px 18px rgba(12,18,26,0.04); transition: transform .18s ease, box-shadow .18s ease; display:flex; align-items:flex-start; gap: 0.8rem; width:100%; box-sizing:border-box; overflow:hidden; }
-        .episode:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(12,18,26,0.08); }
-        .rank { width: 36px; text-align: right; font-weight:700; color: rgba(0,0,0,0.45); margin-top:4px; flex:0 0 36px; font-size:.95rem }
-        .thumb-wrapper { position: relative; overflow: hidden; border-radius:8px; min-width:72px; }
-        .thumb { width:72px; height:72px; object-fit:cover; border-radius:8px; display:block; transition: transform .28s cubic-bezier(.2,.9,.2,1), filter .28s cubic-bezier(.2,.9,.2,1); max-width:100%; }
-        .play-overlay { position: absolute; inset:0; display:flex; align-items:center; justify-content:center; border:0; background:transparent; cursor:pointer; z-index:3; }
-        .play-overlay:focus { outline: none; }
-        .play-overlay .circle { width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; transform: scale(.85); opacity:0; transition: opacity .26s ease, transform .26s ease, filter .26s ease; box-shadow: 0 8px 24px rgba(2,6,23,0.12); }
-        .thumb-wrapper:hover .thumb, .thumb-wrapper:focus-within .thumb { transform: scale(1.06); filter: brightness(.62) saturate(.9) blur(.3px); }
-        .thumb-wrapper:hover .circle, .thumb-wrapper:focus-within .circle { opacity:1; transform: scale(1); }
-        .thumb-wrapper::after { content: ''; position:absolute; inset:0; background: linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.06)); pointer-events:none; transition: background .2s ease; }
+        .top-episodes-section { font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
 
-        .meta { min-width:0; }
-        .meta .title { font-size: .98rem; font-weight:700; margin:0; line-height:1.18; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; color: #0b1220 }
-        .meta .desc { font-size: .86rem; margin:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; color: #5b6671 }
-        .meta-row { opacity: .85; }
-        .meta-row { opacity: .8; }
-
-        /* Responsive: tablet 2 columns, mobile 1 column */
-        @media (max-width: 991px) { .grid-columns { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 575px) { 
-          .grid-columns { grid-template-columns: 1fr; } 
-          .thumb { width:64px; height:64px; }
-          .episode { padding:0.5rem }
-          /* On touch devices remove play button to avoid overlapping touch targets */
-          .play-overlay { display: none !important; }
-          .thumb-wrapper { min-width:64px; }
-          .thumb { filter: brightness(.88); }
-          .thumb-wrapper { z-index:3; }
-          /* Intensify background tint on mobile */
-          .episode { background: linear-gradient(180deg, rgba(0,0,0,0.03), rgba(0,0,0,0.01)); }
-          .episode[style] { /* if dynamic bg present, increase opacity */ }
-          .episode { border: 1px solid rgba(0,0,0,0.04); }
+        .te-grid-columns {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1.25rem;
+          width: 100%;
+          box-sizing: border-box;
         }
 
-        /* Visual polish */
-        .top-episodes h3 { letter-spacing: -0.02em; }
+        .te-column {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+          min-width: 0;
+        }
+
+        .te-episode {
+          padding: 0.65rem;
+          border-radius: 10px;
+          background: #ffffff;
+          box-shadow: 0 6px 18px rgba(12,18,26,0.04);
+          transition: transform .18s ease, box-shadow .18s ease;
+          display: flex;
+          align-items: flex-start;
+          gap: 0.8rem;
+          width: 100%;
+          box-sizing: border-box;
+          overflow: hidden;
+        }
+
+        .te-episode:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 28px rgba(12,18,26,0.10);
+        }
+
+        /* Thumb area: image + play button stacked */
+        .te-thumb-area {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 6px;
+          flex: 0 0 80px;
+        }
+
+        .te-thumb-wrapper {
+          position: relative;
+          width: 80px;
+          height: 80px;
+          border-radius: 8px;
+          overflow: hidden;
+          flex-shrink: 0;
+        }
+
+        .te-thumb {
+          width: 80px;
+          height: 80px;
+          object-fit: cover;
+          border-radius: 8px;
+          display: block;
+          transition: transform .28s cubic-bezier(.2,.9,.2,1);
+        }
+
+        .te-episode:hover .te-thumb {
+          transform: scale(1.05);
+        }
+
+        /* Small rank badge on top-left corner of the image */
+        .te-rank-badge {
+          position: absolute;
+          top: 4px;
+          left: 4px;
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          color: white;
+          font-size: 0.7rem;
+          font-weight: 700;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+          z-index: 2;
+        }
+
+        /* Play button placed BELOW the image */
+        .te-play-btn {
+          width: 100%;
+          height: 28px;
+          border-radius: 6px;
+          border: none;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: transform .2s ease, filter .2s ease;
+          box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+          flex-shrink: 0;
+        }
+
+        .te-play-btn:hover {
+          transform: scale(1.05);
+          filter: brightness(1.1);
+        }
+
+        .te-play-btn:focus {
+          outline: none;
+          box-shadow: 0 0 0 3px rgba(102,126,234,0.35);
+        }
+
+        /* Meta text */
+        .te-meta { min-width: 0; }
+
+        .te-title {
+          font-size: .95rem;
+          font-weight: 700;
+          margin: 0;
+          line-height: 1.2;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          color: #0b1220;
+          transition: color .2s ease;
+        }
+
+        .te-episode:hover .te-title { color: #667eea; }
+
+        .te-desc {
+          font-size: .82rem;
+          margin: 0;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          color: #5b6671;
+        }
+
+        .te-meta-row { opacity: .8; }
+
+        /* Responsive */
+        @media (max-width: 991px) { .te-grid-columns { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 575px) {
+          .te-grid-columns { grid-template-columns: 1fr; }
+          .te-thumb-wrapper { width: 70px; height: 70px; }
+          .te-thumb { width: 70px; height: 70px; }
+          .te-thumb-area { flex: 0 0 70px; }
+        }
+
+        .top-episodes-section h3 { letter-spacing: -0.02em; }
       `}</style>
     </section>
   );

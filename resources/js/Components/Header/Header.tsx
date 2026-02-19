@@ -122,7 +122,9 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
   const handleNavClick = (e: React.MouseEvent, label: string, hasSubItems: boolean = false, targetView?: string, href?: string) => {
     e.preventDefault();
 
+    // If navigating to a URL route, first close any special view (podcast/video)
     if (href && href.startsWith(route('home'))) {
+      if (onNavigate) onNavigate('home'); // reset podcastview / videoreportajes
       router.visit(href);
       setIsMobileMenuOpen(false);
       return;
@@ -140,6 +142,7 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
       return;
     }
     if (onCategoryClick) {
+      if (onNavigate) onNavigate('home'); // close any special view
       onCategoryClick(label);
       setIsMobileMenuOpen(false);
     }
@@ -284,7 +287,7 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
             <button className="btn btn-link p-0 text-abc-blue d-lg-none" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
             </button>
-            <a href={route('home')} onClick={(e) => { e.preventDefault(); router.visit(route('home')); }} className="navbar-brand m-0 brand-logo-wrapper">
+            <a href={route('home')} onClick={(e) => { e.preventDefault(); if (onNavigate) onNavigate('home'); router.visit(route('home')); }} className="navbar-brand m-0 brand-logo-wrapper">
               <img src="https://radioabcstereo.com/img/brand.png" alt="Radio ABC Stereo" className="brand-logo" />
             </a>
           </div>

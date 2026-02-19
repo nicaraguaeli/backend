@@ -165,7 +165,7 @@ export default function AudioReportajeDetail({ audioReport }: Props) {
                     <div className="container position-relative py-5">
                         {/* Back Button */}
                         <button
-                            onClick={() => window.location.href = url('/#podcast')}
+                            onClick={() => window.history.back()}
                             className="btn btn-light btn-sm rounded-pill mb-4 d-inline-flex align-items-center gap-2"
                         >
                             <ArrowLeft size={16} />

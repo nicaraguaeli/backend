@@ -1,402 +1,382 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { Play, Clock, ChevronRight, Search, Mic2, ArrowLeft, Info, Radio, Headphones, Share2 } from 'lucide-react';
-import { router } from '@inertiajs/react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Play, Clock, ChevronRight, Search, ArrowLeft, Radio, Headphones, Share2, ChevronLeft } from 'lucide-react';
 import { url } from '@/url';
 import { fetchPodcasts, PodcastEpisode } from '../services/podcastService';
 import TopEpisodes from './TopEpisodes';
 
 interface PodcastViewProps {
-    onBack: () => void;
-    onPlayPodcast?: (episode: PodcastEpisode) => void;
-    onOpenPodcastInfo: (episode: PodcastEpisode) => void;
+  onBack: () => void;
+  onPlayPodcast?: (episode: PodcastEpisode) => void;
+  onOpenPodcastInfo: (episode: PodcastEpisode) => void;
 }
 
 export default function PodcastView({
-    onBack,
-    onPlayPodcast,
-    onOpenPodcastInfo
+  onBack,
+  onPlayPodcast,
+  onOpenPodcastInfo
 }: PodcastViewProps) {
-    const [activeCategory, setActiveCategory] = useState('Todos');
-    const [searchTerm, setSearchTerm] = useState('');
+  const [activeCategory, setActiveCategory] = useState('Todos');
+  const [searchTerm, setSearchTerm] = useState('');
 
-    // Data States
-    const [episodes, setEpisodes] = useState<PodcastEpisode[]>([]);
-    const [loading, setLoading] = useState(true);
+  // Data States
+  const [episodes, setEpisodes] = useState<PodcastEpisode[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    // Pagination States
-    const [displayedCount, setDisplayedCount] = useState(6);
-    const [isLoadingMore, setIsLoadingMore] = useState(false);
-    const observerTarget = useRef<HTMLDivElement>(null);
+  // Pagination States
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
-    // Load Data from API
-    useEffect(() => {
-        const loadData = async () => {
-            setLoading(true);
-            const data = await fetchPodcasts();
-            setEpisodes(data);
-            setLoading(false);
-        };
-        loadData();
-    }, []);
+  // Load Data from API
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      const data = await fetchPodcasts();
+      setEpisodes(data);
+      setLoading(false);
+    };
+    loadData();
+  }, []);
 
-    // Reset pagination when category changes
-    useEffect(() => {
-        setDisplayedCount(6);
-    }, [activeCategory, searchTerm]);
+  // Reset pagination when category or search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeCategory, searchTerm]);
 
-    // Generate dynamic categories from episodes with counts
-    const categories = useMemo(() => {
-        const categoryCounts: Record<string, number> = {};
-        episodes.forEach(ep => {
-            if (ep.category) {
-                categoryCounts[ep.category] = (categoryCounts[ep.category] || 0) + 1;
-            }
-        });
-
-        const uniqueCategories = Object.keys(categoryCounts).sort();
-        return [
-            { name: 'Todos', count: episodes.length },
-            ...uniqueCategories.map(cat => ({ name: cat, count: categoryCounts[cat] }))
-        ];
-    }, [episodes]);
-
-    const filteredEpisodes = episodes.filter(ep => {
-        const matchesSearch = ep.title.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = activeCategory === 'Todos' || ep.category === activeCategory;
-        return matchesSearch && matchesCategory;
+  // Generate dynamic categories from episodes with counts
+  const categories = useMemo(() => {
+    const categoryCounts: Record<string, number> = {};
+    episodes.forEach(ep => {
+      if (ep.category) {
+        categoryCounts[ep.category] = (categoryCounts[ep.category] || 0) + 1;
+      }
     });
 
-    // Episodes to display with pagination
-    const displayedEpisodes = filteredEpisodes.slice(0, displayedCount);
-    const hasMore = displayedCount < filteredEpisodes.length;
+    const uniqueCategories = Object.keys(categoryCounts).sort();
+    return [
+      { name: 'Todos', count: episodes.length },
+      ...uniqueCategories.map(cat => ({ name: cat, count: categoryCounts[cat] }))
+    ];
+  }, [episodes]);
 
-    // Load more episodes
-    const loadMore = useCallback(() => {
-        if (isLoadingMore || !hasMore) return;
+  const filteredEpisodes = episodes.filter(ep => {
+    const matchesSearch = ep.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = activeCategory === 'Todos' || ep.category === activeCategory;
+    return matchesSearch && matchesCategory;
+  });
 
-        setIsLoadingMore(true);
-        setTimeout(() => {
-            setDisplayedCount(prev => prev + 6);
-            setIsLoadingMore(false);
-        }, 500); // Simulate loading delay for smooth animation
-    }, [isLoadingMore, hasMore]);
+  // Pagination logic
+  const totalPages = Math.ceil(filteredEpisodes.length / itemsPerPage);
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const displayedEpisodes = filteredEpisodes.slice(indexOfFirst, indexOfLast);
 
-    // Intersection Observer for infinite scroll
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
-                    loadMore();
-                }
-            },
-            { threshold: 0.1 }
-        );
+  const paginate = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-        const currentTarget = observerTarget.current;
-        if (currentTarget) {
-            observer.observe(currentTarget);
-        }
+  const handlePlayFromList = (e: React.MouseEvent, episode: PodcastEpisode) => {
+    e.stopPropagation();
+    // Navigate to detail page — same as clicking the card
+    window.location.href = url(`audioreportaje/${episode.slug}`);
+  };
 
-        return () => {
-            if (currentTarget) {
-                observer.unobserve(currentTarget);
-            }
-        };
-    }, [hasMore, isLoadingMore, loadMore]);
+  const handleCardClick = (episode: PodcastEpisode) => {
+    // Navigate to the detail page
+    window.location.href = url(`audioreportaje/${episode.slug}`);
+  };
 
-    const handlePlayFromList = (e: React.MouseEvent, episode: PodcastEpisode) => {
-        e.stopPropagation();
-        if (onPlayPodcast) {
-            onPlayPodcast(episode);
-        }
-    };
+  const handleShare = (e: React.MouseEvent, episode: PodcastEpisode) => {
+    e.stopPropagation();
+    const shareUrl = url(`audioreportaje/${episode.slug}`);
 
-    const handleCardClick = (episode: PodcastEpisode) => {
-        // Navigate to the detail page
-        window.location.href = url(`audioreportaje/${episode.slug}`);
-    };
-
-    const handleShare = (e: React.MouseEvent, episode: PodcastEpisode) => {
-        e.stopPropagation();
-        const shareUrl = url(`audioreportaje/${episode.slug}`);
-
-        // Try to use native share API if available
-        if (navigator.share) {
-            navigator.share({
-                title: episode.title,
-                text: episode.excerpt,
-                url: shareUrl,
-            }).catch((error) => console.log('Error sharing:', error));
-        } else {
-            // Fallback: copy to clipboard
-            navigator.clipboard.writeText(shareUrl).then(() => {
-                alert('¡Link copiado al portapapeles!');
-            });
-        }
-    };
+    // Try to use native share API if available
+    if (navigator.share) {
+      navigator.share({
+        title: episode.title,
+        text: episode.excerpt,
+        url: shareUrl,
+      }).catch((error) => console.log('Error sharing:', error));
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        alert('¡Link copiado al portapapeles!');
+      });
+    }
+  };
 
 
-    return (
-        <div className="bg-gradient-page min-vh-100 animate-fade-in pb-5 position-relative">
+  return (
+    <div className="bg-gradient-page min-vh-100 animate-fade-in pb-5 position-relative">
 
-            {/* Modern Gradient Header */}
-            <div className="header-gradient sticky-top shadow-lg border-0">
-                <div className="animated-header-bg"></div>
-                <div className="container py-4 position-relative" style={{ zIndex: 2 }}>
-                    <div className="d-flex align-items-center justify-content-between mb-4">
-                        <button
-                            onClick={onBack}
-                            className="btn btn-glass rounded-circle p-2 text-white hover-scale transition"
-                        >
-                            <ArrowLeft size={24} />
-                        </button>
-                        <div className="text-center">
-                            <div className="d-flex align-items-center gap-2 justify-content-center mb-1">
-                                <Radio size={20} className="text-warning animate-pulse" />
-                                <h1 className="h5 fw-bold font-serif text-white m-0 tracking-wide text-shadow">AUDIO REPORTAJES</h1>
-                                <Headphones size={20} className="text-warning animate-pulse" />
-                            </div>
-                            <p className="text-white-75 small mb-0">Escucha las mejores historias</p>
-                        </div>
-                        <button className="btn btn-glass rounded-circle p-2 text-white hover-scale transition">
-                            <Search size={24} />
-                        </button>
-                    </div>
+      {/* Modern Gradient Header */}
+      <div className="header-gradient sticky-top shadow-lg border-0">
+        <div className="animated-header-bg"></div>
+        <div className="container py-4 position-relative" style={{ zIndex: 2 }}>
+          <div className="d-flex align-items-center justify-content-between mb-4">
+            <button
+              onClick={onBack}
+              className="btn btn-glass rounded-circle p-2 text-white hover-scale transition"
+            >
+              <ArrowLeft size={24} />
+            </button>
+            <div className="text-center">
+              <div className="d-flex align-items-center gap-2 justify-content-center mb-1">
+                <Radio size={20} className="text-warning animate-pulse" />
+                <h1 className="h5 fw-bold font-serif text-white m-0 tracking-wide text-shadow">AUDIO REPORTAJES</h1>
+                <Headphones size={20} className="text-warning animate-pulse" />
+              </div>
+              <p className="text-white-75 small mb-0">Escucha las mejores historias</p>
+            </div>
+            <button className="btn btn-glass rounded-circle p-2 text-white hover-scale transition">
+              <Search size={24} />
+            </button>
+          </div>
 
-                    {/* Category Pills with Counts */}
-                    <div className="d-flex gap-2 overflow-auto pb-2 scrollbar-hide">
-                        {categories.map(cat => (
-                            <button
-                                key={cat.name}
-                                onClick={() => setActiveCategory(cat.name)}
-                                className={`btn category - pill rounded - pill px - 4 py - 2 small fw - bold text - nowrap transition border - 0 ${activeCategory === cat.name
-                                    ? 'category-active'
-                                    : 'category-inactive'
-                                    } `}
-                            >
-                                <span>{cat.name}</span>
-                                <span className="badge bg-white bg-opacity-25 ms-2">{cat.count}</span>
-                            </button>
-                        ))}
-                    </div>
+          {/* Category Pills with Counts */}
+          <div className="d-flex gap-2 overflow-auto pb-2 scrollbar-hide">
+            {categories.map(cat => (
+              <button
+                key={cat.name}
+                onClick={() => setActiveCategory(cat.name)}
+                className={`btn category-pill rounded-pill px-4 py-2 small fw-bold text-nowrap transition border-0 ${activeCategory === cat.name
+                  ? 'category-active'
+                  : 'category-inactive'
+                  }`}
+              >
+                <span>{cat.name}</span>
+                <span className="badge bg-white bg-opacity-25 ms-2">{cat.count}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="container py-4">
+        {/* Top Audioreportajes section */}
+        {episodes.length > 0 && activeCategory === 'Todos' && (
+          <div className="mb-5">
+            <div className="d-flex align-items-center gap-2 mb-3 px-2">
+              <div className="badge-glow"></div>
+              <h3 className="h5 fw-bold text-dark mb-0">🎙️ Audioreportajes</h3>
+            </div>
+            <TopEpisodes episodes={episodes.slice(0, 9)} />
+          </div>
+        )}
+
+        {loading ? (
+          <div className="text-center py-5">
+            <div className="spinner-border text-abc-blue" role="status"></div>
+            <p className="text-muted mt-2">Cargando audioreportajes...</p>
+          </div>
+        ) : (
+          <>
+            {/* Featured Episode */}
+            {activeCategory === 'Todos' && !searchTerm && episodes.length > 0 && (
+              <div className="mb-5 px-2">
+                <div className="d-flex align-items-center gap-2 mb-3">
+                  <div className="badge-glow"></div>
+                  <h3 className="h5 fw-bold text-dark mb-0">✨ Destacado</h3>
                 </div>
-            </div>
-
-            <div className="container py-4">
-                {/* Top Episodes section */}
-                {episodes.length > 0 && activeCategory === 'Todos' && (
-                    <div className="mb-5">
-                        <div className="d-flex align-items-center gap-2 mb-3 px-2">
-                            <div className="badge-glow"></div>
-                            <h3 className="h5 fw-bold text-dark mb-0">🔥 Top Episodios</h3>
-                        </div>
-                        <TopEpisodes episodes={episodes.slice(0, 9)} onPlay={onPlayPodcast} />
+                <div
+                  className="card border-0 rounded-4 shadow-xl overflow-hidden position-relative text-white cursor-pointer featured-card"
+                  onClick={() => handleCardClick(episodes[0])}
+                  style={{ minHeight: '380px' }}
+                >
+                  <img
+                    src={episodes[0].image}
+                    className="w-100 h-100 object-fit-cover position-absolute top-0 start-0"
+                    alt="Featured"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      if (!target.dataset.errorHandled) {
+                        target.dataset.errorHandled = 'true';
+                        target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Crect fill="%23e0e0e0" width="800" height="600"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="32" dy="10.5" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3EAudio%3C/text%3E%3C/svg%3E';
+                      }
+                    }}
+                  />
+                  <div className="featured-overlay"></div>
+                  <div className="card-body position-relative z-1 d-flex flex-column justify-content-end p-4 h-100">
+                    <span className="badge badge-featured align-self-start mb-3">
+                      <span className="pulse-dot"></span>
+                      NUEVO AUDIOREPORTAJE
+                    </span>
+                    <h3 className="fw-bold font-serif display-6 mb-2 lh-sm text-shadow-strong">{episodes[0].title}</h3>
+                    <p className="text-white-75 line-clamp-2 mb-4">{episodes[0].excerpt}</p>
+                    <div className="d-flex align-items-center gap-3">
+                      <button
+                        onClick={(e) => handlePlayFromList(e, episodes[0])}
+                        className="btn btn-play-featured rounded-circle p-3 shadow-lg hover-scale"
+                      >
+                        <Play size={28} fill="currentColor" />
+                      </button>
+                      <div>
+                        <div className="fw-bold">{episodes[0].duration}</div>
+                        <div className="small text-white-75">{episodes[0].date}</div>
+                      </div>
                     </div>
-                )}
+                  </div>
+                </div>
+              </div>
+            )}
 
-                {loading ? (
-                    <div className="text-center py-5">
-                        <div className="spinner-border text-abc-blue" role="status"></div>
-                        <p className="text-muted mt-2">Cargando audioreportajes...</p>
-                    </div>
-                ) : (
-                    <>
-                        {/* Featured Episode */}
-                        {activeCategory === 'Todos' && !searchTerm && episodes.length > 0 && (
-                            <div className="mb-5 px-2">
-                                <div className="d-flex align-items-center gap-2 mb-3">
-                                    <div className="badge-glow"></div>
-                                    <h3 className="h5 fw-bold text-dark mb-0">✨ Destacado</h3>
-                                </div>
-                                <div
-                                    className="card border-0 rounded-4 shadow-xl overflow-hidden position-relative text-white cursor-pointer featured-card"
-                                    onClick={() => handleCardClick(episodes[0])}
-                                    style={{ minHeight: '380px' }}
-                                >
-                                    <img
-                                        src={episodes[0].image}
-                                        className="w-100 h-100 object-fit-cover position-absolute top-0 start-0"
-                                        alt="Featured"
-                                        onError={(e) => {
-                                            const target = e.target as HTMLImageElement;
-                                            if (!target.dataset.errorHandled) {
-                                                target.dataset.errorHandled = 'true';
-                                                target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Crect fill="%23e0e0e0" width="800" height="600"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="32" dy="10.5" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3EAudio%3C/text%3E%3C/svg%3E';
-                                            }
-                                        }}
-                                    />
-                                    <div className="featured-overlay"></div>
-                                    <div className="card-body position-relative z-1 d-flex flex-column justify-content-end p-4 h-100">
-                                        <span className="badge badge-featured align-self-start mb-3">
-                                            <span className="pulse-dot"></span>
-                                            NUEVO EPISODIO
-                                        </span>
-                                        <h3 className="fw-bold font-serif display-6 mb-2 lh-sm text-shadow-strong">{episodes[0].title}</h3>
-                                        <p className="text-white-75 line-clamp-2 mb-4">{episodes[0].excerpt}</p>
-                                        <div className="d-flex align-items-center gap-3">
-                                            <button
-                                                onClick={(e) => handlePlayFromList(e, episodes[0])}
-                                                className="btn btn-play-featured rounded-circle p-3 shadow-lg hover-scale"
-                                            >
-                                                <Play size={28} fill="currentColor" />
-                                            </button>
-                                            <div>
-                                                <div className="fw-bold">{episodes[0].duration}</div>
-                                                <div className="small text-white-75">{episodes[0].date}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+            {/* Episode List */}
+            <div className="px-2">
+              <div className="d-flex align-items-center justify-content-between mb-4">
+                <div className="d-flex align-items-center gap-2">
+                  <div className="badge-glow"></div>
+                  <h3 className="h5 fw-bold text-dark mb-0">
+                    {activeCategory === 'Todos' ? '📻 Todos los Audioreportajes' : `📂 ${activeCategory} `}
+                  </h3>
+                </div>
+                <span className="badge bg-light text-secondary px-3 py-2">{filteredEpisodes.length} audioreportajes</span>
+              </div>
+
+              {filteredEpisodes.length === 0 ? (
+                <div className="text-center py-5">
+                  <div className="text-muted mb-2" style={{ fontSize: '3rem' }}>🔍</div>
+                  <h4 className="text-secondary">No se encontraron audioreportajes</h4>
+                  <p className="text-muted">Intenta con otra categoría</p>
+                </div>
+              ) : (
+                <>
+                  <div className="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-4">
+                    {displayedEpisodes.map((episode, index) => (
+                      <div
+                        key={episode.id}
+                        className="col"
+                        style={{
+                          animationDelay: `${(index % 6) * 0.08}s`,
+                          opacity: 0,
+                          animation: 'fadeInUp 0.55s ease forwards'
+                        }}
+                      >
+                        <div
+                          className="ar-card h-100 cursor-pointer"
+                          onClick={() => handleCardClick(episode)}
+                        >
+                          {/* ── IMAGE AREA ── */}
+                          <div className="ar-img-wrap">
+                            <img
+                              src={episode.image}
+                              alt={episode.title}
+                              className="ar-img"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                if (!target.dataset.errorHandled) {
+                                  target.dataset.errorHandled = 'true';
+                                  target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="450"%3E%3Crect fill="%231e1e2e" width="800" height="450"/%3E%3Ctext fill="%23555" font-family="sans-serif" font-size="28" font-weight="bold" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle"%3E🎙 Audioreportaje%3C/text%3E%3C/svg%3E';
+                                }
+                              }}
+                            />
+
+                            {/* Dark gradient scrim over bottom of image */}
+                            <div className="ar-img-scrim" />
+
+                            {/* Category badge – top left */}
+                            <span className="ar-cat-badge">{episode.category}</span>
+
+                            {/* Duration – bottom left inside image */}
+                            <span className="ar-duration-badge">
+                              <Clock size={11} />
+                              {episode.duration}
+                            </span>
+
+                            {/* Play button – centered, appears on hover */}
+                            <button
+                              className="ar-play-btn"
+                              onClick={(e) => handlePlayFromList(e, episode)}
+                              aria-label={`Reproducir ${episode.title}`}
+                            >
+                              <Play size={22} fill="white" className="text-white" />
+                            </button>
+                          </div>
+
+                          {/* ── CONTENT AREA ── */}
+                          <div className="ar-body">
+                            <p className="ar-date">{episode.date}</p>
+
+                            <h5 className="ar-title">{episode.title}</h5>
+
+                            <p className="ar-excerpt">{episode.excerpt}</p>
+
+                            <div className="ar-footer">
+                              <span className="ar-read-more">
+                                Escuchar <ChevronRight size={15} />
+                              </span>
+                              <button
+                                className="ar-share-btn"
+                                onClick={(e) => handleShare(e, episode)}
+                                title="Compartir"
+                              >
+                                <Share2 size={14} />
+                              </button>
                             </div>
-                        )}
-
-                        {/* Episode List */}
-                        <div className="px-2">
-                            <div className="d-flex align-items-center justify-content-between mb-4">
-                                <div className="d-flex align-items-center gap-2">
-                                    <div className="badge-glow"></div>
-                                    <h3 className="h5 fw-bold text-dark mb-0">
-                                        {activeCategory === 'Todos' ? '📻 Todos los Episodios' : `📂 ${activeCategory} `}
-                                    </h3>
-                                </div>
-                                <span className="badge bg-light text-secondary px-3 py-2">{filteredEpisodes.length} episodios</span>
-                            </div>
-
-                            {filteredEpisodes.length === 0 ? (
-                                <div className="text-center py-5">
-                                    <div className="text-muted mb-2" style={{ fontSize: '3rem' }}>🔍</div>
-                                    <h4 className="text-secondary">No se encontraron episodios</h4>
-                                    <p className="text-muted">Intenta con otra categoría</p>
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
-                                        {displayedEpisodes.map((episode, index) => (
-                                            <div
-                                                key={episode.id}
-                                                className="col episode-fade-in"
-                                                style={{
-                                                    animationDelay: `${(index % 6) * 0.1} s`,
-                                                    opacity: 0,
-                                                    animation: 'fadeInUp 0.6s ease forwards'
-                                                }}
-                                            >
-                                                <div
-                                                    className="card h-100 border-0 shadow-sm rounded-4 overflow-hidden bg-white episode-card transition cursor-pointer"
-                                                    onClick={() => handleCardClick(episode)}
-                                                >
-                                                    <div className="d-flex flex-row flex-md-column h-100">
-                                                        {/* Image */}
-                                                        <div className="position-relative episode-image-wrapper" style={{ width: '130px', minWidth: '130px', height: 'auto', minHeight: '130px' }}>
-                                                            <img
-                                                                src={episode.image}
-                                                                alt={episode.title}
-                                                                className="w-100 h-100 object-fit-cover d-md-none"
-                                                                onError={(e) => {
-                                                                    const target = e.target as HTMLImageElement;
-                                                                    if (!target.dataset.errorHandled) {
-                                                                        target.dataset.errorHandled = 'true';
-                                                                        target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23e0e0e0" width="400" height="400"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="24" dy="10.5" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3EAudio%3C/text%3E%3C/svg%3E';
-                                                                    }
-                                                                }}
-                                                            />
-                                                            <img
-                                                                src={episode.image}
-                                                                alt={episode.title}
-                                                                className="w-100 h-100 object-fit-cover d-none d-md-block"
-                                                                style={{ maxHeight: '200px' }}
-                                                                onError={(e) => {
-                                                                    const target = e.target as HTMLImageElement;
-                                                                    if (!target.dataset.errorHandled) {
-                                                                        target.dataset.errorHandled = 'true';
-                                                                        target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23e0e0e0" width="400" height="400"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="24" dy="10.5" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3EAudio%3C/text%3E%3C/svg%3E';
-                                                                    }
-                                                                }}
-                                                            />
-                                                            <div className="image-overlay">
-                                                                <div className="play-overlay">
-                                                                    <Info size={32} className="text-white" />
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Content */}
-                                                        <div className="card-body p-3 d-flex flex-column justify-content-center">
-                                                            <div className="d-flex justify-content-between align-items-start mb-2">
-                                                                <span className="badge badge-category">{episode.category}</span>
-                                                                <span className="text-muted small fw-bold">{episode.date}</span>
-                                                            </div>
-
-                                                            <h5
-                                                                className="card-title fw-bold text-dark font-serif mb-2 line-clamp-2 episode-title"
-                                                                style={{ fontSize: '1rem', lineHeight: '1.4' }}
-                                                            >
-                                                                {episode.title}
-                                                            </h5>
-
-                                                            <p className="card-text text-muted small line-clamp-2 mb-3 d-none d-md-block">
-                                                                {episode.excerpt}
-                                                            </p>
-
-                                                            <div className="mt-auto d-flex align-items-center justify-content-between pt-2">
-                                                                <div className="d-flex align-items-center gap-2 text-muted small">
-                                                                    <Clock size={14} className="text-abc-blue" />
-                                                                    <span className="fw-semibold">{episode.duration}</span>
-                                                                </div>
-
-                                                                <div className="d-flex align-items-center gap-2">
-                                                                    <button
-                                                                        onClick={(e) => handleShare(e, episode)}
-                                                                        className="btn btn-outline-secondary btn-sm rounded-circle p-2 d-flex align-items-center justify-content-center"
-                                                                        style={{ width: '32px', height: '32px' }}
-                                                                        title="Compartir"
-                                                                    >
-                                                                        <Share2 size={14} />
-                                                                    </button>
-
-                                                                    <button
-                                                                        onClick={(e) => handlePlayFromList(e, episode)}
-                                                                        className="btn btn-play-small rounded-circle p-2 d-md-none shadow-sm"
-                                                                    >
-                                                                        <Play size={16} fill="white" />
-                                                                    </button>
-
-                                                                    <div className="d-none d-md-flex align-items-center gap-1 text-abc-blue small fw-bold episode-more">
-                                                                        Ver más <ChevronRight size={16} />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Infinite Scroll Observer Target */}
-                                    <div ref={observerTarget} className="py-4">
-                                        {isLoadingMore && (
-                                            <div className="text-center">
-                                                <div className="spinner-border text-abc-blue" role="status">
-                                                    <span className="visually-hidden">Cargando más...</span>
-                                                </div>
-                                                <p className="text-muted mt-2 small">Cargando más episodios...</p>
-                                            </div>
-                                        )}
-                                        {!hasMore && displayedEpisodes.length > 0 && (
-                                            <div className="text-center text-muted">
-                                                <p className="small">✨ Has visto todos los episodios</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </>
-                            )}
+                          </div>
                         </div>
-                    </>
-                )}
-            </div>
+                      </div>
+                    ))}
+                  </div>
 
-            <style>{`
+                  {/* Pagination - Same style as CategoryView */}
+                  {totalPages > 1 && (
+                    <div className="mt-5">
+                      <nav aria-label="Paginación de audioreportajes">
+                        <ul className="pagination justify-content-center gap-2">
+                          <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                            <button
+                              className="page-link border-0 bg-abc-blue text-white rounded-pill px-4 shadow-sm"
+                              onClick={() => paginate(currentPage - 1)}
+                              disabled={currentPage === 1}
+                            >
+                              <ChevronLeft size={18} className="me-1" />
+                              Anterior
+                            </button>
+                          </li>
+
+                          {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
+                            <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
+                              <button
+                                className={`page-link rounded-circle border-2 ${currentPage === number
+                                  ? 'bg-abc-red text-white border-abc-red shadow'
+                                  : 'bg-white text-abc-blue border-abc-blue'
+                                  }`}
+                                onClick={() => paginate(number)}
+                                style={{ width: '40px', height: '40px', fontWeight: 'bold' }}
+                              >
+                                {number}
+                              </button>
+                            </li>
+                          ))}
+
+                          <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                            <button
+                              className="page-link border-0 bg-abc-blue text-white rounded-pill px-4 shadow-sm"
+                              onClick={() => paginate(currentPage + 1)}
+                              disabled={currentPage === totalPages}
+                            >
+                              Siguiente
+                              <ChevronRight size={18} className="ms-1" />
+                            </button>
+                          </li>
+                        </ul>
+                      </nav>
+                    </div>
+                  )}
+
+                  {filteredEpisodes.length > 0 && totalPages <= 1 && (
+                    <div className="text-center text-muted mt-4">
+                      <p className="small">✨ Has visto todos los audioreportajes</p>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+
+      <style>{`
         /* Page Background */
         .bg-gradient-page {
           background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -536,98 +516,217 @@ export default function PodcastView({
           box-shadow: 0 8px 24px rgba(245, 87, 108, 0.5);
         }
 
-        /* Episode Cards */
-        .episode-card {
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          background: white;
+        /* ═══════════════════════════════════════
+           AUDIOREPORTAJE CARDS
+        ═══════════════════════════════════════ */
+
+        .ar-card {
+          background: #ffffff;
+          border-radius: 18px;
+          overflow: hidden;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+          transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.32s ease;
+          display: flex;
+          flex-direction: column;
         }
 
-        .episode-card:hover {
-          transform: translateY(-6px);
-          box-shadow: 0 12px 24px rgba(0,0,0,0.12) !important;
+        .ar-card:hover {
+          transform: translateY(-8px) scale(1.01);
+          box-shadow: 0 20px 48px rgba(102,126,234,0.18);
         }
 
-        .episode-image-wrapper {
+        /* Image */
+        .ar-img-wrap {
           position: relative;
           overflow: hidden;
+          height: 210px;
+          flex-shrink: 0;
         }
 
-        .image-overlay {
-          position: absolute;
-          top: 0;
-          left: 0;
+        .ar-img {
           width: 100%;
           height: 100%;
-          background: rgba(0,0,0,0.5);
-          opacity: 0;
-          transition: opacity 0.3s ease;
-          display: none;
+          object-fit: cover;
+          transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94);
+          display: block;
         }
 
-        @media (min-width: 768px) {
-          .image-overlay {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          }
+        .ar-card:hover .ar-img {
+          transform: scale(1.07);
         }
 
-        .episode-card:hover .image-overlay {
-          opacity: 1;
+        /* Bottom gradient scrim */
+        .ar-img-scrim {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            to top,
+            rgba(10,10,30,0.75) 0%,
+            rgba(10,10,30,0.15) 45%,
+            transparent 70%
+          );
+          pointer-events: none;
         }
 
-        .play-overlay {
-          background: rgba(255, 255, 255, 0.25);
-          backdrop-filter: blur(10px);
-          border-radius: 50%;
-          padding: 16px;
-          border: 2px solid rgba(255, 255, 255, 0.5);
-          transform: scale(0.8);
-          transition: transform 0.3s ease;
-        }
-
-        .episode-card:hover .play-overlay {
-          transform: scale(1);
-        }
-
-        .badge-category {
+        /* Category badge */
+        .ar-cat-badge {
+          position: absolute;
+          top: 12px;
+          left: 12px;
           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          font-size: 0.65rem;
+          color: #fff;
+          font-size: 0.62rem;
+          font-weight: 700;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
           padding: 4px 10px;
+          border-radius: 20px;
+          box-shadow: 0 2px 8px rgba(102,126,234,0.35);
+          backdrop-filter: blur(4px);
+        }
+
+        /* Duration badge */
+        .ar-duration-badge {
+          position: absolute;
+          bottom: 10px;
+          left: 12px;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: rgba(0,0,0,0.55);
+          backdrop-filter: blur(8px);
+          color: #fff;
+          font-size: 0.72rem;
           font-weight: 600;
+          padding: 4px 9px;
+          border-radius: 20px;
+          border: 1px solid rgba(255,255,255,0.15);
         }
 
-        .episode-title {
-          transition: color 0.3s ease;
-        }
-
-        .episode-card:hover .episode-title {
-          color: #667eea;
-        }
-
-        .btn-play-small {
-          background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-          color: white;
-          width: 36px;
-          height: 36px;
+        /* Play button */
+        .ar-play-btn {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%) scale(0.7);
+          opacity: 0;
+          width: 54px;
+          height: 54px;
+          border-radius: 50%;
+          border: 2.5px solid rgba(255,255,255,0.9);
+          background: rgba(255,255,255,0.18);
+          backdrop-filter: blur(12px);
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: all 0.3s ease;
+          cursor: pointer;
+          transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
+          box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+          z-index: 4;
         }
 
-        .btn-play-small:hover {
+        .ar-card:hover .ar-play-btn {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1);
+        }
+
+        .ar-play-btn:hover {
+          background: rgba(102,126,234,0.85);
+          border-color: transparent;
+        }
+
+        /* Body */
+        .ar-body {
+          padding: 16px 18px 14px;
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+        }
+
+        .ar-date {
+          font-size: 0.7rem;
+          color: #94a3b8;
+          font-weight: 600;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          margin: 0 0 6px;
+        }
+
+        .ar-title {
+          font-size: 0.98rem;
+          font-weight: 700;
+          line-height: 1.35;
+          color: #0f172a;
+          margin: 0 0 8px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          transition: color 0.2s ease;
+          font-family: Georgia, 'Times New Roman', serif;
+        }
+
+        .ar-card:hover .ar-title {
+          color: #667eea;
+        }
+
+        .ar-excerpt {
+          font-size: 0.82rem;
+          color: #64748b;
+          line-height: 1.5;
+          margin: 0 0 14px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          flex: 1;
+        }
+
+        /* Footer row */
+        .ar-footer {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-top: 1px solid #f1f5f9;
+          padding-top: 11px;
+          margin-top: auto;
+        }
+
+        .ar-read-more {
+          display: inline-flex;
+          align-items: center;
+          gap: 3px;
+          font-size: 0.78rem;
+          font-weight: 700;
+          color: #667eea;
+          letter-spacing: 0.02em;
+          transition: gap 0.2s ease, color 0.2s ease;
+        }
+
+        .ar-card:hover .ar-read-more {
+          gap: 6px;
+          color: #764ba2;
+        }
+
+        .ar-share-btn {
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          border: 1.5px solid #e2e8f0;
+          background: transparent;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #94a3b8;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .ar-share-btn:hover {
+          border-color: #667eea;
+          color: #667eea;
+          background: rgba(102,126,234,0.06);
           transform: scale(1.1);
-        }
-
-        .episode-more {
-          transition: all 0.3s ease;
-        }
-
-        .episode-card:hover .episode-more {
-          color: #f5576c !important;
-          transform: translateX(4px);
         }
 
         /* Animations */
@@ -673,6 +772,19 @@ export default function PodcastView({
           }
         }
 
+        /* Pagination styles */
+        .pagination .page-link {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+        }
+
+        .pagination .page-link:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
           .featured-card {
@@ -680,6 +792,6 @@ export default function PodcastView({
           }
         }
       `}</style>
-        </div>
-    );
+    </div>
+  );
 }

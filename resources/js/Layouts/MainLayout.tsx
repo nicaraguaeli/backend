@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../Components/Header/Header';
 import Footer from '../Components/Footer/Footer';
 import AudioPlayer from '../Components/AudioPlayer';
@@ -39,6 +39,26 @@ export default function MainLayout({ children }: MainLayoutProps) {
     // Simple in-layout view switcher to support Header onNavigate actions (e.g., podcast view, video reportajes)
     const [currentView, setCurrentView] = useState<'default' | 'podcastview' | 'videoreportajes'>('default');
 
+    // On mount: read URL hash to restore view (e.g., after navigating back from detail page)
+    useEffect(() => {
+        const hash = window.location.hash;
+        if (hash === '#audioreportajes') {
+            setCurrentView('podcastview');
+        } else if (hash === '#videos') {
+            setCurrentView('videoreportajes');
+        }
+
+        // Also listen for popstate so the back/forward browser buttons work
+        const onPop = () => {
+            const h = window.location.hash;
+            if (h === '#audioreportajes') setCurrentView('podcastview');
+            else if (h === '#videos') setCurrentView('videoreportajes');
+            else setCurrentView('default');
+        };
+        window.addEventListener('popstate', onPop);
+        return () => window.removeEventListener('popstate', onPop);
+    }, []);
+
     // Podcast info & playback states for the sheet and global player
     const [viewingPodcast, setViewingPodcast] = useState<any | null>(null);
     const [isPodcastInfoOpen, setIsPodcastInfoOpen] = useState(false);
@@ -46,14 +66,17 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const handleNavigation = (page: string) => {
         if (page === 'podcast' || page === 'podcastview') {
             setCurrentView('podcastview');
+            window.history.pushState(null, '', '#audioreportajes');
             return;
         }
         if (page === 'videos' || page === 'videoreportajes') {
             setCurrentView('videoreportajes');
+            window.history.pushState(null, '', '#videos');
             return;
         }
-        // Reset to default for any other view (preserve current behavior)
+        // Home / default: clear hash
         setCurrentView('default');
+        window.history.pushState(null, '', window.location.pathname);
     };
 
     const openPodcastInfo = (episode: any) => {
@@ -73,8 +96,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 audioUrl: episode.audioUrl || episode.audio
             }
         });
-        setViewingPodcast(episode);
-        setIsPodcastInfoOpen(true);
+        // No abrimos el sheet: los botones de play navegan directo al detalle
     };
 
     return (

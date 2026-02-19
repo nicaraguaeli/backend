@@ -6,9 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class AudioReport extends Model
 {
-    //
     protected $fillable = [
-        
         'title',
         'slug',
         'excerpt',
@@ -18,6 +16,11 @@ class AudioReport extends Model
         'author_id',
         'published_at',
         'is_active',
+    ];
+
+    protected $casts = [
+        'published_at' => 'datetime',
+        'is_active' => 'boolean',
     ];
 
     public function author()

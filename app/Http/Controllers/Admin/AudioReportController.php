@@ -45,6 +45,11 @@ class AudioReportController extends Controller
         $data['slug'] = Str::slug($request->title);
         $data['is_active'] = $request->has('is_active');
 
+        // Auto-set published_at if is_active is true and published_at is not provided
+        if ($data['is_active'] && empty($data['published_at'])) {
+            $data['published_at'] = now();
+        }
+
         if ($request->hasFile('image')) {
             $data['image_path'] = $request->file('image')->store('audio_reports/images', 'public');
         }
@@ -106,6 +111,10 @@ class AudioReportController extends Controller
         $data = $request->except(['image', 'audio', 'categories']);
         $data['slug'] = Str::slug($request->title);
         
+        // Auto-set published_at if is_active is true and published_at is not provided
+        if ($request->boolean('is_active') && empty($data['published_at']) && empty($audioReport->published_at)) {
+            $data['published_at'] = now();
+        }
 
         // Handle image upload (replace)
         if ($request->hasFile('image')) {
