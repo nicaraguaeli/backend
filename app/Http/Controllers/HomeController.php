@@ -38,20 +38,7 @@ class HomeController extends Controller
             ->get();
 
         // 3. Stream Status Check
-        // Using HEAD + withOptions verify:false to avoid TLS handshake failures
-        // on production servers where the streaming server (port 4205) uses a
-        // self-signed or incompatible SSL certificate.
-        $streamUrl = 'https://hoth.alonhosting.com:4205/stream';
-        $streamStatus = false;
-        try {
-            $response = \Illuminate\Support\Facades\Http::timeout(5)
-                ->withOptions(['verify' => false])
-                ->head($streamUrl);
-            // 200 = stream active, 302/301 = redirect (also active), anything else = down
-            $streamStatus = in_array($response->status(), [200, 301, 302, 400]);
-        } catch (\Exception $e) {
-            $streamStatus = false;
-        }
+        $streamStatus = $this->checkStreamStatus();
 
         return view('home', compact(
             'newsCount',
@@ -63,5 +50,67 @@ class HomeController extends Controller
             'latestNews',
             'streamStatus'
         ));
+    }
+
+    /**
+     * AJAX endpoint: returns real-time stream status as JSON.
+     * Called every 3 minutes by the dashboard JavaScript auto-refresh.
+     */
+    public function streamStatusAjax()
+    {
+        $online = $this->checkStreamStatus();
+        return response()->json([
+            'online'    => $online,
+            'checkedAt' => now()->toTimeString(),
+        ]);
+    }
+
+    /**
+     * Check if the Icecast stream is online by querying its official JSON stats endpoint.
+     *
+     * WHY /status-json.xsl and NOT /stream:
+     *  - Doing GET/HEAD to /stream opens an infinite audio connection and hangs.
+     *  - /status-json.xsl is the standard Icecast health/stats URL and returns a
+     *    small JSON payload describing all active mount points and their listener counts.
+     *  - verify:false bypasses the self-signed SSL certificate on port 4205 that
+     *    causes "TLS handshake failure" on production servers.
+     */
+    private function checkStreamStatus(): bool
+    {
+        $statsUrl = 'https://hoth.alonhosting.com:4205/status-json.xsl';
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(5)
+                ->withOptions(['verify' => false])
+                ->get($statsUrl);
+
+            if (!$response->successful()) {
+                return false;
+            }
+
+            $data = $response->json();
+
+            // Icecast JSON structure: { "icestats": { "source": {...} | [{...}] } }
+            $source = $data['icestats']['source'] ?? null;
+
+            if (empty($source)) {
+                return false;
+            }
+
+            // Single active source comes as an object with 'listenurl'
+            if (isset($source['listenurl'])) {
+                return true;
+            }
+
+            // Multiple sources come as an array — at least one means stream is up
+            if (is_array($source) && count($source) > 0) {
+                return true;
+            }
+
+            return false;
+
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }

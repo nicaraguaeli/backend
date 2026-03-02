@@ -173,6 +173,8 @@ Route::post('admin/summernote/upload', function (Illuminate\Http\Request $reques
 
 
 Route::get('/dashboard', [App\Http\Controllers\HomeController::class, 'index'])->name('dashboard');
+Route::get('/dashboard/stream-status', [App\Http\Controllers\HomeController::class, 'streamStatusAjax'])->middleware('auth')->name('dashboard.stream-status');
+
 
 // Corporate Pages Routes
 Route::get('/quienes-somos', [App\Http\Controllers\CorporateController::class, 'about'])->name('corporate.about');

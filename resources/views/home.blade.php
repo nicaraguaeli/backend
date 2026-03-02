@@ -9,28 +9,30 @@
 @section('content')
     <!-- Stream Status Monitor -->
     <div class="row mb-3">
-        <div class="col-12">
+        <div class="col-12" id="stream-status-wrapper">
             @if($streamStatus)
-                <div class="info-box bg-gradient-success elevation-3">
-                    <span class="info-box-icon"><i class="fas fa-broadcast-tower fa-beat"></i></span>
+                <div class="info-box bg-gradient-success elevation-3" id="stream-status-box">
+                    <span class="info-box-icon"><i class="fas fa-broadcast-tower fa-beat" id="stream-icon"></i></span>
                     <div class="info-box-content">
-                        <span class="info-box-text fw-bold text-uppercase">Estado de Transmisión</span>
-                        <span class="info-box-number">EN VIVO - ONLINE</span>
-                        <span class="progress-description">
+                        <span class="info-box-text fw-bold text-uppercase" id="stream-title">Estado de Transmisión</span>
+                        <span class="info-box-number" id="stream-label">EN VIVO - ONLINE</span>
+                        <span class="progress-description" id="stream-desc">
                             La señal de streaming está operando correctamente.
                         </span>
+                        <small class="text-white-50 mt-1 d-block" id="stream-last-check">Verificado al cargar</small>
                     </div>
                 </div>
             @else
-                <div class="info-box bg-gradient-danger elevation-4 user-select-none">
-                    <span class="info-box-icon"><i class="fas fa-exclamation-triangle fa-shake"></i></span>
+                <div class="info-box bg-gradient-danger elevation-4 user-select-none" id="stream-status-box">
+                    <span class="info-box-icon"><i class="fas fa-exclamation-triangle fa-shake" id="stream-icon"></i></span>
                     <div class="info-box-content">
-                        <span class="info-box-text fw-bold text-uppercase">ALERTA: Transmisión Caída</span>
-                        <span class="info-box-number">OFFLINE - SIN SEÑAL</span>
-                        <span class="progress-description">
-                             No se detecta señal en el servidor de streaming. Verifique el encoder.
+                        <span class="info-box-text fw-bold text-uppercase" id="stream-title">ALERTA: Transmisión Caída</span>
+                        <span class="info-box-number" id="stream-label">OFFLINE - SIN SEÑAL</span>
+                        <span class="progress-description" id="stream-desc">
+                            No se detecta señal en el servidor de streaming. Verifique el encoder.
                         </span>
-                        <a href="https://hoth.alonhosting.com:4205/stream" target="_blank" class="text-white text-decoration-underline mt-2 d-inline-block small">Verificar URL Directa</a>
+                        <small class="text-white-50 mt-1 d-block" id="stream-last-check">Verificado al cargar</small>
+                        <a href="https://hoth.alonhosting.com:4205/status-json.xsl" target="_blank" class="text-white text-decoration-underline mt-1 d-inline-block small">Ver estadísticas del servidor</a>
                     </div>
                 </div>
             @endif
@@ -260,5 +262,63 @@
 @stop
 
 @section('js')
-    <script> console.log('Dashboard loaded'); </script>
+<script>
+(function () {
+    const POLL_INTERVAL_MS = 3 * 60 * 1000; // 3 minutos
+    const STATUS_URL = '{{ route("dashboard.stream-status") }}';
+
+    function updateStreamWidget(online, checkedAt) {
+        const box   = document.getElementById('stream-status-box');
+        const icon  = document.getElementById('stream-icon');
+        const title = document.getElementById('stream-title');
+        const label = document.getElementById('stream-label');
+        const desc  = document.getElementById('stream-desc');
+        const check = document.getElementById('stream-last-check');
+
+        if (!box) return;
+
+        if (online) {
+            box.className = 'info-box bg-gradient-success elevation-3';
+            icon.className = 'fas fa-broadcast-tower fa-beat';
+            title.textContent = 'Estado de Transmisión';
+            label.textContent = 'EN VIVO - ONLINE';
+            desc.textContent  = 'La señal de streaming está operando correctamente.';
+            // Remove offline link if it exists
+            const offlineLink = box.querySelector('a');
+            if (offlineLink) offlineLink.remove();
+        } else {
+            box.className = 'info-box bg-gradient-danger elevation-4 user-select-none';
+            icon.className = 'fas fa-exclamation-triangle fa-shake';
+            title.textContent = 'ALERTA: Transmisión Caída';
+            label.textContent = 'OFFLINE - SIN SEÑAL';
+            desc.textContent  = 'No se detecta señal en el servidor de streaming. Verifique el encoder.';
+        }
+
+        if (check) {
+            check.textContent = 'Última verificación: ' + (checkedAt || new Date().toLocaleTimeString('es-NI'));
+        }
+    }
+
+    function pollStreamStatus() {
+        fetch(STATUS_URL, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                updateStreamWidget(data.online, data.checkedAt);
+            })
+            .catch(function () {
+                // Si falla el fetch no cambiamos el estado para no generar falsos negativos
+                const check = document.getElementById('stream-last-check');
+                if (check) check.textContent = 'Error al verificar — reintentando en 3 min';
+            });
+    }
+
+    // Auto-refresh cada 3 minutos
+    setInterval(pollStreamStatus, POLL_INTERVAL_MS);
+
+    // Primera verificación después de 10 segundos de cargar (para no bloquear el render)
+    setTimeout(pollStreamStatus, 10000);
+
+    console.log('Dashboard cargado — verificación de stream cada 3 minutos.');
+})();
+</script>
 @stop
