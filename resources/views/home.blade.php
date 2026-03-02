@@ -7,35 +7,24 @@
 @stop
 
 @section('content')
-    <!-- Stream Status Monitor -->
+    <!-- Stream Status Monitor (estado inicial: verificando, JS lo actualiza al cargar) -->
     <div class="row mb-3">
-        <div class="col-12" id="stream-status-wrapper">
-            @if($streamStatus)
-                <div class="info-box bg-gradient-success elevation-3" id="stream-status-box">
-                    <span class="info-box-icon"><i class="fas fa-broadcast-tower fa-beat" id="stream-icon"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text fw-bold text-uppercase" id="stream-title">Estado de Transmisión</span>
-                        <span class="info-box-number" id="stream-label">EN VIVO - ONLINE</span>
-                        <span class="progress-description" id="stream-desc">
-                            La señal de streaming está operando correctamente.
+        <div class="col-12">
+            <div class="info-box bg-gradient-secondary elevation-2" id="stream-status-box">
+                <span class="info-box-icon"><i class="fas fa-circle-notch fa-spin" id="stream-icon"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text fw-bold text-uppercase" id="stream-title">Estado de Transmisión</span>
+                    <span class="info-box-number" id="stream-label">Verificando señal...</span>
+                    <div class="d-flex align-items-center gap-3 mt-1">
+                        <span class="progress-description mb-0" id="stream-desc">Consultando servidor de streaming...</span>
+                        <span class="badge bg-white text-dark fw-bold px-2 py-1 d-none" id="stream-listeners-badge">
+                            <i class="fas fa-headphones me-1"></i>
+                            <span id="stream-listeners">0</span> oyentes
                         </span>
-                        <small class="text-white-50 mt-1 d-block" id="stream-last-check">Verificado al cargar</small>
                     </div>
+                    <small class="text-white-50 mt-1 d-block" id="stream-last-check"></small>
                 </div>
-            @else
-                <div class="info-box bg-gradient-danger elevation-4 user-select-none" id="stream-status-box">
-                    <span class="info-box-icon"><i class="fas fa-exclamation-triangle fa-shake" id="stream-icon"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text fw-bold text-uppercase" id="stream-title">ALERTA: Transmisión Caída</span>
-                        <span class="info-box-number" id="stream-label">OFFLINE - SIN SEÑAL</span>
-                        <span class="progress-description" id="stream-desc">
-                            No se detecta señal en el servidor de streaming. Verifique el encoder.
-                        </span>
-                        <small class="text-white-50 mt-1 d-block" id="stream-last-check">Verificado al cargar</small>
-                        <a href="https://hoth.alonhosting.com:4205/status-json.xsl" target="_blank" class="text-white text-decoration-underline mt-1 d-inline-block small">Ver estadísticas del servidor</a>
-                    </div>
-                </div>
-            @endif
+            </div>
         </div>
     </div>
 
@@ -264,61 +253,103 @@
 @section('js')
 <script>
 (function () {
-    const POLL_INTERVAL_MS = 3 * 60 * 1000; // 3 minutos
-    const STATUS_URL = '{{ route("dashboard.stream-status") }}';
+    // ─── Configuración ────────────────────────────────────────────────────────
+    const POLL_INTERVAL_MS  = 3 * 60 * 1000;  // 3 minutos entre cada check
+    const ICECAST_STATS_URL = 'https://hoth.alonhosting.com:4205/status-json.xsl';
+    const PROXY_URL         = '{{ route("dashboard.stream-status") }}';
 
-    function updateStreamWidget(online, checkedAt) {
-        const box   = document.getElementById('stream-status-box');
-        const icon  = document.getElementById('stream-icon');
-        const title = document.getElementById('stream-title');
-        const label = document.getElementById('stream-label');
-        const desc  = document.getElementById('stream-desc');
-        const check = document.getElementById('stream-last-check');
+    // ─── DOM refs ─────────────────────────────────────────────────────────────
+    const box             = document.getElementById('stream-status-box');
+    const iconEl          = document.getElementById('stream-icon');
+    const labelEl         = document.getElementById('stream-label');
+    const descEl          = document.getElementById('stream-desc');
+    const checkEl         = document.getElementById('stream-last-check');
+    const listenersBadge  = document.getElementById('stream-listeners-badge');
+    const listenersCount  = document.getElementById('stream-listeners');
 
+    // ─── Actualizar widget ────────────────────────────────────────────────────
+    function updateWidget(online, listeners, title) {
         if (!box) return;
 
         if (online) {
-            box.className = 'info-box bg-gradient-success elevation-3';
-            icon.className = 'fas fa-broadcast-tower fa-beat';
-            title.textContent = 'Estado de Transmisión';
-            label.textContent = 'EN VIVO - ONLINE';
-            desc.textContent  = 'La señal de streaming está operando correctamente.';
-            // Remove offline link if it exists
-            const offlineLink = box.querySelector('a');
-            if (offlineLink) offlineLink.remove();
+            box.className        = 'info-box bg-gradient-success elevation-3';
+            iconEl.className     = 'fas fa-broadcast-tower fa-beat';
+            labelEl.textContent  = 'EN VIVO — ONLINE';
+            descEl.textContent   = title
+                ? '"' + title + '" — señal operando correctamente.'
+                : 'La señal de streaming está operando correctamente.';
+
+            // Mostrar badge de listeners
+            if (listenersBadge && listenersCount) {
+                listenersCount.textContent = listeners.toLocaleString('es-NI');
+                listenersBadge.classList.remove('d-none');
+            }
         } else {
-            box.className = 'info-box bg-gradient-danger elevation-4 user-select-none';
-            icon.className = 'fas fa-exclamation-triangle fa-shake';
-            title.textContent = 'ALERTA: Transmisión Caída';
-            label.textContent = 'OFFLINE - SIN SEÑAL';
-            desc.textContent  = 'No se detecta señal en el servidor de streaming. Verifique el encoder.';
+            box.className        = 'info-box bg-gradient-danger elevation-4';
+            iconEl.className     = 'fas fa-exclamation-triangle fa-shake';
+            labelEl.textContent  = 'OFFLINE — SIN SEÑAL';
+            descEl.textContent   = 'No se detecta señal en el servidor. Verifique el encoder.';
+
+            if (listenersBadge) listenersBadge.classList.add('d-none');
         }
 
-        if (check) {
-            check.textContent = 'Última verificación: ' + (checkedAt || new Date().toLocaleTimeString('es-NI'));
+        if (checkEl) {
+            checkEl.textContent = 'Última verificación: ' + new Date().toLocaleTimeString('es-NI');
         }
     }
 
-    function pollStreamStatus() {
-        fetch(STATUS_URL, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    // ─── Parsear respuesta de Icecast ─────────────────────────────────────────
+    function parseIcecast(data) {
+        const source = (data && data.icestats && data.icestats.source) ? data.icestats.source : null;
+        if (!source) return { online: false, listeners: 0, title: '' };
+
+        // Source puede ser un objeto (1 fuente) o un array (varias fuentes)
+        if (Array.isArray(source)) {
+            const first = source[0] || {};
+            return {
+                online:    source.length > 0,
+                listeners: parseInt(first.listeners || 0, 10),
+                title:     first.title || first.server_name || '',
+            };
+        }
+        return {
+            online:    Boolean(source.listenurl),
+            listeners: parseInt(source.listeners || 0, 10),
+            title:     source.title || source.server_name || '',
+        };
+    }
+
+    // ─── Estrategia: browser directo → proxy servidor ─────────────────────────
+    function checkStream() {
+        // 1. Intentar desde el navegador directamente (evita restricciones del servidor PHP)
+        fetch(ICECAST_STATS_URL)
             .then(function (res) { return res.json(); })
             .then(function (data) {
-                updateStreamWidget(data.online, data.checkedAt);
+                const parsed = parseIcecast(data);
+                updateWidget(parsed.online, parsed.listeners, parsed.title);
             })
             .catch(function () {
-                // Si falla el fetch no cambiamos el estado para no generar falsos negativos
-                const check = document.getElementById('stream-last-check');
-                if (check) check.textContent = 'Error al verificar — reintentando en 3 min';
+                // 2. Si el browser no puede (CORS u otro), usar el proxy PHP
+                fetch(PROXY_URL, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(function (res) { return res.json(); })
+                    .then(function (data) {
+                        updateWidget(
+                            Boolean(data.online),
+                            parseInt(data.listeners || 0, 10),
+                            data.title || ''
+                        );
+                    })
+                    .catch(function () {
+                        if (checkEl) checkEl.textContent = 'No se pudo verificar — reintentando en 3 min';
+                    });
             });
     }
 
-    // Auto-refresh cada 3 minutos
-    setInterval(pollStreamStatus, POLL_INTERVAL_MS);
+    // ─── Iniciar ──────────────────────────────────────────────────────────────
+    checkStream();                                    // <-- inmediato al cargar
+    setInterval(checkStream, POLL_INTERVAL_MS);       // <-- cada 3 minutos
 
-    // Primera verificación después de 10 segundos de cargar (para no bloquear el render)
-    setTimeout(pollStreamStatus, 10000);
-
-    console.log('Dashboard cargado — verificación de stream cada 3 minutos.');
+    console.log('[Stream Monitor] Activo — polling cada 3 minutos.');
 })();
 </script>
 @stop
