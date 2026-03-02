@@ -38,12 +38,17 @@ class HomeController extends Controller
             ->get();
 
         // 3. Stream Status Check
-        $streamUrl = 'https://hoth.alonhosting.com:4205/';
+        // Using HEAD + withOptions verify:false to avoid TLS handshake failures
+        // on production servers where the streaming server (port 4205) uses a
+        // self-signed or incompatible SSL certificate.
+        $streamUrl = 'https://hoth.alonhosting.com:4205/stream';
         $streamStatus = false;
         try {
-            // Using a short timeout to prevent blocking the dashboard load
-            $response = \Illuminate\Support\Facades\Http::timeout(2)->get($streamUrl);
-            $streamStatus = $response->successful();
+            $response = \Illuminate\Support\Facades\Http::timeout(5)
+                ->withOptions(['verify' => false])
+                ->head($streamUrl);
+            // 200 = stream active, 302/301 = redirect (also active), anything else = down
+            $streamStatus = in_array($response->status(), [200, 301, 302, 400]);
         } catch (\Exception $e) {
             $streamStatus = false;
         }
