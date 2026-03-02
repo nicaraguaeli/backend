@@ -4,15 +4,32 @@ import MainLayout from '@/Layouts/MainLayout';
 import ArticleDetail from '@/Components/ArticleDetail';
 import { ArticleData } from '@/types';
 
+interface Banner {
+    id: number;
+    file_path: string;
+    link: string | null;
+    position: string | null;
+    mime_type: string;
+    is_active: boolean;
+}
+
 interface Props {
     article: ArticleData;
     relatedNews?: ArticleData[];
     mostReadNews?: ArticleData[];
     authorNews?: ArticleData[];
     categoryRecommendations?: ArticleData[];
+    banners?: Banner[];
 }
 
-const ArticlePage = ({ article, relatedNews = [], mostReadNews = [], authorNews = [], categoryRecommendations = [] }: Props) => {
+const ArticlePage = ({
+    article,
+    relatedNews = [],
+    mostReadNews = [],
+    authorNews = [],
+    categoryRecommendations = [],
+    banners = [],
+}: Props) => {
     return (
         <>
             <Head title={article.title} />
@@ -23,6 +40,7 @@ const ArticlePage = ({ article, relatedNews = [], mostReadNews = [], authorNews 
                     mostReadNews={mostReadNews}
                     authorNews={authorNews}
                     categoryRecommendations={categoryRecommendations}
+                    banners={banners}
                     onBack={() => router.visit('/')}
                 />
             </div>

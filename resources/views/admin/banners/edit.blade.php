@@ -42,18 +42,27 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="position">Posición (Opcional)</label>
+                    <label for="position">Posición en el sitio</label>
                     <select name="position" id="position" class="form-control @error('position') is-invalid @enderror">
-                        <option value="">Seleccione una posición</option>
-                        <option value="home_top" {{ old('position', $banner->position) == 'home_top' ? 'selected' : '' }}>Home Top</option>
-                        <option value="sidebar" {{ old('position', $banner->position) == 'sidebar' ? 'selected' : '' }}>Sidebar</option>
-                        <option value="footer" {{ old('position', $banner->position) == 'footer' ? 'selected' : '' }}>Footer</option>
-                        <option value="content" {{ old('position', $banner->position) == 'content' ? 'selected' : '' }}>Contenido</option>
+                        <option value="">-- Seleccione una posición --</option>
+                        <optgroup label="🏠 Página de Inicio">
+                            <option value="home_top"     {{ old('position', $banner->position) == 'home_top'     ? 'selected' : '' }}>Home Top — Leaderboard sobre el Hero (728×90)</option>
+                            <option value="sidebar_home" {{ old('position', $banner->position) == 'sidebar_home' ? 'selected' : '' }}>Home Sidebar derecho — Cuadrado (300×250)</option>
+                            <option value="content_home" {{ old('position', $banner->position) == 'content_home' ? 'selected' : '' }}>Home Contenido — Leaderboard tras noticias (728×90)</option>
+                            <option value="billboard"    {{ old('position', $banner->position) == 'billboard'    ? 'selected' : '' }}>Billboard entre secciones — Ancho completo (970×250)</option>
+                            <option value="footer"       {{ old('position', $banner->position) == 'footer'       ? 'selected' : '' }}>Footer Home — Leaderboard al pie (728×90)</option>
+                        </optgroup>
+                        <optgroup label="📰 Páginas de Artículo">
+                            <option value="article_sidebar" {{ old('position', $banner->position) == 'article_sidebar' ? 'selected' : '' }}>Artículo Sidebar — Cuadrado sticky (300×250)</option>
+                            <option value="article_mid"     {{ old('position', $banner->position) == 'article_mid'     ? 'selected' : '' }}>Artículo In-Content — Leaderboard entre párrafos (728×90)</option>
+                            <option value="article_bottom"  {{ old('position', $banner->position) == 'article_bottom'  ? 'selected' : '' }}>Artículo Footer — Leaderboard al pie del artículo (728×90)</option>
+                        </optgroup>
                     </select>
                     @error('position')
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
                 </div>
+
 
 
 

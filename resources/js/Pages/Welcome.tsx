@@ -66,9 +66,11 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
     };
 
     const homeTopBanner = getBanner('home_top');
-    const sidebarBanner = getBanner('sidebar');
-    const contentBanner = getBanner('content');
+    const sidebarBanner = getBanner('sidebar_home');
+    const contentBanner = getBanner('content_home');
     const footerBanner = getBanner('footer');
+    const billboardBanner = getBanner('billboard');
+
 
     return (
         <>
@@ -117,10 +119,9 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
                         )}
                     </div>
 
-                    {/* Sidebar: Most Read & Widgets */}
+                    {/* Sidebar: wider sticky column */}
                     <aside className="col-lg-auto" style={{ width: '350px' }}>
                         <div className="d-flex flex-column gap-4 sticky-top" style={{ top: '100px', zIndex: 10 }}>
-
 
                             {/* Most Read Widget */}
                             <MostRead items={mostReadNews || []} />
@@ -128,10 +129,20 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
                             {/* International News Widget */}
                             <InternationalNews items={internationalNews || []} />
 
+                            {/* ── SIDEBAR BANNER (300×250) ── */}
+                            {sidebarBanner && (
+                                <AdSpace
+                                    variant="square"
+                                    imageUrl={asset(`storage/${sidebarBanner.file_path}`)}
+                                    link={sidebarBanner.link || '#'}
+                                    label="Publicidad"
+                                />
+                            )}
 
 
                         </div>
                     </aside>
+
                 </div>
             </div>
 
@@ -154,6 +165,22 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
                     />
                 </div>
             )}
+
+            {/* ── BILLBOARD 970×250 — before NacionalesSection ── */}
+            {billboardBanner && (
+                <div className="container-fluid px-0 my-4">
+                    <a href={billboardBanner.link || '#'} target="_blank" rel="noopener noreferrer" className="d-block">
+                        <img
+                            src={asset(`storage/${billboardBanner.file_path}`)}
+                            alt="Publicidad"
+                            className="w-100"
+                            style={{ maxHeight: '250px', objectFit: 'cover', display: 'block' }}
+                        />
+                    </a>
+                    <p className="text-center text-muted mb-0" style={{ fontSize: '0.6rem', letterSpacing: '1px', textTransform: 'uppercase' }}>Publicidad</p>
+                </div>
+            )}
+
 
             <JobsCallToAction />
 

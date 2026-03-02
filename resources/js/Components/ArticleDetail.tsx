@@ -9,6 +9,17 @@ import {
 
 import { ArticleData } from '../types';
 import MostRead from './MostRead';
+import AdSpace from './AdSpace';
+
+
+interface Banner {
+  id: number;
+  file_path: string;
+  link: string | null;
+  position: string | null;
+  mime_type: string;
+  is_active: boolean;
+}
 
 interface ArticleDetailProps {
   article: ArticleData;
@@ -16,8 +27,10 @@ interface ArticleDetailProps {
   mostReadNews?: ArticleData[];
   authorNews?: ArticleData[];
   categoryRecommendations?: ArticleData[];
+  banners?: Banner[];
   onBack: () => void;
 }
+
 
 // ─── Helper: category badge color ───────────────────────────────────────────
 const getCategoryColor = (name: string) => {
@@ -130,8 +143,17 @@ export default function ArticleDetail({
   mostReadNews = [],
   authorNews = [],
   categoryRecommendations = [],
+  banners = [],
   onBack
 }: ArticleDetailProps) {
+  const getBanner = (pos: string) => {
+    const pool = banners.filter(b => b.position === pos && b.is_active);
+    return pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : null;
+  };
+  const sidebarAdBanner = getBanner('article_sidebar');
+  const inContentBanner = getBanner('article_mid');
+  const bottomBanner = getBanner('article_bottom');
+
   const [copied, setCopied] = useState(false);
   const [isReading, setIsReading] = useState(false);
   const [fontSize, setFontSize] = useState(18);
@@ -349,6 +371,20 @@ export default function ArticleDetail({
             ))}
           </div>
 
+          {/* ── IN-CONTENT AD (728×90) — entre cuerpo y noticias relacionadas ── */}
+          {inContentBanner && (
+            <div className="my-5">
+              <AdSpace
+                variant="horizontal"
+                imageUrl={asset(`storage/${inContentBanner.file_path}`)}
+                link={inContentBanner.link || '#'}
+                label="Publicidad"
+              />
+            </div>
+          )}
+
+
+
           {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
           {/* WIDGET 1: Noticias Relacionadas (same category) */}
           {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
@@ -399,6 +435,18 @@ export default function ArticleDetail({
         {/* ── Sidebar ── */}
         <aside className="col-lg-3">
           <div className="sticky-top" style={{ top: '100px' }}>
+            {/* ── SIDEBAR AD (300×250) ── */}
+            {sidebarAdBanner && (
+              <AdSpace
+                variant="square"
+                imageUrl={asset(`storage/${sidebarAdBanner.file_path}`)}
+                link={sidebarAdBanner.link || '#'}
+                label="Publicidad"
+                className="mb-4"
+              />
+            )}
+
+
             <MostRead items={mostReadNews} />
 
             {/* Sidebar: Related news mini list */}
@@ -414,6 +462,7 @@ export default function ArticleDetail({
             )}
           </div>
         </aside>
+
       </div>
 
       {/* ── Article Content Styles ── */}

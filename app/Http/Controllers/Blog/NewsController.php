@@ -141,12 +141,19 @@ class NewsController extends Controller
             'author' => $item->serialized_author,
         ]))->values();
 
+        // Banners activos para la página de artículo (sidebar, in-content, bottom)
+        $articleBanners = \App\Models\Banner::where('is_active', true)
+            ->whereIn('position', ['article_sidebar', 'article_mid', 'article_bottom'])
+            ->get();
+
+
         return \Inertia\Inertia::render('Article', [
             'article'                  => $articleData,
             'mostReadNews'             => $serializeNews($mostReadNews),
             'relatedNews'              => $serializeNews($relatedNews),
             'authorNews'               => $serializeNews($authorNews),
             'categoryRecommendations'  => $serializeNews($categoryRecommendations),
+            'banners'                  => $articleBanners,
         ])->withViewData(['meta' => $meta]);
     }
 

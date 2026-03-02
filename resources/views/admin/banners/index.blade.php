@@ -83,50 +83,75 @@
 document.addEventListener('DOMContentLoaded', function () {
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
 
+    // Mapa de rutas generado por Blade (correcto, independiente del prefijo)
+    const bannerRoutes = {
+        @foreach($banners as $banner)
+        {{ $banner->id }}: '{{ route('admin.banners.update', $banner) }}',
+        @endforeach
+    };
+
     function showToast(type, message) {
-        $(document).Toasts('create', {
-            class: `bg-${type}`,
-            title: type === 'success' ? 'Éxito' : 'Error',
-            autohide: true,
-            delay: 3000,
-            body: message
-        });
+        if (typeof $ !== 'undefined' && $(document).Toasts) {
+            $(document).Toasts('create', {
+                class: `bg-${type}`,
+                title: type === 'success' ? 'Éxito' : 'Error',
+                autohide: true,
+                delay: 3000,
+                body: message
+            });
+        } else {
+            alert((type === 'success' ? '✅ ' : '❌ ') + message);
+        }
     }
 
     const tableBody = document.querySelector('tbody');
 
     tableBody.addEventListener('change', e => {
-        if (e.target.classList.contains('banner-toggle')) {
-            const toggle = e.target;
-            const id = toggle.closest('tr').dataset.id;
-            const field = toggle.dataset.field;
-            
-            toggle.disabled = true;
+        if (!e.target.classList.contains('banner-toggle')) return;
 
-            fetch(`/admin/banners/${id}`, {
-                method: 'PUT', // Spoofing PUT/PATCH, but using PUT as per resource route
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': token,
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify({ [field]: toggle.checked }),
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    showToast('success', data.message || 'Actualizado.');
-                } else {
-                    throw new Error(data.message || 'Falló la actualización.');
-                }
-            })
-            .catch(err => {
-                showToast('danger', err.message);
-                toggle.checked = !toggle.checked; // Revert
-            })
-            .finally(() => toggle.disabled = false );
+        const toggle = e.target;
+        const id     = parseInt(toggle.closest('tr').dataset.id);
+        const field  = toggle.dataset.field;
+        const url    = bannerRoutes[id];
+
+        if (!url) {
+            showToast('danger', 'No se encontró la ruta para este banner.');
+            return;
         }
+
+        toggle.disabled = true;
+
+        fetch(url, {
+            method: 'POST',   // Laravel resource update acepta POST con _method spoofing
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': token,
+                'Accept': 'application/json',
+                'X-HTTP-Method-Override': 'PUT',
+            },
+            body: JSON.stringify({
+                _method: 'PUT',
+                [field]: toggle.checked,
+            }),
+        })
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showToast('success', data.message || 'Estado actualizado.');
+            } else {
+                throw new Error(data.message || 'Falló la actualización.');
+            }
+        })
+        .catch(err => {
+            showToast('danger', 'Error: ' + err.message);
+            toggle.checked = !toggle.checked; // Revertir el switch
+        })
+        .finally(() => toggle.disabled = false);
     });
 });
 </script>
 @endpush
+

@@ -51,11 +51,11 @@ class BannerController extends Controller
 
     public function update(Request $request, Banner $banner)
     {
-        // Check for toggle partial update
-        if ($request->expectsJson() && $request->has('is_active') && count($request->all()) === 1) {
-             $request->validate(['is_active' => 'boolean']);
-             $banner->update(['is_active' => $request->input('is_active')]);
-             return response()->json(['success' => true, 'message' => 'Estado actualizado.']);
+        // Actualización parcial desde el toggle de estado (AJAX/JSON)
+        if ($request->expectsJson() && $request->has('is_active')) {
+            $request->validate(['is_active' => 'boolean']);
+            $banner->update(['is_active' => filter_var($request->input('is_active'), FILTER_VALIDATE_BOOLEAN)]);
+            return response()->json(['success' => true, 'message' => 'Estado actualizado.']);
         }
 
         $request->validate([
