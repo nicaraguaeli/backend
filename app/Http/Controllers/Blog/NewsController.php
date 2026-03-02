@@ -65,45 +65,70 @@ class NewsController extends Controller
         }
 
         // Regular article flow
-        // Fetch most read news (for sidebar)
+        // --- Fetch all news sets with deduplication ---
+        $usedIds = collect([$news->id]); // always exclude current article
+
+        // 1. MOST READ NEWS (sidebar) — top 5 by views
         $mostReadNews = News::with(['categories', 'author'])
             ->where('is_published', true)
-            ->where('id', '!=', $news->id)
+            ->whereNotIn('id', $usedIds)
             ->orderBy('views', 'desc')
             ->take(5)
             ->get();
+        $usedIds = $usedIds->merge($mostReadNews->pluck('id'));
 
-        // Fetch related news (for bottom section - based on category)
+        // 2. RELATED NEWS (same category) — up to 4
+        $categoryIds = $news->categories->pluck('id');
         $relatedNews = News::with(['categories', 'author'])
             ->where('is_published', true)
-            ->where('id', '!=', $news->id)
-            ->whereHas('categories', function ($query) use ($news) {
-                $query->whereIn('categories.id', $news->categories->pluck('id'));
+            ->whereNotIn('id', $usedIds)
+            ->whereHas('categories', function ($q) use ($categoryIds) {
+                $q->whereIn('categories.id', $categoryIds);
             })
             ->orderBy('published_at', 'desc')
             ->take(4)
             ->get();
-            
-        // If not enough related news, fill with latest
-        if ($relatedNews->count() < 4) {
-             $extraNews = News::with(['categories', 'author'])
+        $usedIds = $usedIds->merge($relatedNews->pluck('id'));
+
+        // 3. AUTHOR NEWS — up to 4 articles by the same author(s)
+        $authorIds = $news->author->pluck('id');
+        $authorNews = collect();
+        if ($authorIds->isNotEmpty()) {
+            $authorNews = News::with(['categories', 'author'])
                 ->where('is_published', true)
-                ->where('id', '!=', $news->id)
-                ->whereNotIn('id', $relatedNews->pluck('id'))
+                ->whereNotIn('id', $usedIds)
+                ->whereHas('author', function ($q) use ($authorIds) {
+                    $q->whereIn('authors.id', $authorIds);
+                })
                 ->orderBy('published_at', 'desc')
-                ->take(4 - $relatedNews->count())
+                ->take(4)
                 ->get();
-             $relatedNews = $relatedNews->merge($extraNews);
+            $usedIds = $usedIds->merge($authorNews->pluck('id'));
         }
 
-        // Fetch generic 'More News' for the bottom grid
-        $moreNews = News::with(['categories', 'author'])
+        // 4. CATEGORY RECOMMENDATIONS — fill from latest news of same categories, then any latest
+        $categoryRecommendations = News::with(['categories', 'author'])
             ->where('is_published', true)
-            ->where('id', '!=', $news->id)
-            ->whereNotIn('id', $relatedNews->pluck('id'))
+            ->whereNotIn('id', $usedIds)
+            ->whereHas('categories', function ($q) use ($categoryIds) {
+                $q->whereIn('categories.id', $categoryIds);
+            })
             ->orderBy('published_at', 'desc')
             ->take(6)
             ->get();
+        $usedIds = $usedIds->merge($categoryRecommendations->pluck('id'));
+
+        // Fill recommendations if fewer than 6
+        if ($categoryRecommendations->count() < 6) {
+            $fillCount = 6 - $categoryRecommendations->count();
+            $fillNews = News::with(['categories', 'author'])
+                ->where('is_published', true)
+                ->whereNotIn('id', $usedIds)
+                ->orderBy('published_at', 'desc')
+                ->take($fillCount)
+                ->get();
+            $categoryRecommendations = $categoryRecommendations->merge($fillNews);
+        }
 
         // Serializar autores usando los accessors del modelo
         $articleData = array_merge($news->toArray(), [
@@ -117,10 +142,11 @@ class NewsController extends Controller
         ]))->values();
 
         return \Inertia\Inertia::render('Article', [
-            'article'      => $articleData,
-            'mostReadNews' => $serializeNews($mostReadNews),
-            'relatedNews'  => $serializeNews($relatedNews),
-            'moreNews'     => $serializeNews($moreNews),
+            'article'                  => $articleData,
+            'mostReadNews'             => $serializeNews($mostReadNews),
+            'relatedNews'              => $serializeNews($relatedNews),
+            'authorNews'               => $serializeNews($authorNews),
+            'categoryRecommendations'  => $serializeNews($categoryRecommendations),
         ])->withViewData(['meta' => $meta]);
     }
 

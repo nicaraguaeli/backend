@@ -8,10 +8,11 @@ interface Props {
     article: ArticleData;
     relatedNews?: ArticleData[];
     mostReadNews?: ArticleData[];
-    moreNews?: ArticleData[];
+    authorNews?: ArticleData[];
+    categoryRecommendations?: ArticleData[];
 }
 
-const ArticlePage = ({ article, relatedNews = [], mostReadNews = [], moreNews = [] }: Props) => {
+const ArticlePage = ({ article, relatedNews = [], mostReadNews = [], authorNews = [], categoryRecommendations = [] }: Props) => {
     return (
         <>
             <Head title={article.title} />
@@ -20,7 +21,8 @@ const ArticlePage = ({ article, relatedNews = [], mostReadNews = [], moreNews = 
                     article={article}
                     relatedNews={relatedNews}
                     mostReadNews={mostReadNews}
-                    moreNews={moreNews}
+                    authorNews={authorNews}
+                    categoryRecommendations={categoryRecommendations}
                     onBack={() => router.visit('/')}
                 />
             </div>
