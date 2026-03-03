@@ -39,12 +39,17 @@ class NewsController extends Controller
             });
         }
 
-        // filter by category id
+        // filter by category id (or special 'featured' value)
         if ($request->filled('category')) {
-            $query->whereHas('categories', function ($qb) use ($request) {
-                $qb->where('categories.id', $request->input('category'));
-            });
+            if ($request->input('category') === 'featured') {
+                $query->where('is_featured', true);
+            } else {
+                $query->whereHas('categories', function ($qb) use ($request) {
+                    $qb->where('categories.id', $request->input('category'));
+                });
+            }
         }
+
 
         // paginate and preserve query string
         $news = $query->orderBy('id', 'desc')->paginate(20)->appends($request->query());

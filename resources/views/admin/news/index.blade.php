@@ -97,6 +97,7 @@
 
                 <select name="category" class="form-control mr-2">
                     <option value="">Todas las categorías</option>
+                    <option value="featured" {{ request('category') === 'featured' ? 'selected' : '' }}>⭐ Solo destacadas</option>
                     @foreach($categories as $c)
                         <option value="{{ $c->id }}" {{ request('category') == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
                     @endforeach
