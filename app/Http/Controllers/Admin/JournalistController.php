@@ -66,9 +66,11 @@ class JournalistController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Author $journalist)
     {
-        //
+        // El admin no tiene vista de detalle para periodistas,
+        // redirigir a la edición es la acción más útil.
+        return redirect()->route('admin.journalists.edit', $journalist);
     }
 
     /**

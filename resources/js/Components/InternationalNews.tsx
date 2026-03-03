@@ -1,5 +1,5 @@
 import React from 'react';
-import { router } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { Globe, Clock, ChevronRight, ArrowRight } from 'lucide-react';
 import { ArticleData } from '@/types';
@@ -10,10 +10,6 @@ interface InternationalNewsProps {
 }
 
 export default function InternationalNews({ items }: InternationalNewsProps) {
-    const onNewsClick = (slug: string) => {
-        router.visit(route('news.show', { slug }));
-    };
-
     const getRelativeTime = (dateString: string | Date) => {
         const date = new Date(dateString);
         const now = new Date();
@@ -42,10 +38,9 @@ export default function InternationalNews({ items }: InternationalNewsProps) {
             {/* List */}
             <div className="list-group list-group-flush">
                 {items.slice(0, 5).map((news) => (
-                    <a
+                    <Link
                         key={news.id}
                         href={route('news.show', { slug: news.slug })}
-                        onClick={(e) => { e.preventDefault(); onNewsClick(news.slug); }}
                         className="list-group-item list-group-item-action border-0 border-bottom p-3 news-item-hover"
                     >
                         <div className="d-flex gap-3">
@@ -73,15 +68,15 @@ export default function InternationalNews({ items }: InternationalNewsProps) {
                                 </div>
                             </div>
                         </div>
-                    </a>
+                    </Link>
                 ))}
             </div>
 
             {/* Footer */}
             <div className="p-3 bg-light text-center border-top">
-                <a href={route('category.show', { slug: 'internacionales' })} className="text-decoration-none fw-bold text-abc-green d-flex align-items-center justify-content-center gap-1 hover-opacity small">
+                <Link href={route('category.show', { slug: 'internacionales' })} className="text-decoration-none fw-bold text-abc-green d-flex align-items-center justify-content-center gap-1 hover-opacity small">
                     Ver todas las internacionales <ArrowRight size={14} />
-                </a>
+                </Link>
             </div>
 
             <style>{`

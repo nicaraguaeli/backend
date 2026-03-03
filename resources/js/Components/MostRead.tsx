@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from '@inertiajs/react';
 import { Eye, TrendingUp } from 'lucide-react';
 import { asset } from '@/url';
 import { route } from 'ziggy-js';
@@ -86,7 +87,7 @@ export default function MostRead({ items, className = '' }: MostReadProps) {
             : `https://placehold.co/100x100/eee/ccc?text=${encodeURIComponent(item.categories?.[0]?.name.charAt(0) || 'N')}`;
 
           return (
-            <a
+            <Link
               key={item.id}
               href={route('news.show', { slug: item.slug })}
               className="most-read-item d-flex align-items-center gap-3 text-decoration-none p-3"
@@ -121,7 +122,7 @@ export default function MostRead({ items, className = '' }: MostReadProps) {
                   {`${15 - (index * 2)}k lecturas`}
                 </div>
               </div>
-            </a>
+            </Link>
           )
         })}
       </div>

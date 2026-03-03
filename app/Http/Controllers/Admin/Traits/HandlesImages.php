@@ -54,9 +54,7 @@ trait HandlesImages
     bool $applyWatermark = false
 ): ?string {
 
-    if ($oldPath) {
-        Storage::disk('public')->delete($oldPath);
-    }
+
      // 📅 Carpeta por mes-año (01-2026)
     $folder = 'news/' . now()->format('m-Y');
 
@@ -99,13 +97,18 @@ trait HandlesImages
             }
         }
 
-        // ✅ SIEMPRE guardar la imagen (con o sin watermark)
+        // ✅ Guardar nueva imagen ANTES de borrar la anterior.
+        // Si falla aquí, la imagen anterior queda intacta (catch retorna null sin borrar nada).
         Storage::disk('public')->put(
             $filename,
             $img->toJpeg(90)
         );
 
-       
+        // ✅ Solo borrar la imagen anterior DESPUÉS de confirmar que la nueva se guardó.
+        if ($oldPath && $oldPath !== $filename) {
+            Storage::disk('public')->delete($oldPath);
+        }
+
         return $filename;
 
     } catch (\Throwable $e) {

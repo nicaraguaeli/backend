@@ -1,6 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import { asset } from '@/url';
-import MainLayout from '@/Layouts/MainLayout';
+import MainLayout, { withMainLayout } from '@/Layouts/MainLayout';
 import React, { useState, useEffect } from 'react';
 import Hero from '@/Components/Hero';
 import MostRead from '@/Components/MostRead';
@@ -210,6 +210,7 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
     );
 };
 
-Welcome.layout = (page: React.ReactNode) => <MainLayout>{page}</MainLayout>;
+Welcome.layout = withMainLayout;
+
 
 export default Welcome;

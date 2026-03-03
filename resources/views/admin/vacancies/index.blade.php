@@ -1,6 +1,6 @@
 @extends('adminlte::page')
 
-@section('title', 'Vacancies')
+@section('title', 'Vacantes')
 
 @section('content_header')
     <h1>Vacantes</h1>
@@ -9,7 +9,36 @@
 @section('content')
     <div class="card">
         <div class="card-body">
-            @if(isset($vacancies) && $vacancies->count())
+
+            {{-- Acciones y búsqueda --}}
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <a href="{{ route('admin.vacancies.create') }}" class="btn btn-primary">
+                    <i class="fas fa-plus mr-1"></i> Crear Vacante
+                </a>
+
+                <form method="GET" action="{{ route('admin.vacancies.index') }}" class="form-inline">
+                    <div class="input-group mr-2">
+                        <input type="search" name="q" value="{{ request('q') }}"
+                               class="form-control" placeholder="Buscar cargo o empresa..." aria-label="Buscar">
+                    </div>
+                    <select name="status" class="form-control mr-2" aria-label="Estado">
+                        <option value="">Todos los estados</option>
+                        <option value="active"   {{ request('status') === 'active'   ? 'selected' : '' }}>✅ Activas</option>
+                        <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>🚫 Inactivas</option>
+                    </select>
+                    <button class="btn btn-outline-secondary mr-1" type="submit">Buscar</button>
+                    <a href="{{ route('admin.vacancies.index') }}" class="btn btn-link">Limpiar</a>
+                </form>
+            </div>
+
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if($vacancies->count())
                 <div class="table-responsive">
                     <table class="table table-sm table-hover" aria-label="Lista de vacantes">
                         <thead>
@@ -18,7 +47,8 @@
                                 <th>Cargo</th>
                                 <th>Empleador</th>
                                 <th>Ubicación</th>
-                                <th>Tipo de vacante</th>
+                                <th>Tipo</th>
+                                <th>Vence</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
@@ -26,24 +56,34 @@
                         <tbody>
                             @foreach($vacancies as $vacancy)
                                 <tr data-id="{{ $vacancy->id }}">
-                                    <td>{{ $vacancies->firstItem() ? $vacancies->firstItem() + $loop->index : $loop->iteration }}</td>
-                                    <td>{{ $vacancy->title }}</td>
+                                    <td>{{ $vacancies->firstItem() + $loop->index }}</td>
+                                    <td><strong>{{ $vacancy->title }}</strong></td>
                                     <td>{{ $vacancy->company ?? '-' }}</td>
                                     <td>{{ $vacancy->city ?? '-' }}</td>
                                     <td>{{ $vacancy->employment_type ?? '-' }}</td>
-                                    <td>{{ $vacancy->is_active ? 'Activa' : 'Inactiva' }}</td>
                                     <td>
-                                        @if(!empty($vacancy) && !empty($vacancy->id))
-                                            <a href="{{ route('admin.vacancies.edit', ['vacancy' => $vacancy->id]) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
-
-                                            <form action="{{ route('admin.vacancies.destroy', ['vacancy' => $vacancy->id]) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Confirmar eliminar?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">Borrar</button>
-                                            </form>
+                                        @if($vacancy->expires_at)
+                                            <span class="{{ $vacancy->expires_at->isPast() ? 'text-danger' : 'text-muted' }}">
+                                                {{ $vacancy->expires_at->format('d/m/Y') }}
+                                            </span>
                                         @else
-                                            <span class="text-muted">Sin acciones</span>
+                                            -
                                         @endif
+                                    </td>
+                                    <td>
+                                        @if($vacancy->is_active)
+                                            <span class="badge badge-success">Activa</span>
+                                        @else
+                                            <span class="badge badge-secondary">Inactiva</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <a href="{{ route('admin.vacancies.edit', $vacancy) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
+                                        <form action="{{ route('admin.vacancies.destroy', $vacancy) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Confirmar eliminar esta vacante?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Borrar</button>
+                                        </form>
                                     </td>
                                 </tr>
                             @endforeach
@@ -55,7 +95,7 @@
                     {{ $vacancies->links() }}
                 </div>
             @else
-                <p class="text-muted">No hay vacantes registradas.</p>
+                <p class="text-muted mt-3">No se encontraron vacantes{{ request('q') ? ' para "' . request('q') . '"' : '' }}.</p>
             @endif
         </div>
     </div>

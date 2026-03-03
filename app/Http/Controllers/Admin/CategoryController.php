@@ -140,8 +140,8 @@ class CategoryController extends Controller
 
     public function destroy(Request $request, Category $category)
     {
-        if ($category->image) {
-            Storage::disk('public')->delete($category->image);
+        if ($category->image_path) {
+            Storage::disk('public')->delete($category->image_path);
         }
         $category->delete();
 

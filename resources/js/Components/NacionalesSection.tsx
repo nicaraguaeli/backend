@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from '@inertiajs/react';
 import { asset } from '@/url';
 import { route } from 'ziggy-js';
 import { ArticleData } from '../types';
@@ -18,9 +19,9 @@ export default function NacionalesSection({ news }: NacionalesSectionProps) {
           <h2 className="h3 fw-bold text-abc-blue font-serif border-start border-4 border-abc-red ps-3 mb-0">
             Nacionales
           </h2>
-          <a href={route('category.show', { slug: 'nacionales' })} className="btn btn-link text-decoration-none text-secondary d-flex align-items-center gap-1 small fw-bold">
+          <Link href={route('category.show', { slug: 'nacionales' })} className="btn btn-link text-decoration-none text-secondary d-flex align-items-center gap-1 small fw-bold">
             Ver más <ArrowRight size={16} />
-          </a>
+          </Link>
         </div>
 
         <div className="row g-4">
@@ -52,9 +53,9 @@ export default function NacionalesSection({ news }: NacionalesSectionProps) {
                     )}
                   </div>
                   <h3 className="h6 fw-bold text-dark mb-3 line-clamp-3 flex-grow-1 font-serif">
-                    <a href={route('news.show', { slug: item.slug })} className="text-decoration-none text-dark stretched-link hover-text-red">
+                    <Link href={route('news.show', { slug: item.slug })} className="text-decoration-none text-dark stretched-link hover-text-red">
                       {item.title}
-                    </a>
+                    </Link>
                   </h3>
                 </div>
               </article>

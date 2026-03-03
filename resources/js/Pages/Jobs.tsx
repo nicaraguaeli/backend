@@ -1,6 +1,6 @@
 import React from 'react';
 import { Head, router } from '@inertiajs/react';
-import MainLayout from '@/Layouts/MainLayout';
+import MainLayout, { withMainLayout } from '@/Layouts/MainLayout';
 import { Briefcase, MapPin, Clock, Building } from 'lucide-react';
 
 interface Vacancy {
@@ -96,6 +96,7 @@ const JobsPage = ({ vacancies }: Props) => {
     );
 };
 
-JobsPage.layout = (page: React.ReactNode) => <MainLayout>{page}</MainLayout>;
+JobsPage.layout = withMainLayout;
+
 
 export default JobsPage;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Head, router } from '@inertiajs/react';
-import MainLayout from '@/Layouts/MainLayout';
+import MainLayout, { withMainLayout } from '@/Layouts/MainLayout';
 import FeaturedCategoryView from '@/Components/FeaturedCategoryView';
 import { route } from 'ziggy-js';
 import { Category } from '@/types';
@@ -22,6 +22,7 @@ const FeaturedCategoryPage = ({ category }: Props) => {
     );
 };
 
-FeaturedCategoryPage.layout = (page: React.ReactNode) => <MainLayout>{page}</MainLayout>;
+FeaturedCategoryPage.layout = withMainLayout;
+
 
 export default FeaturedCategoryPage;

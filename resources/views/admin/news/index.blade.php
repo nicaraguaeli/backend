@@ -103,6 +103,26 @@
                     @endforeach
                 </select>
 
+                <select name="status" class="form-control mr-2" aria-label="Estado de publicación">
+                    <option value="">Todos los estados</option>
+                    <option value="published"   {{ request('status') === 'published'   ? 'selected' : '' }}>✅ Publicadas</option>
+                    <option value="unpublished" {{ request('status') === 'unpublished' ? 'selected' : '' }}>🚫 No publicadas</option>
+                </select>
+
+                <div class="input-group mr-2" title="Desde">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" style="font-size:.8em;">Desde</span>
+                    </div>
+                    <input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control" aria-label="Fecha desde">
+                </div>
+
+                <div class="input-group mr-2" title="Hasta">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" style="font-size:.8em;">Hasta</span>
+                    </div>
+                    <input type="date" name="date_to" value="{{ request('date_to') }}" class="form-control" aria-label="Fecha hasta">
+                </div>
+
                 <!-- moved buttons next to category for easier access -->
                 <div class="d-flex align-items-center w-100-mobile">
                     <button class="btn btn-outline-secondary mr-2" type="submit">Buscar</button>
@@ -656,18 +676,14 @@
             const slugInput = cloned.find('input[name="slug"]');
 
             function slugify(text) {
-                const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;'
-                const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------'
-                const p = new RegExp(a.split('').join('|'), 'g')
-
                 return text.toString().toLowerCase()
-                    .replace(/\s+/g, '-') // Replace spaces with -
-                    .replace(p, c => b.charAt(a.indexOf(c))) // Replace special characters
-                    .replace(/&/g, '-and-') // Replace & with 'and'
-                    .replace(/[^\w\-]+/g, '') // Remove all non-word chars
-                    .replace(/\-\-+/g, '-') // Replace multiple - with single -
-                    .replace(/^-+/, '') // Trim - from start of text
-                    .replace(/-+$/, '') // Trim - from end of text
+                    .normalize('NFD')                    // Separa letras de diacríticos (ñ → n + ~)
+                    .replace(/[\u0300-\u036f]/g, '')      // Elimina diacríticos (acentos, tildes, ñ~)
+                    .replace(/\s+/g, '-')                // Espacios → guion
+                    .replace(/[^\w\-]+/g, '')            // Elimina caracteres no alfanuméricos
+                    .replace(/\-\-+/g, '-')              // Múltiples guiones → uno solo
+                    .replace(/^-+/, '')                  // Quita guiones al inicio
+                    .replace(/-+$/, '');                 // Quita guiones al final
             }
 
             titleInput.on('input', function() {

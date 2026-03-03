@@ -22,8 +22,24 @@ class VacancyController extends Controller
     
     public function index(Request $request)
     {
+        $query = Vacancy::orderByDesc('created_at');
+
+        // Búsqueda por título o empresa
+        if ($request->filled('q')) {
+            $q = $request->input('q');
+            $query->where(function ($qb) use ($q) {
+                $qb->where('title', 'like', "%{$q}%")
+                   ->orWhere('company', 'like', "%{$q}%");
+            });
+        }
+
+        // Filtro por estado
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->input('status') === 'active');
+        }
+
         $perPage = (int) $request->get('per_page', 15);
-        $vacancies = Vacancy::orderByDesc('created_at')->paginate($perPage);
+        $vacancies = $query->paginate($perPage)->appends($request->query());
 
         return view('admin.vacancies.index', compact('vacancies'));
     }

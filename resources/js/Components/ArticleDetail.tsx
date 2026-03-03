@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link as InertiaLink } from '@inertiajs/react';
 import { asset } from '@/url';
 import { route } from 'ziggy-js';
 import {
@@ -53,7 +54,7 @@ const MiniCard = ({ post }: { post: ArticleData }) => {
   const imgSrc = post.image_path ? asset(`storage/${post.image_path}`) : 'https://placehold.co/160x100?text=ABC';
 
   return (
-    <a
+    <InertiaLink
       href={route('news.show', { slug: post.slug })}
       className="text-decoration-none d-flex gap-3 align-items-start article-mini-card"
       style={{ padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}
@@ -75,9 +76,10 @@ const MiniCard = ({ post }: { post: ArticleData }) => {
           {new Date(post.published_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
         </span>
       </div>
-    </a>
+    </InertiaLink>
   );
 };
+
 
 // ─── Full Article Card (grid) ─────────────────────────────────────────────────
 const GridCard = ({ post, accentColor }: { post: ArticleData; accentColor?: string }) => {
@@ -87,40 +89,50 @@ const GridCard = ({ post, accentColor }: { post: ArticleData; accentColor?: stri
   const imgSrc = post.image_path ? asset(`storage/${post.image_path}`) : 'https://placehold.co/400x240?text=ABC';
 
   return (
-    <article className="grid-news-card h-100 d-flex flex-column" style={{ borderRadius: 12, overflow: 'hidden', background: '#fff', boxShadow: '0 2px 12px rgba(0,0,0,0.08)', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}>
-      <div style={{ position: 'relative', paddingBottom: '60%', overflow: 'hidden' }}>
-        <img
-          src={imgSrc}
-          alt={post.title}
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s ease' }}
-          className="grid-card-img"
-          onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x240?text=Sin+Imagen'; }}
-        />
-        <span
-          className="badge position-absolute text-uppercase"
-          style={{ top: 10, left: 10, backgroundColor: accent, color: color.label, fontSize: '0.68rem', letterSpacing: '0.5px', zIndex: 1 }}
-        >
-          {catName}
-        </span>
-        <span className="position-absolute d-flex align-items-center gap-1 text-white" style={{ bottom: 8, right: 10, fontSize: '0.7rem', textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}>
-          <Clock size={11} />
-          {new Date(post.published_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
-        </span>
-      </div>
-      <div className="p-3 d-flex flex-column flex-grow-1">
-        {post.author?.name && (
-          <p className="mb-1 text-muted d-flex align-items-center gap-1" style={{ fontSize: '0.72rem' }}>
-            <User size={11} /> {post.author.name}
-          </p>
-        )}
-        <h3 className="fw-bold mb-2 lh-sm flex-grow-1" style={{ fontSize: '0.92rem', color: '#1a1a2e' }}>
-          <a href={route('news.show', { slug: post.slug })} className="text-decoration-none text-dark stretched-link grid-card-link">{post.title}</a>
-        </h3>
-        <span className="text-abc-red fw-bold d-inline-flex align-items-center gap-1 mt-auto" style={{ fontSize: '0.75rem' }}>
-          Leer más <ChevronRight size={13} />
-        </span>
-      </div>
-    </article>
+    // Envuelve toda la tarjeta: evita stretched-link que escapa al contenedor padre
+    <InertiaLink
+      href={route('news.show', { slug: post.slug })}
+      className="text-decoration-none d-block"
+      style={{ color: 'inherit' }}
+    >
+      <article
+        className="grid-news-card h-100 d-flex flex-column"
+        style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', background: '#fff', boxShadow: '0 2px 12px rgba(0,0,0,0.08)', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}
+      >
+        <div style={{ position: 'relative', paddingBottom: '60%', overflow: 'hidden' }}>
+          <img
+            src={imgSrc}
+            alt={post.title}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s ease' }}
+            className="grid-card-img"
+            onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x240?text=Sin+Imagen'; }}
+          />
+          <span
+            className="badge position-absolute text-uppercase"
+            style={{ top: 10, left: 10, backgroundColor: accent, color: color.label, fontSize: '0.68rem', letterSpacing: '0.5px', zIndex: 1 }}
+          >
+            {catName}
+          </span>
+          <span className="position-absolute d-flex align-items-center gap-1 text-white" style={{ bottom: 8, right: 10, fontSize: '0.7rem', textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}>
+            <Clock size={11} />
+            {new Date(post.published_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+          </span>
+        </div>
+        <div className="p-3 d-flex flex-column flex-grow-1">
+          {post.author?.name && (
+            <p className="mb-1 text-muted d-flex align-items-center gap-1" style={{ fontSize: '0.72rem' }}>
+              <User size={11} /> {post.author.name}
+            </p>
+          )}
+          <h3 className="fw-bold mb-2 lh-sm flex-grow-1 grid-card-link" style={{ fontSize: '0.92rem', color: '#1a1a2e' }}>
+            {post.title}
+          </h3>
+          <span className="text-abc-red fw-bold d-inline-flex align-items-center gap-1 mt-auto" style={{ fontSize: '0.75rem' }}>
+            Leer más <ChevronRight size={13} />
+          </span>
+        </div>
+      </article>
+    </InertiaLink>
   );
 };
 

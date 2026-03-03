@@ -1,6 +1,7 @@
 import React from 'react';
 import { Head, router } from '@inertiajs/react';
-import MainLayout from '@/Layouts/MainLayout';
+import MainLayout, { withMainLayout } from '@/Layouts/MainLayout';
+import { route } from 'ziggy-js';
 import ArticleDetail from '@/Components/ArticleDetail';
 import { ArticleData } from '@/types';
 
@@ -41,13 +42,14 @@ const ArticlePage = ({
                     authorNews={authorNews}
                     categoryRecommendations={categoryRecommendations}
                     banners={banners}
-                    onBack={() => router.visit('/')}
+                    onBack={() => router.visit(route('home'), { replace: false })}
                 />
             </div>
         </>
     );
 };
 
-ArticlePage.layout = (page: React.ReactNode) => <MainLayout>{page}</MainLayout>;
+ArticlePage.layout = withMainLayout;
+
 
 export default ArticlePage;

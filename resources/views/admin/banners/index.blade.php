@@ -39,7 +39,13 @@
                                     <img src="{{ asset('storage/' . $banner->file_path) }}" alt="Banner" style="height: 50px; width: auto;">
                                 @endif
                             </td>
-                            <td><span class="badge badge-info">{{ $banner->mime_type }}</span></td>
+                            <td>
+                                @if(Str::startsWith($banner->mime_type, 'video'))
+                                    <span class="badge badge-dark">Video</span>
+                                @else
+                                    <span class="badge badge-info">Imagen</span>
+                                @endif
+                            </td>
                             <td>
                                 @if($banner->link)
                                     <a href="{{ $banner->link }}" target="_blank">{{ Str::limit($banner->link, 30) }}</a>
@@ -91,7 +97,10 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     function showToast(type, message) {
-        if (typeof $ !== 'undefined' && $(document).Toasts) {
+        if (typeof toastr !== 'undefined') {
+            if (type === 'success') toastr.success(message);
+            else toastr.error(message);
+        } else if (typeof $ !== 'undefined' && $(document).Toasts) {
             $(document).Toasts('create', {
                 class: `bg-${type}`,
                 title: type === 'success' ? 'Éxito' : 'Error',
@@ -100,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 body: message
             });
         } else {
-            alert((type === 'success' ? '✅ ' : '❌ ') + message);
+            console.warn(message);
         }
     }
 

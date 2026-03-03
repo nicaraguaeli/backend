@@ -1,6 +1,6 @@
 import React from 'react';
 import { Head, router } from '@inertiajs/react';
-import MainLayout from '@/Layouts/MainLayout';
+import MainLayout, { withMainLayout } from '@/Layouts/MainLayout';
 import CategoryView from '@/Components/CategoryView';
 import { route } from 'ziggy-js';
 
@@ -23,6 +23,7 @@ const CategoryPage = ({ category, categoryName }: Props) => {
     );
 };
 
-CategoryPage.layout = (page: React.ReactNode) => <MainLayout>{page}</MainLayout>;
+CategoryPage.layout = withMainLayout;
+
 
 export default CategoryPage;

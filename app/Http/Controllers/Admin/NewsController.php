@@ -50,6 +50,18 @@ class NewsController extends Controller
             }
         }
 
+        // filter by published status
+        if ($request->filled('status')) {
+            $query->where('is_published', $request->input('status') === 'published');
+        }
+
+        // filter by date range
+        if ($request->filled('date_from')) {
+            $query->whereDate('published_at', '>=', $request->input('date_from'));
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('published_at', '<=', $request->input('date_to'));
+        }
 
         // paginate and preserve query string
         $news = $query->orderBy('id', 'desc')->paginate(20)->appends($request->query());
@@ -396,7 +408,7 @@ if ($imagePath) {
 
     News::whereIn('id', $ids)->update([
         'is_published' => $status,
-
+        'published_at' => $published_at,
     ]);
 
     $message = $action === 'publish'
@@ -424,18 +436,13 @@ public function related(Request $request)
 
 public function preview(News $news)
 {
-   
-    // Solo usuarios autenticados pueden hacer preview
-    if (!auth()->check()) {
-        abort(403);
-    }
-
-     // Envío al frontend usando las mismas variables que el show
+    // El middleware 'auth' del grupo de rutas admin ya protege esta ruta.
+    // No se necesita verificar auth()->check() manualmente aquí.
     return Inertia::render('Article', [
-        'article' => $news,          // aquí usamos el mismo 'article'
-        'relatedNews' => $news->related ?? [],  // opcional, según tu lógica actual
-        'mostReadNews' => [],         // opcional, puedes usar tu método de most read
-        'preview' => true             // variable extra para frontend, indica que es preview
+        'article'     => $news,
+        'relatedNews' => $news->related ?? [],
+        'mostReadNews' => [],
+        'preview'     => true,
     ]);
 }
 

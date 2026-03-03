@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from '@inertiajs/react';
 import { asset } from '@/url';
 import { route } from 'ziggy-js';
 import { ArticleData } from '../types';
@@ -98,9 +99,9 @@ export default function PostGrid({ posts, columns, compact = false }: PostGridPr
                 )}
 
                 <h3 className={`card-title fw-bold font-serif mb-3 text-dark ${compact ? 'h6' : 'h5'}`}>
-                  <a href={route('news.show', { slug: post.slug })} className="text-decoration-none text-dark stretched-link hover-text-abc-blue">
+                  <Link href={route('news.show', { slug: post.slug })} className="text-decoration-none text-dark stretched-link hover-text-abc-blue">
                     {post.title}
-                  </a>
+                  </Link>
                 </h3>
 
                 {!compact && (
@@ -110,13 +111,13 @@ export default function PostGrid({ posts, columns, compact = false }: PostGridPr
                 )}
 
                 <div className="mt-3 position-relative" style={{ zIndex: 2 }}>
-                  <a
+                  <Link
                     href={route('news.show', { slug: post.slug })}
                     className="text-decoration-none text-abc-red fw-bold text-uppercase d-inline-flex align-items-center gap-1"
                     style={{ fontSize: '0.8rem', letterSpacing: '0.5px' }}
                   >
                     Leer Noticia <ArrowRight size={14} />
-                  </a>
+                  </Link>
                 </div>
               </div>
             </article>

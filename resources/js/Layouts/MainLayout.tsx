@@ -147,3 +147,17 @@ export default function MainLayout({ children }: MainLayoutProps) {
         </div>
     );
 }
+
+/**
+ * Función de layout compartida para Inertia persistent layouts.
+ *
+ * IMPORTANTE: debe ser una referencia estable única (definida a nivel de módulo,
+ * fuera de cualquier componente). Inertia compara por referencia: si dos Page components
+ * asignan la misma función, el layout NO se destruye al navegar entre ellos, preservando:
+ *   - audioState del reproductor (no se corta la música al navegar)
+ *   - navItems del Header (no re-fetchea categorías, sin spinner del menú)
+ *   - currentView (podcast/videos/default)
+ */
+export function withMainLayout(page: React.ReactNode): React.ReactElement {
+    return <MainLayout>{page}</MainLayout>;
+}

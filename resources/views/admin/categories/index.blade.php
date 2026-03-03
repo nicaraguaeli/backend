@@ -149,21 +149,37 @@ document.addEventListener('DOMContentLoaded', function () {
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
     const slugify = text =>
         text.toString().toLowerCase().trim()
-            .replace(/\s+/g, '-')           // Replace spaces with -
-            .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
-            .replace(/\-\-+/g, '-')         // Replace multiple - with single -
-            .replace(/^-+/, '')             // Trim - from start of text
-            .replace(/-+$/, '');            // Trim - from end of text
+            .normalize('NFD')                   // Separa diacríticos
+            .replace(/[\u0300-\u036f]/g, '')     // Elimina acentos/tildes
+            .replace(/\s+/g, '-')               // Espacios → guion
+            .replace(/[^\w\-]+/g, '')           // Solo alfanuméricos y guiones
+            .replace(/\-\-+/g, '-')             // Múltiples guiones → uno
+            .replace(/^-+/, '')                 // Sin guion inicial
+            .replace(/-+$/, '');                // Sin guion final
 
     function showToast(type, message) {
-        // Uses AdminLTE's Toasts plugin, make sure it's enabled
-        $(document).Toasts('create', {
-            class: `bg-${type}`,
-            title: type === 'success' ? 'Éxito' : 'Error',
-            autohide: true,
-            delay: 3000,
-            body: message
-        });
+        // Normalizar: 'error' → 'danger' para consistencia con Bootstrap
+        if (type === 'error') type = 'danger';
+        if (type === 'warning') type = 'warning';
+
+        if (typeof toastr !== 'undefined') {
+            // toastr es el sistema de notificaciones principal del admin
+            const fn = type === 'success' ? 'success'
+                     : type === 'danger'  ? 'error'
+                     : type === 'warning' ? 'warning'
+                     : 'info';
+            toastr[fn](message);
+        } else if (typeof $ !== 'undefined' && typeof $(document).Toasts === 'function') {
+            $(document).Toasts('create', {
+                class: `bg-${type}`,
+                title: type === 'success' ? 'Éxito' : 'Error',
+                autohide: true,
+                delay: 3000,
+                body: message
+            });
+        } else {
+            console.warn('[showToast]', type, message);
+        }
     }
 
     function debounce(func, delay) {
@@ -322,7 +338,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const formData = new FormData(form);
         const id = categoryIdInput.value;
-        const url = id ? '{{ url("admin/categories") }}/' + id : '{{ route('admin.categories.store') }}';
+        const url = id ? '{{ url("admin/categorias") }}/' + id : '{{ route('admin.categories.store') }}';
         
         // For updates, we use POST but spoof the method with _method
         if (id) {
@@ -373,7 +389,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // AJAX update for toggles and position (delegated)
     const debouncedUpdate = debounce((id, data, element) => {
         element.disabled = true;
-        fetch('{{ url("admin/categories") }}/' + id, {
+        fetch('{{ url("admin/categorias") }}/' + id, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -391,7 +407,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         })
         .catch(err => {
-            showToast('error', err.message);
+            showToast('danger', err.message);
             if (element.type === 'checkbox') element.checked = !element.checked; // Revert
         })
         .finally(() => element.disabled = false );
@@ -800,7 +816,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         throw new Error('No se pudo eliminar.');
                     }
                  })
-                 .catch(err => showToast('error', err.message));
+                 .catch(err => showToast('danger', err.message));
             }
         }
     });

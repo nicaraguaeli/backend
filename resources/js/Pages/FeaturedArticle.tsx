@@ -1,6 +1,6 @@
 import React from 'react';
 import { Head, router } from '@inertiajs/react';
-import MainLayout from '@/Layouts/MainLayout';
+import MainLayout, { withMainLayout } from '@/Layouts/MainLayout';
 import FeaturedArticleDetail from '@/Components/FeaturedArticleDetail';
 import { ArticleData } from '@/types';
 
@@ -20,6 +20,7 @@ const FeaturedArticlePage = ({ article }: Props) => {
     );
 };
 
-FeaturedArticlePage.layout = (page: React.ReactNode) => <MainLayout>{page}</MainLayout>;
+FeaturedArticlePage.layout = withMainLayout;
+
 
 export default FeaturedArticlePage;

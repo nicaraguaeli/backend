@@ -3,7 +3,7 @@
 <div class="row">
     <div class="col-md-8">
         <div class="form-group">
-            <label for="title">Titulo</label>
+            <label for="title">Título</label>
             <input type="text" name="title" id="title" class="form-control"
                    value="{{ old('title', $news->title ?? '') }}" required>
         </div>
@@ -146,7 +146,7 @@
         </div>
 
         <div class="form-group">
-                            <label for="area">Area</label>
+                            <label for="area">Área</label>
                             <select name="area" id="area" class="form-control">
                                 <option value="">Seleccionar...</option>
                                 <option value="Nacional" {{ old('area', $news->area ?? '') == 'Nacional' ? 'selected' : '' }}>Nacional</option>
@@ -157,7 +157,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="country_id">Pais</label>
+                            <label for="country_id">País</label>
                             <select name="country_id" id="country_id" class="form-control select2"
                                     data-cities-url="{{ url('admin/countries/COUNTRY_ID/cities') }}">
                                 <option value="">Seleccionar país...</option>
@@ -179,7 +179,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="author_id">Autor(s)</label>
+                            <label for="author_id">Autor(es)</label>
                             <select name="author_id[]" id="author_id" class="form-control select2" multiple="multiple" required>
                                 @foreach ($authors as $author)
                                     <option class="text-dark" value="{{ $author->id }}" {{ in_array($author->id, old('author_id', $news->author->pluck('id')->toArray() ?? [])) ? 'selected' : '' }}>{{ $author->name }}</option>
@@ -189,7 +189,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="categories">Categorias</label>
+                            <label for="categories">Categorías</label>
                             <select name="categories[]" id="categories" class="form-control select2" multiple="multiple" required>
                                 @foreach ($categories as $category)
                                     <option value="{{ $category->id }}" {{ in_array($category->id, old('categories', $news->categories->pluck('id')->toArray() ?? [])) ? 'selected' : '' }}>{{ $category->name }}</option>
@@ -351,8 +351,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (croppedInput) croppedInput.value = base64data;
 
-             console.log('cropped image:', base64data);
-             
             if (imagePreview) {
                 imagePreview.src = base64data;
                 imagePreview.classList.remove('d-none');
@@ -362,8 +360,6 @@ document.addEventListener('DOMContentLoaded', function () {
         };
         reader.readAsDataURL(blob);
     }, 'image/jpeg', 0.9);
-
-    console.log('cropped image:', base64data);
 });
 
     // Watermark logic
