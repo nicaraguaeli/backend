@@ -26,7 +26,7 @@ const JobsPage = ({ vacancies }: Props) => {
 
             <div className="row justify-content-center mb-4">
                 <div className="col-md-10 text-center">
-                    <h1 className="fw-bold mb-3 display-5">Bolsa de Empleos</h1>
+                    <h1 className="fw-bold mb-3 display-5">Oportunidades de Empleo</h1>
                     <p className="lead text-muted">Encuentra tu próxima oportunidad profesional en ABC Stereo.</p>
                 </div>
             </div>
@@ -79,7 +79,7 @@ const JobsPage = ({ vacancies }: Props) => {
                     ) : (
                         <div className="text-center py-5 bg-white rounded shadow-sm">
                             <Briefcase size={48} className="text-muted mb-3" />
-                            <h3>No hay vacantes disponibles</h3>
+                            <h3>No hay empleos disponibles</h3>
                             <p className="text-muted">Por favor revisa más tarde para nuevas oportunidades.</p>
                         </div>
                     )}

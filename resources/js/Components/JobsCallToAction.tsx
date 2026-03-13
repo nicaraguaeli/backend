@@ -27,7 +27,7 @@ export default function JobsCallToAction() {
                                         </h2>
 
                                         <p className="lead text-muted mb-4">
-                                            Explora nuestra bolsa de trabajo y descubre las vacantes disponibles en las mejores empresas de la región.
+                                            Explora nuestra bolsa de trabajo y descubre los empleos disponibles en las mejores empresas de la región.
                                         </p>
 
                                         <div className="d-flex flex-wrap gap-3">
@@ -35,7 +35,7 @@ export default function JobsCallToAction() {
                                                 href={route('jobs.index')}
                                                 className="btn btn-abc-blue px-4 py-2 rounded-pill fw-bold d-flex align-items-center gap-2 hover-scale"
                                             >
-                                                Ver Vacantes Disponibles
+                                                Ver Empleos Disponibles
                                                 <ArrowRight size={18} />
                                             </Link>
                                         </div>
