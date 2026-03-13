@@ -56,7 +56,7 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
         // Sort by menu_order (safe when null/undefined)
         visibleCategories.sort((a, b) => (Number(a.menu_order) || 0) - (Number(b.menu_order) || 0));
 
-        const MAX_VISIBLE_ITEMS = 7;
+        const MAX_VISIBLE_ITEMS = 6;
         let dynamicNavItems: NavItem[];
         let remainingItems: NavItem[] = [];
 
@@ -88,6 +88,13 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
         const finalNavItems = [
           ...dynamicNavItems,
         ];
+
+        // Add fixed 'Audioreportajes' link before '+Contenido'
+        finalNavItems.push({
+          label: 'Audioreportajes',
+          href: '#',
+          target: 'podcastview',
+        });
 
         // Only add "+Contenido" if there are items for it
         if (megaMenuItems.length > 0) {
@@ -261,7 +268,6 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
               <li className="nav-item"><a href={route('corporate.advertise')} className="nav-link text-light px-2 py-0 hover-white" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>ANUNCIATE</a></li>
               <li className="nav-item"><a href={route('corporate.contact')} className="nav-link text-light px-2 py-0 hover-white" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>CONTÁCTANOS</a></li>
               <li className="nav-item"><a href="#" onClick={navigateToVideos} className="nav-link text-abc-gold px-2 py-0 hover-white fw-bold" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>ABCTV</a></li>
-              <li className="nav-item"><a href="#" onClick={navigateToPodcast} className="nav-link text-light px-2 py-0 hover-white cursor-pointer" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>AUDIOREPORTAJES</a></li>
               <li className="nav-item"><a href={route('corporate.programming')} className="nav-link text-light px-2 py-0 hover-white" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>PROGRAMACIÓN</a></li>
               <li className="nav-item"><a href="#" onClick={navigateToJobs} className="nav-link text-light px-2 py-0 hover-white cursor-pointer" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>EMPLEOS</a></li>
             </ul>
@@ -355,17 +361,24 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
                         href={item.href}
                         className="nav-link nav-link-custom d-flex align-items-center gap-1 text-white text-uppercase fw-bold px-3 py-3"
                         style={{ fontSize: '0.75rem' }}
-                        onClick={(e) => handleNavClick(e, item.label, hasSubItems, undefined, item.href)}
+                        onClick={(e) => handleNavClick(e, item.label, hasSubItems, (item as any).target, item.href)}
                       >
                         {item.label}
                         {hasSubItems && <ChevronDown size={12} />}
                       </a>
                       {hasSubItems && (
-                        <div className="dropdown-menu border-0 shadow-lg rounded-0 mt-0 py-2">
-                          {item.subItems?.map(sub => {
-                            const isSpecial = SPECIAL_HIGHLIGHTS.includes(sub.label);
-                            return <a key={sub.label} href={sub.href} className={`dropdown-item py-2 px-4 small ${isSpecial ? 'text-gray fw-bold' : ''}`} onClick={(e) => handleNavClick(e, sub.label, false, sub.target, sub.href)}>{sub.label}</a>;
-                          })}
+                        <div className="nav-dropdown-panel">
+                          {item.subItems?.map((sub, idx) => (
+                            <a
+                              key={sub.label}
+                              href={sub.href}
+                              className="nav-dropdown-item"
+                              onClick={(e) => handleNavClick(e, sub.label, false, sub.target, sub.href)}
+                            >
+                              <span className="nav-dropdown-num">{String(idx + 1).padStart(2, '0')}</span>
+                              <span className="nav-dropdown-text">{sub.label}</span>
+                            </a>
+                          ))}
                         </div>
                       )}
                     </li>
@@ -511,6 +524,64 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
         .search-suggestions { position: absolute; z-index: 2050; max-height: 280px; overflow-y: auto; }
         .search-suggestions .dropdown-item { white-space: normal; }
         .search-suggestions .dropdown-item small { display: block; }
+
+        /* +Contenido — dark panel design */
+        .nav-dropdown-panel {
+          display: none;
+          position: absolute;
+          top: 100%;
+          right: 0;
+          min-width: 240px;
+          background: #0f1f3d;
+          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+          border-radius: 0 0 8px 8px;
+          padding: 6px 0 10px;
+          z-index: 1000;
+          overflow: hidden;
+          animation: dropFadeIn 0.18s ease-out;
+        }
+        .dropdown-hover:hover .nav-dropdown-panel { display: block; }
+        .nav-dropdown-item {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding: 10px 20px;
+          text-decoration: none;
+          color: rgba(255,255,255,0.75);
+          font-size: 0.78rem;
+          font-weight: 500;
+          letter-spacing: 0.3px;
+          border-left: 2px solid transparent;
+          transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+          white-space: nowrap;
+        }
+        .nav-dropdown-item + .nav-dropdown-item {
+          border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .nav-dropdown-item:hover {
+          background: rgba(255,255,255,0.05);
+          color: #ffffff;
+          border-left-color: var(--abc-red, #c0392b);
+        }
+        .nav-dropdown-num {
+          font-size: 0.65rem;
+          font-weight: 700;
+          color: rgba(255,255,255,0.2);
+          font-variant-numeric: tabular-nums;
+          min-width: 18px;
+          transition: color 0.15s ease;
+        }
+        .nav-dropdown-item:hover .nav-dropdown-num {
+          color: var(--abc-red, #c0392b);
+        }
+        .nav-dropdown-text {
+          flex: 1;
+          text-transform: capitalize;
+        }
+        @keyframes dropFadeIn {
+          from { opacity: 0; transform: translateY(-6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
       `}</style>
     </header>
   );

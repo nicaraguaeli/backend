@@ -12,6 +12,7 @@ import FeaturedSection from '@/Components/FeaturedSection';
 import FeaturedCategories from '@/Components/FeaturedCategories';
 import NacionalesSection from '@/Components/NacionalesSection';
 import JobsCallToAction from '@/Components/JobsCallToAction';
+import AudioreportajesCTA from '@/Components/AudioreportajesCTA';
 import VideoGallery from '@/Components/VideoGallery';
 import { ArticleData, Category, Video } from '@/types';
 import { Calendar } from 'lucide-react';
@@ -154,6 +155,14 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
                 categories={featuredCategories}
                 onCategoryClick={(slug) => router.visit(route('category.show', { slug }))}
             />
+
+            {/* ── CTA Audioreportajes ── 
+            <AudioreportajesCTA
+                onNavigate={() => {
+                    window.history.pushState(null, '', '#audioreportajes');
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                }}
+            />*/}
 
             {footerBanner && (
                 <div className="container my-5">
