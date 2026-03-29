@@ -195,6 +195,35 @@ class NewsController extends Controller
     }
 
     /**
+     * Página de resultados de búsqueda paginados
+     * GET /search?q=termino&page=1
+     */
+    public function search(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+
+        $results = null;
+        $total   = 0;
+
+        if (strlen($q) >= 2) {
+            $paginator = News::where('is_published', true)
+                ->where('title', 'like', "%{$q}%")
+                ->orderBy('published_at', 'desc')
+                ->paginate(20)
+                ->withQueryString();
+
+            $total   = $paginator->total();
+            $results = $paginator;
+        }
+
+        return \Inertia\Inertia::render('Search', [
+            'query'   => $q,
+            'results' => $results,
+            'total'   => $total,
+        ]);
+    }
+
+    /**
      * Suggestions endpoint for typeahead search (returns small set of matches)
      * GET /api/news/suggestions?q=term
      */
