@@ -318,7 +318,8 @@ export default function VideoReportajes({ onBack }: VideoReportajesProps) {
                 <VideoIcon size={18} className="text-warning animate-pulse" />
               </div>
               {!isScrolled && (
-                <p className="text-white-75 small mb-0">ABC TV - Periodismo de Investigación</p>
+                <p className="text-white-75 small mb-0">Mira nuestros trabajos audiovisuales: noticias, reportajes especiales y más.
+                </p>
               )}
             </div>
 
@@ -402,7 +403,7 @@ export default function VideoReportajes({ onBack }: VideoReportajesProps) {
           <div className="d-flex align-items-center gap-2">
             <div className="stat-badge"></div>
             <h3 className="h5 fw-bold text-dark mb-0">
-              {activeCategory === 'Todos' ? '🎬 Todos los Reportajes' : `📂 ${activeCategory}`}
+              {activeCategory === 'Todos' ? '🎬 Todos los Videos' : `📂 ${activeCategory}`}
             </h3>
           </div>
           <span className="badge bg-light text-secondary px-3 py-2">

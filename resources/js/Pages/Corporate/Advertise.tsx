@@ -19,14 +19,14 @@ export default function Advertise({ title }: AdvertiseProps) {
                         <div className="row align-items-center">
                             <div className="col-lg-6 mb-5 mb-lg-0">
                                 <h1 className="display-3 fw-bold text-white mb-4">
-                                    Haz Crecer tu Negocio
+                                    Publicidad que sí vale la pena
                                 </h1>
                                 <p className="lead text-white-75 mb-4">
-                                    Llega a miles de oyentes en todo Nicaragua con ABC Stereo.
-                                    Publicidad efectiva que genera resultados reales para tu marca.
+                                    Llega a miles de oyentes dentro y fuera de Nicaragua con Radio ABC Stereo. <br />
+                                    Ofrecemos diversos servicios de publicidad, según tu tipo de negocio y público objetivo.
                                 </p>
                                 <div className="d-flex gap-3">
-                                    <a href="#contact" className="btn btn-light btn-lg px-4 fw-bold text-abc-blue">
+                                    <a href="mailto:radioabcstereo@gmail.com" className="btn btn-light btn-lg px-4 fw-bold text-abc-blue">
                                         Cotizar Ahora
                                     </a>
                                 </div>
@@ -35,31 +35,31 @@ export default function Advertise({ title }: AdvertiseProps) {
                                 <div className="stats-grid">
                                     <div className="stat-card">
                                         <div className="stat-icon">
-                                            <Users size={32} />
+                                            <Radio size={32} />
                                         </div>
-                                        <div className="stat-number">500K+</div>
-                                        <div className="stat-label">Oyentes Diarios</div>
+                                        <div className="stat-number fs-4">2 frecuencias</div>
+                                        <div className="stat-label">99.7FM y 102.1FM</div>
                                     </div>
                                     <div className="stat-card">
                                         <div className="stat-icon">
                                             <TrendingUp size={32} />
                                         </div>
-                                        <div className="stat-number">85%</div>
-                                        <div className="stat-label">Tasa de Recordación</div>
+                                        <div className="stat-number fs-4">24/7</div>
+                                        <div className="stat-label">Transmisión permanente</div>
                                     </div>
                                     <div className="stat-card">
                                         <div className="stat-icon">
-                                            <Radio size={32} />
+                                            <Users size={32} />
                                         </div>
-                                        <div className="stat-number">24/7</div>
-                                        <div className="stat-label">Cobertura Nacional</div>
+                                        <div className="stat-number fs-4">Más de 15 programas</div>
+                                        <div className="stat-label">Programación para todos los gustos</div>
                                     </div>
                                     <div className="stat-card">
                                         <div className="stat-icon">
                                             <BarChart3 size={32} />
                                         </div>
-                                        <div className="stat-number">95%</div>
-                                        <div className="stat-label">Satisfacción</div>
+                                        <div className="stat-number fs-4">95%</div>
+                                        <div className="stat-label">Alta tasa de retención de anunciantes</div>
                                     </div>
                                 </div>
                             </div>
@@ -71,7 +71,7 @@ export default function Advertise({ title }: AdvertiseProps) {
                 <div className="container py-5">
                     <div className="text-center mb-5">
                         <h2 className="display-5 fw-bold mb-3 text-abc-blue">¿Por Qué Anunciarte con Nosotros?</h2>
-                        <p className="text-muted lead">Beneficios que hacen la diferencia</p>
+                        <p className="text-muted lead">Características que hacen la diferencia</p>
                     </div>
                     <div className="row g-4 mb-5">
                         <div className="col-md-6 col-lg-3">
@@ -81,7 +81,7 @@ export default function Advertise({ title }: AdvertiseProps) {
                                 </div>
                                 <h3 className="h5 fw-bold mb-2 text-abc-blue">Audiencia Segmentada</h3>
                                 <p className="text-muted small mb-0">
-                                    Llega exactamente a tu público objetivo con horarios estratégicos
+                                    Llega exactamente a tu público objetivo con horarios estratégicos.
                                 </p>
                             </div>
                         </div>
@@ -92,7 +92,7 @@ export default function Advertise({ title }: AdvertiseProps) {
                                 </div>
                                 <h3 className="h5 fw-bold mb-2 text-abc-blue">Alto Impacto</h3>
                                 <p className="text-muted small mb-0">
-                                    Mensajes que se quedan en la mente de tus clientes potenciales
+                                    Mensajes que se quedan en la mente de tus clientes potenciales.
                                 </p>
                             </div>
                         </div>
@@ -103,7 +103,7 @@ export default function Advertise({ title }: AdvertiseProps) {
                                 </div>
                                 <h3 className="h5 fw-bold mb-2 text-abc-blue">Resultados Medibles</h3>
                                 <p className="text-muted small mb-0">
-                                    Reportes detallados del rendimiento de tu campaña
+                                    Al contratar nuestros servicios digitales de publicidad.
                                 </p>
                             </div>
                         </div>
@@ -114,52 +114,29 @@ export default function Advertise({ title }: AdvertiseProps) {
                                 </div>
                                 <h3 className="h5 fw-bold mb-2 text-abc-blue">Producción Incluida</h3>
                                 <p className="text-muted small mb-0">
-                                    Creamos tu anuncio profesional sin costo adicional
+                                    Creamos tu anuncio profesional sin costo adicional para uso único de nuestra emisora.
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    {/* Contact Form */}
+                    {/* Contact Section */}
                     <div id="contact" className="contact-section py-5">
                         <div className="row justify-content-center">
                             <div className="col-lg-8">
-                                <div className="contact-card">
-                                    <div className="text-center mb-4">
-                                        <h2 className="h3 fw-bold mb-3 text-abc-blue">Solicita tu Propuesta</h2>
-                                        <p className="text-muted">
-                                            Contáctanos y un asesor diseñará una estrategia a la medida de tu marca
-                                        </p>
+                                <div className="contact-card text-center">
+                                    <h2 className="h3 fw-bold mb-3 text-abc-blue">Solicita tu cotización</h2>
+                                    <p className="text-muted mb-2">
+                                        Contáctate a nuestra área de ventas y publicidad.
+                                    </p>
+                                    <p className="text-muted fs-5">
+                                        Escríbenos a: <a href="mailto:radioabcstereo@gmail.com" className="fw-bold text-abc-blue text-decoration-none">radioabcstereo@gmail.com</a>
+                                    </p>
+                                    <div className="mt-4">
+                                        <a href="mailto:radioabcstereo@gmail.com" className="btn btn-abc-primary btn-lg px-5">
+                                            Enviar Correo
+                                        </a>
                                     </div>
-                                    <form>
-                                        <div className="row g-3">
-                                            <div className="col-md-6">
-                                                <label className="form-label fw-semibold text-abc-blue">Nombre Completo</label>
-                                                <input type="text" className="form-control" placeholder="Tu nombre" />
-                                            </div>
-                                            <div className="col-md-6">
-                                                <label className="form-label fw-semibold text-abc-blue">Empresa</label>
-                                                <input type="text" className="form-control" placeholder="Nombre de tu empresa" />
-                                            </div>
-                                            <div className="col-md-6">
-                                                <label className="form-label fw-semibold text-abc-blue">Email</label>
-                                                <input type="email" className="form-control" placeholder="tu@email.com" />
-                                            </div>
-                                            <div className="col-md-6">
-                                                <label className="form-label fw-semibold text-abc-blue">Teléfono</label>
-                                                <input type="tel" className="form-control" placeholder="+505 0000 0000" />
-                                            </div>
-                                            <div className="col-12">
-                                                <label className="form-label fw-semibold text-abc-blue">Mensaje</label>
-                                                <textarea className="form-control" rows={4} placeholder="Cuéntanos sobre tus objetivos..."></textarea>
-                                            </div>
-                                            <div className="col-12">
-                                                <button type="submit" className="btn btn-abc-primary btn-lg w-100">
-                                                    Solicitar Cotización
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </form>
                                 </div>
                             </div>
                         </div>

@@ -20,7 +20,7 @@ export default function Contact({ title }: ContactProps) {
                             <div className="col-lg-8">
                                 <h1 className="display-3 fw-bold text-white mb-4">Contáctanos</h1>
                                 <p className="lead text-white-75">
-                                    Estamos aquí para escucharte. Envíanos tu mensaje y te responderemos pronto.
+                                    Estamos aquí para servirte. Envíanos tus mensajes y solicitudes especiales.
                                 </p>
                             </div>
                         </div>
@@ -41,8 +41,8 @@ export default function Contact({ title }: ContactProps) {
                                     <div>
                                         <h4 className="h6 fw-bold mb-1">Dirección</h4>
                                         <p className="text-muted small mb-0">
-                                            Estelí, Nicaragua<br />
-                                            C. 8 SO
+                                            Parque Infantil 2c y media al oeste.<br />
+                                            Bo. El Calvario, Estelí, Nicaragua.
                                         </p>
                                     </div>
                                 </div>
@@ -52,10 +52,11 @@ export default function Contact({ title }: ContactProps) {
                                         <Phone size={24} />
                                     </div>
                                     <div>
-                                        <h4 className="h6 fw-bold mb-1">Teléfono</h4>
+                                        <h4 className="h6 fw-bold mb-1">Teléfonos</h4>
                                         <p className="text-muted small mb-0">
-                                            +505 2713 2322<br />
-                                            +505 8900 0000
+                                            <strong>Oficina:</strong> +505 2713 6001 / +505 8151 3977<br />
+                                            <strong>Cabina:</strong> +505 2713 3043 / +505 2714 2000<br />
+                                            <strong>WhatsApp:</strong> +505 8845 0415 / +505 8113 2643
                                         </p>
                                     </div>
                                 </div>
@@ -67,8 +68,7 @@ export default function Contact({ title }: ContactProps) {
                                     <div>
                                         <h4 className="h6 fw-bold mb-1">Email</h4>
                                         <p className="text-muted small mb-0">
-                                            info@radioabcstereo.com<br />
-                                            ventas@radioabcstereo.com
+                                            <a href="mailto:radioabcstereo@gmail.com" className="text-decoration-none text-muted">radioabcstereo@gmail.com</a>
                                         </p>
                                     </div>
                                 </div>
@@ -78,10 +78,11 @@ export default function Contact({ title }: ContactProps) {
                                         <Clock size={24} />
                                     </div>
                                     <div>
-                                        <h4 className="h6 fw-bold mb-1">Horario</h4>
+                                        <h4 className="h6 fw-bold mb-1">Horario de atención</h4>
                                         <p className="text-muted small mb-0">
-                                            Lunes - Viernes: 8:00 AM - 5:00 PM<br />
-                                            Sábados: 8:00 AM - 12:00 MD
+                                            Lunes a viernes:<br />
+                                            08:00 AM a 01:00 PM<br />
+                                            02:00 PM a 05:30 PM
                                         </p>
                                     </div>
                                 </div>
@@ -90,44 +91,15 @@ export default function Contact({ title }: ContactProps) {
 
                         {/* Contact Form */}
                         <div className="col-lg-8">
-                            <div className="contact-form-card">
-                                <h3 className="h4 fw-bold mb-4">Envíanos un Mensaje</h3>
-                                <form>
-                                    <div className="row g-3">
-                                        <div className="col-md-6">
-                                            <label className="form-label fw-semibold">Nombre Completo *</label>
-                                            <input type="text" className="form-control" placeholder="Tu nombre" required />
-                                        </div>
-                                        <div className="col-md-6">
-                                            <label className="form-label fw-semibold">Email *</label>
-                                            <input type="email" className="form-control" placeholder="tu@email.com" required />
-                                        </div>
-                                        <div className="col-md-6">
-                                            <label className="form-label fw-semibold">Teléfono</label>
-                                            <input type="tel" className="form-control" placeholder="+505 0000 0000" />
-                                        </div>
-                                        <div className="col-md-6">
-                                            <label className="form-label fw-semibold">Asunto *</label>
-                                            <select className="form-select" required>
-                                                <option value="">Selecciona un asunto</option>
-                                                <option value="general">Consulta General</option>
-                                                <option value="publicidad">Publicidad</option>
-                                                <option value="programacion">Programación</option>
-                                                <option value="otro">Otro</option>
-                                            </select>
-                                        </div>
-                                        <div className="col-12">
-                                            <label className="form-label fw-semibold">Mensaje *</label>
-                                            <textarea className="form-control" rows={6} placeholder="Escribe tu mensaje aquí..." required></textarea>
-                                        </div>
-                                        <div className="col-12">
-                                            <button type="submit" className="btn btn-abc-primary btn-lg px-5 w-100 w-md-auto">
-                                                <Send size={20} className="me-2" />
-                                                Enviar Mensaje
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
+                            <div className="contact-form-card d-flex flex-column justify-content-center align-items-center text-center h-100">
+                                <h3 className="h3 fw-bold mb-4 text-abc-blue">Envíanos un Mensaje</h3>
+                                <p className="text-muted mb-5 fs-5" style={{ maxWidth: '500px' }}>
+                                    Si tienes alguna duda, reporte noticioso o solicitud especial, haz clic en el botón de abajo para escribirnos directamente.
+                                </p>
+                                <a href="mailto:radioabcstereo@gmail.com" className="btn btn-abc-primary btn-lg px-5">
+                                    <Send size={20} className="me-2" />
+                                    Enviar Mensaje
+                                </a>
                             </div>
                         </div>
                     </div>

@@ -35,7 +35,7 @@ export default function Programming({ title }: ProgrammingProps) {
                             <div className="col-lg-8">
                                 <h1 className="display-3 fw-bold text-white mb-4">Programación</h1>
                                 <p className="lead text-white-75">
-                                    Descubre nuestra parrilla de programas. Música, noticias y entretenimiento las 24 horas.
+                                    Una programación completa diseñada a tu gusto. Música, noticias, deportes y entretenimiento.
                                 </p>
                             </div>
                         </div>
@@ -102,9 +102,9 @@ export default function Programming({ title }: ProgrammingProps) {
                         </div>
                         <div className="row g-4">
                             {[
-                                { name: 'Buenos Días Nicaragua', time: '06:00 - 09:00', image: 'photo-1478737270239-2f02b77fc618' },
-                                { name: 'Deportivas ABC', time: '17:00 - 19:00', image: 'photo-1461896836934-ffe607ba8211' },
-                                { name: 'Noche de Noticias', time: '19:00 - 21:00', image: 'photo-1504711434969-e33886168f5c' },
+                                { name: 'Noticias ABC I Edición', time: '06:00am - 07:00am', image: 'photo-1478737270239-2f02b77fc618' },
+                                { name: 'Aquí entre nos', time: '07:00am - 08:00am', image: 'photo-1461896836934-ffe607ba8211' },
+                                { name: 'Viernes Romántico', time: '05:00pm - 07:00pm', image: 'photo-1504711434969-e33886168f5c' },
                             ].map((program, index) => (
                                 <div key={index} className="col-md-4">
                                     <div className="featured-card">

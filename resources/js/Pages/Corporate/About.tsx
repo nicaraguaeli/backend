@@ -34,7 +34,8 @@ export default function About({ title }: AboutProps) {
                         </Link>
                         <h1 className="display-3 fw-bold font-serif mb-3">Quiénes Somos</h1>
                         <p className="lead fs-4 text-white-50 mx-auto" style={{ maxWidth: '700px' }}>
-                            Más que una estación de radio, somos la voz del norte de Nicaragua. Conectando historias, informando con la verdad y entreteniendo a generaciones.
+                            Radio ABC Stereo es la emisora de referencia en la zona norte de Nicaragua, caracterizada por nuestra objetividad, pluralidad y cercanía con la comunidad.
+                            <br /><span className="fw-bold text-white mt-2 d-inline-block">¡99.7FM…en las mejores calificaciones!</span>
                         </p>
                         <div className="mt-4">
                             <span className="badge bg-abc-red px-3 py-2 fs-6 text-uppercase fw-bold shadow">ABC Stereo 99.7 FM</span>
@@ -53,10 +54,12 @@ export default function About({ title }: AboutProps) {
                                     <div className="bg-abc-gold" style={{ height: '4px', width: '80px' }}></div>
                                 </div>
                                 <p className="lead text-secondary mb-4">
-                                    Radio ABC Stereo nació con el propósito fundamental de servir a la comunidad del norte de Nicaragua. A lo largo de los años, nos hemos consolidado como el medio de comunicación líder en la región, caracterizándonos por nuestro periodismo responsable, veraz y objetivo.
+                                    Fundada en la ciudad de Estelí, en 1996 por el señor Javier Rodríguez Castillo, nos hemos convertido en una marca seria y de confianza, llegando a miles de personas de diferentes sectores que nos posicionan en los primeros lugares de preferencia y credibilidad.
                                 </p>
-                                <p className="text-secondary">
-                                    Desde nuestros estudios en la ciudad de Estelí, transmitimos una programación variada que combina noticias de última hora, análisis profundo, música selecta y espacios de entretenimiento familiar. Nuestro compromiso es ser "La que le gusta a usted", manteniendo siempre los más altos estándares de calidad radiofónica.
+                                <p className="text-secondary text-start mx-auto" style={{ maxWidth: '800px' }}>
+                                    En Radio ABC Stereo ofrecemos una programación completa que combina: noticias, radio-revistas, radio-novelas, programas musicales y de entretenimiento-
+                                    <br /><br />
+                                    Transmitiendo las 24 horas, los 7 días de la semana, somos la radio que te quiere más.
                                 </p>
                             </div>
                         </div>
@@ -71,8 +74,10 @@ export default function About({ title }: AboutProps) {
                                         <Target size={48} strokeWidth={1.5} />
                                     </div>
                                     <h3 className="h3 fw-bold font-serif text-abc-blue mb-3">Misión</h3>
-                                    <p className="text-secondary fs-5">
-                                        Informar, educar y entretener a nuestra audiencia con profesionalismo y ética, promoviendo los valores culturales, sociales y morales, contribuyendo así al desarrollo integral de nuestra sociedad.
+                                    <p className="text-secondary fs-5 text-start mx-auto" style={{ maxWidth: '400px', lineHeight: '1.6' }}>
+                                        <span className="d-block mb-2">• Informar veraz y objetivamente sobre asuntos de interés de la población.</span>
+                                        <span className="d-block mb-2">• Educar por medio de programas de orientación con especialistas.</span>
+                                        <span className="d-block">• Entretener a través de una programación musical variada con diferentes formatos.</span>
                                     </p>
                                 </div>
                             </div>
@@ -85,7 +90,7 @@ export default function About({ title }: AboutProps) {
                                     </div>
                                     <h3 className="h3 fw-bold font-serif text-abc-blue mb-3">Visión</h3>
                                     <p className="text-secondary fs-5">
-                                        Ser la corporación radial líder en Nicaragua, reconocida por su innovación tecnológica, calidad de contenidos y compromiso social, siendo el referente principal de la comunicación en la región norte.
+                                        Ser la emisora líder en sintonía y credibilidad del norte de Nicaragua, innovando en formatos multiplataforma para acompañar a nuestra audiencia siempre.
                                     </p>
                                 </div>
                             </div>
@@ -99,7 +104,10 @@ export default function About({ title }: AboutProps) {
                                 <h4 className="text-uppercase text-secondary fw-bold small mb-2">Nuestra Cobertura</h4>
                                 <h2 className="display-5 fw-bold font-serif text-abc-blue mb-4">Llegando a donde tú estás</h2>
                                 <p className="lead text-secondary mb-4">
-                                    Radio ABC Stereo transmite en dos potentes frecuencias, <span className="fw-bold text-abc-red">99.7 FM</span> y <span className="fw-bold text-abc-blue">102.1 FM</span>, cubriendo estratégicamente la zona norte y occidente de Nicaragua.
+                                    Te acompañamos en cada tiempo y lugar.<br /><br />
+                                    Radio ABC Stereo transmite en dos frecuencias, <span className="fw-bold text-abc-red">99.7 FM</span> y <span className="fw-bold text-abc-blue">102.1 FM</span>, cubriendo estratégicamente la zona norte, centro y occidente de Nicaragua.
+                                    <br /><br />
+                                    Con transmisión simultánea en línea desde nuestro sitio web oficial.
                                 </p>
 
                                 <h5 className="fw-bold text-dark mb-3">Departamentos de cobertura:</h5>
@@ -165,22 +173,22 @@ export default function About({ title }: AboutProps) {
                                     <div className="mb-3 d-inline-block bg-white bg-opacity-10 p-3 rounded-circle text-abc-gold">
                                         <Award size={32} />
                                     </div>
-                                    <h4 className="fw-bold">Excelencia</h4>
-                                    <p className="text-white-50">Buscamos la calidad superior en cada transmisión y contenido que producimos.</p>
+                                    <h4 className="fw-bold">Responsabilidad</h4>
+                                    <p className="text-white-50 mb-0">Estamos comprometidos con nuestra audiencia, velando por la honestidad, confianza, inclusión y profesionalismo.</p>
                                 </div>
                                 <div className="col-md-4 text-center">
                                     <div className="mb-3 d-inline-block bg-white bg-opacity-10 p-3 rounded-circle text-abc-gold">
                                         <CheckCircle size={32} />
                                     </div>
                                     <h4 className="fw-bold">Veracidad</h4>
-                                    <p className="text-white-50">Comprometidos con la verdad, investigando y contrastando fuentes.</p>
+                                    <p className="text-white-50 mb-0">Somos una fuente de información confiable con datos verificables, fuentes diversas y objetividad.</p>
                                 </div>
                                 <div className="col-md-4 text-center">
                                     <div className="mb-3 d-inline-block bg-white bg-opacity-10 p-3 rounded-circle text-abc-gold">
                                         <Users size={32} />
                                     </div>
                                     <h4 className="fw-bold">Servicio</h4>
-                                    <p className="text-white-50">Somos un canal abierto para las necesidades y denuncias de la comunidad.</p>
+                                    <p className="text-white-50 mb-0">En Radio ABC Stereo la voz de la audiencia vale, trabajamos con transparencia y apertura para hacer de este medio un espacio para todos.</p>
                                 </div>
                             </div>
                         </div>

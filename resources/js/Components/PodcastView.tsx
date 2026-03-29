@@ -159,7 +159,8 @@ export default function PodcastView({
               </div>
               {/* Subtitle hidden when scrolled */}
               {!isScrolled && (
-                <p className="text-white-75 small mb-0">Escucha las mejores historias</p>
+                <p className="text-white-75 small mb-0">Escucha historias, reportes especiales y mucho más.
+                </p>
               )}
             </div>
 
@@ -227,7 +228,7 @@ export default function PodcastView({
           <div className="mb-5">
             <div className="d-flex align-items-center gap-2 mb-3 px-2">
               <div className="badge-glow"></div>
-              <h3 className="h5 fw-bold text-dark mb-0">🎙️ Audioreportajes</h3>
+              <h3 className="h5 fw-bold text-dark mb-0">🎙️ Todos los Audioreportajes</h3>
             </div>
             <TopEpisodes episodes={episodes.slice(0, 9)} />
           </div>

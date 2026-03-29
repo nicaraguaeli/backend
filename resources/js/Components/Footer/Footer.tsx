@@ -20,7 +20,7 @@ export default function Footer() {
           href: route('category.show', { slug: cat.slug }),
         }));
       setMenuCategories(visible);
-    }).catch(() => {});
+    }).catch(() => { });
   }, []);
 
   return (
@@ -44,7 +44,9 @@ export default function Footer() {
               />
             </div>
             <p className="small text-white-50 mb-4 lh-lg">
-              La mejor información nacional e internacional, música y entretenimiento. Tu conexión directa con la actualidad en Nicaragua y el mundo.
+              Radio ABC Stereo, la emisora de las mejores calificaciones.
+              Tu portal informativo completo.
+
             </p>
             <div className="d-flex gap-2">
               {[
@@ -75,15 +77,15 @@ export default function Footer() {
                 <ul className="list-unstyled small space-y-2">
                   {menuCategories.length > 0
                     ? menuCategories.map(cat => (
-                        <li key={cat.href} className="mb-2">
-                          <Link href={cat.href} className="text-white-50 text-decoration-none footer-link">{cat.label}</Link>
-                        </li>
-                      ))
-                    : [1,2,3,4,5].map(i => (
-                        <li key={i} className="mb-2">
-                          <span className="d-inline-block bg-secondary rounded" style={{ width: '90px', height: '12px', opacity: 0.3 }} />
-                        </li>
-                      ))
+                      <li key={cat.href} className="mb-2">
+                        <Link href={cat.href} className="text-white-50 text-decoration-none footer-link">{cat.label}</Link>
+                      </li>
+                    ))
+                    : [1, 2, 3, 4, 5].map(i => (
+                      <li key={i} className="mb-2">
+                        <span className="d-inline-block bg-secondary rounded" style={{ width: '90px', height: '12px', opacity: 0.3 }} />
+                      </li>
+                    ))
                   }
                 </ul>
               </div>
@@ -127,7 +129,8 @@ export default function Footer() {
                 </div>
                 <div>
                   <span className="d-block fw-bold text-white">Ubicación</span>
-                  <p className="mb-0 text-white-50">C. 8 SO, Estelí, Nicaragua</p>
+                  <p className="mb-0 text-white-50">Parque Infantil 2c y media al oeste.
+                    Bo. El Calvario, Estelí, Nicaragua.</p>
                 </div>
               </li>
             </ul>

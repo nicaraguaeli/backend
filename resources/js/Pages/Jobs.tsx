@@ -27,7 +27,8 @@ const JobsPage = ({ vacancies }: Props) => {
             <div className="row justify-content-center mb-4">
                 <div className="col-md-10 text-center">
                     <h1 className="fw-bold mb-3 display-5">Oportunidades de Empleo</h1>
-                    <p className="lead text-muted">Encuentra tu próxima oportunidad profesional en ABC Stereo.</p>
+                    <p className="lead text-muted">Encuentra tu próximo empleo en esta sección.
+                    </p>
                 </div>
             </div>
 
