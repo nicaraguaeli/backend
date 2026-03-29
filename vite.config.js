@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig(({ command }) => ({
-    base: command === 'build' ? '/radioabc/public/build/' : '/',
+    base: command === 'build' ? '/radioabcstereo/public/build/' : '/',
     build: {
         outDir: 'public/build',
         emptyOutDir: true,
