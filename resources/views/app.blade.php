@@ -22,10 +22,10 @@
             <meta property="twitter:description" content="{{ $meta['description'] }}">
             <meta property="twitter:image" content="{{ $meta['image'] }}">
         @else
-            <title inertia>Radio ABC Stereo | Inicio | ABC Stereo</title>
+            <title inertia>Radio ABC Stereo</title>
             <meta name="description" content="Noticias de última hora, deportes, farándula y la mejor programación musical.">
             <meta property="og:type" content="website">
-            <meta property="og:title" content="Radio ABC Stereo | Inicio | ABC Stereo">
+            <meta property="og:title" content="Radio ABC Stereo">
             <meta property="og:description" content="Noticias de última hora, deportes, farándula y la mejor programación musical.">
             <meta property="og:image" content="{{ asset('storage/logotipo.png') }}">
         @endif
