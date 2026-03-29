@@ -28,7 +28,6 @@ class HomeController extends Controller
         $bannersCount       = \App\Models\Banner::where('is_active', true)->count();
 
         $latestNews = \App\Models\News::with('author')
-            ->orderBy('updated_at', 'desc')
             ->orderBy('published_at', 'desc')
             ->take(5)
             ->get();
