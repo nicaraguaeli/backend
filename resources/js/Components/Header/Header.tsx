@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { router } from '@inertiajs/react';
+import { router, Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { asset, url } from '@/url';
 import { Menu, X, Search, Play, Pause, Facebook, Twitter, Instagram, Youtube, ChevronDown } from 'lucide-react';
@@ -256,11 +256,11 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
           <div className="d-flex justify-content-between align-items-center">
             {/* Corporate Links */}
             <ul className="nav align-items-center">
-              <li className="nav-item"><a href={route('corporate.about')} className="nav-link text-light px-2 py-0 hover-white" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>QUIÉNES SOMOS</a></li>
-              <li className="nav-item"><a href={route('corporate.advertise')} className="nav-link text-light px-2 py-0 hover-white" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>ANUNCIATE</a></li>
-              <li className="nav-item"><a href={route('corporate.contact')} className="nav-link text-light px-2 py-0 hover-white" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>CONTÁCTANOS</a></li>
-              <li className="nav-item"><a href="#" onClick={navigateToVideos} className="nav-link text-abc-gold px-2 py-0 hover-white fw-bold" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>ABCTV</a></li>
-              <li className="nav-item"><a href={route('corporate.programming')} className="nav-link text-light px-2 py-0 hover-white" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>PROGRAMACIÓN</a></li>
+              <li className="nav-item"><Link href={route('corporate.about')} className="nav-link text-light px-2 py-0 hover-white" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>QUIÉNES SOMOS</Link></li>
+              <li className="nav-item"><Link href={route('corporate.advertise')} className="nav-link text-light px-2 py-0 hover-white" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>ANUNCIATE</Link></li>
+              <li className="nav-item"><Link href={route('corporate.contact')} className="nav-link text-light px-2 py-0 hover-white" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>CONTÁCTANOS</Link></li>
+              {/* <li className="nav-item"><a href="#" onClick={navigateToVideos} className="nav-link text-abc-gold px-2 py-0 hover-white fw-bold" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>ABCTV</a></li> */}
+              <li className="nav-item"><Link href={route('corporate.programming')} className="nav-link text-light px-2 py-0 hover-white" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>PROGRAMACIÓN</Link></li>
               <li className="nav-item"><a href="#" onClick={navigateToJobs} className="nav-link text-light px-2 py-0 hover-white cursor-pointer" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>EMPLEOS</a></li>
             </ul>
 
@@ -448,10 +448,10 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
               <a href="#" className="list-group-item list-group-item-action fw-bold text-abc-gold" onClick={navigateToVideos}>AbcTV</a>
               <a href="#" className="list-group-item list-group-item-action fw-bold text-secondary" onClick={navigateToPodcast}>AUDIOREPORTAJES</a>
               <a href="#" className="list-group-item list-group-item-action fw-bold text-secondary" onClick={navigateToJobs}>Empleos</a>
-              <a href={route('corporate.about')} className="list-group-item list-group-item-action fw-bold text-secondary">Quiénes Somos</a>
-              <a href={route('corporate.advertise')} className="list-group-item list-group-item-action fw-bold text-secondary">Anúnciate</a>
-              <a href={route('corporate.contact')} className="list-group-item list-group-item-action fw-bold text-secondary">Contáctanos</a>
-              <a href={route('corporate.programming')} className="list-group-item list-group-item-action fw-bold text-secondary">Programación</a>
+              <Link href={route('corporate.about')} className="list-group-item list-group-item-action fw-bold text-secondary" onClick={() => setIsMobileMenuOpen(false)}>Quiénes Somos</Link>
+              <Link href={route('corporate.advertise')} className="list-group-item list-group-item-action fw-bold text-secondary" onClick={() => setIsMobileMenuOpen(false)}>Anúnciate</Link>
+              <Link href={route('corporate.contact')} className="list-group-item list-group-item-action fw-bold text-secondary" onClick={() => setIsMobileMenuOpen(false)}>Contáctanos</Link>
+              <Link href={route('corporate.programming')} className="list-group-item list-group-item-action fw-bold text-secondary" onClick={() => setIsMobileMenuOpen(false)}>Programación</Link>
             </div>
           </div>
         </div>

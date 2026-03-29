@@ -68,9 +68,10 @@ class NewsController extends Controller
         // --- Fetch all news sets with deduplication ---
         $usedIds = collect([$news->id]); // always exclude current article
 
-        // 1. MOST READ NEWS (sidebar) — top 5 by views
+        // 1. MOST READ NEWS (sidebar) — top 5 por vistas en los últimos 7 días
         $mostReadNews = News::with(['categories', 'author'])
             ->where('is_published', true)
+            ->where('published_at', '>=', now()->subDays(7))
             ->whereNotIn('id', $usedIds)
             ->orderBy('views', 'desc')
             ->take(5)

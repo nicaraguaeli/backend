@@ -1,42 +1,149 @@
 import React, { useState, useEffect } from 'react';
-import { Radio, Mic2, Music, Clock, Users } from 'lucide-react';
+import { Link } from '@inertiajs/react';
+import { route } from 'ziggy-js';
+import { Radio, Mic2, Music, Clock, Newspaper, Trophy } from 'lucide-react';
 
-const SCHEDULE_ITEMS = [
-    { start: 6, end: 7, time: '06:00', title: 'El Espacio Ranchero', host: 'ABC Stereo', type: 'music' },
-    { start: 7, end: 8, time: '07:00', title: 'Noticias ABC Matutino', host: 'Equipo de Noticias', type: 'news' },
-    { start: 8, end: 11, time: '08:00', title: 'Cumpleañeros', host: 'ABC Stereo', type: 'social' },
-    { start: 11, end: 12, time: '11:00', title: 'El Club de la Amistad', host: 'ABC Stereo', type: 'social' },
-    { start: 12, end: 14, time: '12:00', title: 'Noticias ABC Meridiano', host: 'Equipo de Noticias', type: 'news' },
-    { start: 14, end: 16, time: '14:00', title: 'Tardes Musicales', host: 'ABC Stereo', type: 'music' },
-    { start: 20, end: 22, time: '20:00', title: 'Clásicos de Siempre', host: 'ABC Stereo', type: 'music' },
-];
+interface ScheduleItem {
+    startH: number;
+    startM: number;
+    endH: number;
+    endM: number;
+    timeLabel: string;
+    title: string;
+    slogan: string;
+    type: 'music' | 'news' | 'sports' | 'show';
+}
+
+// Helper: convert "HH:MM" string to total minutes from midnight
+function toMinutes(h: number, m: number) {
+    return h * 60 + m;
+}
+
+const SCHEDULE: Record<string, ScheduleItem[]> = {
+    Lunes: [
+        { startH: 0,  startM: 0,  endH: 5,  endM: 0,  timeLabel: '12:00am – 05:00am', title: 'La radio que nunca duerme',     slogan: 'Música continua',                                              type: 'music'  },
+        { startH: 5,  startM: 0,  endH: 6,  endM: 0,  timeLabel: '05:00am – 06:00am', title: 'El Tempranero',                 slogan: 'Donde vos sos el primero',                                     type: 'show'   },
+        { startH: 6,  startM: 0,  endH: 7,  endM: 0,  timeLabel: '06:00am – 07:00am', title: 'Noticias ABC',                  slogan: 'El radio informativo completo',                                 type: 'news'   },
+        { startH: 7,  startM: 0,  endH: 8,  endM: 0,  timeLabel: '07:00am – 08:00am', title: 'Aquí entre nos',                slogan: 'Para estar más cerca de vos',                                  type: 'show'   },
+        { startH: 8,  startM: 0,  endH: 12, endM: 0,  timeLabel: '08:00am – 12:00md', title: 'Cada mañana',                   slogan: 'La mañana de tu radio',                                        type: 'show'   },
+        { startH: 12, startM: 0,  endH: 12, endM: 40, timeLabel: '12:00md – 12:40md', title: 'Noticias ABC',                  slogan: 'El radio informativo completo',                                 type: 'news'   },
+        { startH: 12, startM: 40, endH: 13, endM: 10, timeLabel: '12:40md – 01:10md', title: 'Deportivas ABC',                slogan: 'Siempre en la jugada',                                         type: 'sports' },
+        { startH: 13, startM: 10, endH: 14, endM: 0,  timeLabel: '01:10md – 02:00pm', title: 'Clásicos en inglés',            slogan: 'Para usted',                                                   type: 'music'  },
+        { startH: 14, startM: 0,  endH: 14, endM: 15, timeLabel: '02:00pm – 02:15pm', title: 'Una historia, una canción',     slogan: 'Porque siempre hay una historia que nos llega directo al corazón', type: 'show'  },
+        { startH: 14, startM: 15, endH: 17, endM: 0,  timeLabel: '02:15pm – 05:00pm', title: 'Tardes Románticas',             slogan: 'La FM de tus sentimientos',                                    type: 'music'  },
+        { startH: 17, startM: 0,  endH: 19, endM: 0,  timeLabel: '05:00pm – 07:00pm', title: 'Doble Hora Grupera',            slogan: 'Hecha a tu manera',                                            type: 'music'  },
+        { startH: 19, startM: 0,  endH: 21, endM: 0,  timeLabel: '07:00pm – 09:00pm', title: 'Espacio Ranchero y más',        slogan: 'Más de tu música favorita',                                    type: 'music'  },
+        { startH: 21, startM: 0,  endH: 21, endM: 15, timeLabel: '09:00pm – 09:15pm', title: 'Una historia, una canción',     slogan: 'Porque siempre hay una historia que nos llega directo al corazón', type: 'show'  },
+        { startH: 21, startM: 15, endH: 22, endM: 30, timeLabel: '09:15pm – 10:30pm', title: 'Ligaditas a tu recuerdo',       slogan: 'Canciones inolvidables',                                       type: 'music'  },
+        { startH: 22, startM: 30, endH: 24, endM: 0,  timeLabel: '10:30pm – 12:00am', title: 'Clásicos en inglés',            slogan: 'Para usted',                                                   type: 'music'  },
+    ],
+    Martes: [
+        { startH: 0,  startM: 0,  endH: 4,  endM: 0,  timeLabel: '12:00am – 04:00am', title: 'La radio que nunca duerme',     slogan: 'Música continua',                                              type: 'music'  },
+        { startH: 4,  startM: 0,  endH: 6,  endM: 0,  timeLabel: '04:00am – 06:00am', title: 'El Tempranero',                 slogan: 'Donde vos sos el primero',                                     type: 'show'   },
+        { startH: 6,  startM: 0,  endH: 7,  endM: 0,  timeLabel: '06:00am – 07:00am', title: 'Noticias ABC',                  slogan: 'El radio informativo completo',                                 type: 'news'   },
+        { startH: 7,  startM: 0,  endH: 8,  endM: 0,  timeLabel: '07:00am – 08:00am', title: 'Aquí entre nos',                slogan: 'Para estar más cerca de vos',                                  type: 'show'   },
+        { startH: 8,  startM: 0,  endH: 12, endM: 0,  timeLabel: '08:00am – 12:00md', title: 'Cada mañana',                   slogan: 'La mañana de tu radio',                                        type: 'show'   },
+        { startH: 12, startM: 0,  endH: 12, endM: 40, timeLabel: '12:00md – 12:40md', title: 'Noticias ABC',                  slogan: 'El radio informativo completo',                                 type: 'news'   },
+        { startH: 12, startM: 40, endH: 13, endM: 10, timeLabel: '12:40md – 01:10md', title: 'Deportivas ABC',                slogan: 'Siempre en la jugada',                                         type: 'sports' },
+        { startH: 13, startM: 10, endH: 14, endM: 0,  timeLabel: '01:10md – 02:00pm', title: 'Clásicos en inglés',            slogan: 'Para usted',                                                   type: 'music'  },
+        { startH: 14, startM: 0,  endH: 17, endM: 0,  timeLabel: '02:00pm – 05:00pm', title: 'Tardes Románticas',             slogan: 'La FM de tus sentimientos',                                    type: 'music'  },
+        { startH: 17, startM: 0,  endH: 19, endM: 0,  timeLabel: '05:00pm – 07:00pm', title: 'Doble Hora Grupera',            slogan: 'Hecha a tu manera',                                            type: 'music'  },
+        { startH: 19, startM: 0,  endH: 21, endM: 0,  timeLabel: '07:00pm – 09:00pm', title: 'Espacio Ranchero y más',        slogan: 'Más de tu música favorita',                                    type: 'music'  },
+        { startH: 21, startM: 0,  endH: 22, endM: 30, timeLabel: '09:00pm – 10:30pm', title: 'Ligaditas a tu recuerdo',       slogan: 'Canciones inolvidables',                                       type: 'music'  },
+        { startH: 22, startM: 30, endH: 24, endM: 0,  timeLabel: '10:30pm – 12:00am', title: 'Clásicos en inglés',            slogan: 'Para usted',                                                   type: 'music'  },
+    ],
+    Viernes: [
+        { startH: 0,  startM: 0,  endH: 5,  endM: 0,  timeLabel: '12:00am – 05:00am', title: 'La radio que nunca duerme',     slogan: 'Música continua',                                              type: 'music'  },
+        { startH: 5,  startM: 0,  endH: 6,  endM: 0,  timeLabel: '05:00am – 06:00am', title: 'El Tempranero',                 slogan: 'Donde vos sos el primero',                                     type: 'show'   },
+        { startH: 6,  startM: 0,  endH: 7,  endM: 0,  timeLabel: '06:00am – 07:00am', title: 'Noticias ABC',                  slogan: 'El radio informativo completo',                                 type: 'news'   },
+        { startH: 7,  startM: 0,  endH: 8,  endM: 0,  timeLabel: '07:00am – 08:00am', title: 'El arte de saber vivir',        slogan: 'Con su amiga Hirtcia Parrilla',                                type: 'show'   },
+        { startH: 8,  startM: 0,  endH: 12, endM: 0,  timeLabel: '08:00am – 12:00md', title: 'Cada mañana',                   slogan: 'La mañana de tu radio',                                        type: 'show'   },
+        { startH: 12, startM: 0,  endH: 12, endM: 40, timeLabel: '12:00md – 12:40md', title: 'Noticias ABC',                  slogan: 'El radio informativo completo',                                 type: 'news'   },
+        { startH: 12, startM: 40, endH: 13, endM: 10, timeLabel: '12:40md – 01:10md', title: 'Deportivas ABC',                slogan: 'Siempre en la jugada',                                         type: 'sports' },
+        { startH: 13, startM: 10, endH: 14, endM: 0,  timeLabel: '01:10md – 02:00pm', title: 'Clásicos en inglés',            slogan: 'Para usted',                                                   type: 'music'  },
+        { startH: 14, startM: 0,  endH: 14, endM: 15, timeLabel: '02:00pm – 02:15pm', title: 'Una historia, una canción',     slogan: 'Porque siempre hay una historia que nos llega directo al corazón', type: 'show'  },
+        { startH: 14, startM: 15, endH: 17, endM: 0,  timeLabel: '02:15pm – 05:00pm', title: 'Tardes Románticas',             slogan: 'La FM de tus sentimientos',                                    type: 'music'  },
+        { startH: 17, startM: 0,  endH: 18, endM: 0,  timeLabel: '05:00pm – 06:00pm', title: 'Doble Hora Grupera',            slogan: 'Hecha a tu manera',                                            type: 'music'  },
+        { startH: 18, startM: 0,  endH: 19, endM: 0,  timeLabel: '06:00pm – 07:00pm', title: 'Viernes de bandas',             slogan: 'Especial de bandas',                                           type: 'music'  },
+        { startH: 19, startM: 0,  endH: 21, endM: 0,  timeLabel: '07:00pm – 09:00pm', title: 'Pedímela cantando',             slogan: 'Si le hacés a la cantada, pedímela cantando',                  type: 'show'   },
+        { startH: 21, startM: 0,  endH: 21, endM: 15, timeLabel: '09:00pm – 09:15pm', title: 'Una historia, una canción',     slogan: 'Porque siempre hay una historia que nos llega directo al corazón', type: 'show'  },
+        { startH: 21, startM: 15, endH: 24, endM: 0,  timeLabel: '09:15pm – 12:00am', title: 'Clásicos en inglés',            slogan: 'Por fin es viernes – Especial de clásicos en inglés',          type: 'music'  },
+    ],
+    Sábado: [
+        { startH: 0,  startM: 0,  endH: 5,  endM: 0,  timeLabel: '12:00am – 05:00am', title: 'La radio que nunca duerme',     slogan: 'Música continua',                                              type: 'music'  },
+        { startH: 5,  startM: 0,  endH: 8,  endM: 0,  timeLabel: '05:00am – 08:00am', title: 'Sábado en blanco y negro',      slogan: 'Para que le pongás color a tu día',                            type: 'show'   },
+        { startH: 8,  startM: 0,  endH: 12, endM: 0,  timeLabel: '08:00am – 12:00md', title: 'Sábado 7',                      slogan: 'Tu día diferente',                                             type: 'show'   },
+        { startH: 12, startM: 0,  endH: 16, endM: 0,  timeLabel: '12:00md – 04:00pm', title: 'Ponele ganas a tu fin de semana', slogan: 'Programación sabatina',                                     type: 'show'   },
+        { startH: 16, startM: 0,  endH: 17, endM: 0,  timeLabel: '04:00pm – 05:00pm', title: 'La Ruta 997',                   slogan: 'Conduciendo con vos',                                          type: 'music'  },
+        { startH: 17, startM: 0,  endH: 18, endM: 0,  timeLabel: '05:00pm – 06:00pm', title: 'El sonidito caliente',           slogan: 'Música continua',                                              type: 'music'  },
+        { startH: 18, startM: 0,  endH: 21, endM: 0,  timeLabel: '06:00pm – 09:00pm', title: 'Antesala de Haga su fiesta en casa', slogan: 'Música y saludos',                                      type: 'show'   },
+        { startH: 21, startM: 0,  endH: 24, endM: 0,  timeLabel: '09:00pm – 05:30am', title: 'Haga su fiesta en casa',         slogan: 'Nosotros ponemos la música',                                   type: 'show'   },
+    ],
+    Domingo: [
+        { startH: 5,  startM: 30, endH: 6,  endM: 45, timeLabel: '05:30am – 06:45am', title: 'Los Alegres de San José',        slogan: 'El programa con mayor tradición',                              type: 'show'   },
+        { startH: 6,  startM: 45, endH: 7,  endM: 0,  timeLabel: '06:45am – 07:00am', title: 'Jesús te ama',                   slogan: 'Un espacio de fe y reflexión',                                 type: 'show'   },
+        { startH: 7,  startM: 0,  endH: 8,  endM: 30, timeLabel: '07:00am – 08:30am', title: 'Épocas de oro',                  slogan: 'Donde el tiempo y la nostalgia se detienen',                   type: 'music'  },
+        { startH: 8,  startM: 30, endH: 9,  endM: 0,  timeLabel: '08:30am – 09:00am', title: 'Recordando con los conjuntos nicaragüenses', slogan: 'Con Martín García',                            type: 'show'   },
+        { startH: 9,  startM: 0,  endH: 12, endM: 0,  timeLabel: '09:00am – 12:00md', title: 'Programación dominical',         slogan: 'Música y saludos',                                             type: 'show'   },
+        { startH: 12, startM: 0,  endH: 13, endM: 0,  timeLabel: '12:00md – 01:00pm', title: 'Música del recuerdo a la carta', slogan: 'Buen provecho',                                                type: 'music'  },
+        { startH: 13, startM: 0,  endH: 14, endM: 0,  timeLabel: '01:00pm – 02:00pm', title: 'Clásicos en inglés',             slogan: 'Para usted',                                                   type: 'music'  },
+        { startH: 14, startM: 0,  endH: 17, endM: 0,  timeLabel: '02:00pm – 05:00pm', title: 'Espacio dominguero',             slogan: 'Está como lo quiero',                                          type: 'show'   },
+        { startH: 17, startM: 0,  endH: 17, endM: 30, timeLabel: '05:00pm – 05:30pm', title: 'Las rancheras de siempre',       slogan: 'Inolvidables',                                                 type: 'music'  },
+        { startH: 17, startM: 30, endH: 18, endM: 0,  timeLabel: '05:30pm – 06:00pm', title: 'De dos en dos',                  slogan: 'Dos canciones con un mismo artista',                           type: 'music'  },
+        { startH: 18, startM: 0,  endH: 19, endM: 0,  timeLabel: '06:00pm – 07:00pm', title: 'El especial de tu artista favorito', slogan: 'Una hora con la música de tu artista, dúo o grupo favorito', type: 'music' },
+        { startH: 19, startM: 0,  endH: 24, endM: 0,  timeLabel: '07:00pm – 05:00am', title: 'La radio que nunca duerme',      slogan: 'Música continua',                                              type: 'music'  },
+    ],
+};
+
+// Lunes = Miércoles, Martes = Jueves
+SCHEDULE['Miércoles'] = SCHEDULE['Lunes'];
+SCHEDULE['Jueves']    = SCHEDULE['Martes'];
+
+const DAY_NAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+function getTodayKey(): string {
+    return DAY_NAMES[new Date().getDay()];
+}
+
+function getCurrentProgram(items: ScheduleItem[]): ScheduleItem | null {
+    const now = new Date();
+    const nowMins = toMinutes(now.getHours(), now.getMinutes());
+    return items.find(p => {
+        const start = toMinutes(p.startH, p.startM);
+        const end   = p.endH === 24 ? 1440 : toMinutes(p.endH, p.endM);
+        return nowMins >= start && nowMins < end;
+    }) ?? null;
+}
+
+const TYPE_ICON: Record<string, React.ReactNode> = {
+    news:   <Newspaper size={13} />,
+    sports: <Trophy size={13} />,
+    show:   <Mic2 size={13} />,
+    music:  <Music size={13} />,
+};
 
 export default function RadioSchedule() {
-    const [currentProgram, setCurrentProgram] = useState(SCHEDULE_ITEMS[0]);
+    const todayKey = getTodayKey();
+    const todayItems = SCHEDULE[todayKey] ?? SCHEDULE['Lunes'];
+    const [currentProgram, setCurrentProgram] = useState<ScheduleItem | null>(() => getCurrentProgram(todayItems));
 
     useEffect(() => {
-        const updateCurrent = () => {
-            const hour = new Date().getHours();
-            const current = SCHEDULE_ITEMS.find(p => hour >= p.start && hour < p.end);
-            setCurrentProgram(current || { 
-                start: 0, end: 24, time: 'Ahora', 
-                title: 'Música Continua', 
-                host: 'ABC Stereo', 
-                type: 'music' 
-            });
-        };
-        updateCurrent();
-        const interval = setInterval(updateCurrent, 60000);
-        return () => clearInterval(interval);
+        const tick = () => setCurrentProgram(getCurrentProgram(todayItems));
+        tick();
+        const id = setInterval(tick, 30_000);
+        return () => clearInterval(id);
     }, []);
 
-    const getIcon = (type: string) => {
-        switch(type) {
-            case 'news': return <Mic2 size={14} />;
-            case 'social': return <Users size={14} />;
-            default: return <Music size={14} />;
-        }
-    };
+    const displayTitle  = currentProgram?.title  ?? 'La radio que nunca duerme';
+    const displaySlogan = currentProgram?.slogan ?? 'Música continua';
+
+    // Show next 5 upcoming programs (or all if fewer)
+    const now = new Date();
+    const nowMins = toMinutes(now.getHours(), now.getMinutes());
+    const upcoming = todayItems.filter(p => {
+        const end = p.endH === 24 ? 1440 : toMinutes(p.endH, p.endM);
+        return end > nowMins;
+    }).slice(0, 5);
 
     return (
         <div className="card border-0 shadow-sm h-100 overflow-hidden bg-white">
@@ -45,47 +152,53 @@ export default function RadioSchedule() {
                     <Radio size={20} className="text-abc-red" />
                     <h3 className="h5 mb-0 fw-bold font-serif">Programación</h3>
                 </div>
-                <span className="badge bg-abc-red animate-pulse">EN VIVO</span>
+                <span className="badge bg-abc-red rs-pulse">EN VIVO</span>
             </div>
-            
-            {/* Now Playing Section */}
+
+            {/* Now Playing */}
             <div className="p-3 bg-light border-bottom">
-                <p className="text-uppercase text-muted small fw-bold mb-1">Sonando ahora:</p>
+                <p className="text-uppercase text-muted small fw-bold mb-1">Sonando ahora · {todayKey}</p>
                 <div className="d-flex align-items-center gap-3">
                     <div className="bg-white p-2 rounded-circle shadow-sm text-abc-blue">
-                        {getIcon(currentProgram.type)}
+                        {TYPE_ICON[currentProgram?.type ?? 'music']}
                     </div>
                     <div>
-                        <h5 className="fw-bold mb-0 text-dark">{currentProgram.title}</h5>
-                        <small className="text-secondary">Con {currentProgram.host}</small>
+                        <h5 className="fw-bold mb-0 text-dark" style={{ fontSize: '0.95rem' }}>{displayTitle}</h5>
+                        <small className="text-secondary" style={{ fontSize: '0.75rem' }}>{displaySlogan}</small>
                     </div>
                 </div>
-                <div className="progress mt-3" style={{height: '4px'}}>
-                    <div className="progress-bar bg-abc-red w-100 progress-bar-striped progress-bar-animated" role="progressbar"></div>
+                <div className="progress mt-3" style={{ height: '3px' }}>
+                    <div className="progress-bar bg-abc-red w-100 progress-bar-striped progress-bar-animated" role="progressbar" />
                 </div>
             </div>
 
-            <div className="card-body p-0 overflow-auto" style={{maxHeight: '400px'}}>
+            {/* Upcoming */}
+            <div className="card-body p-0 overflow-auto" style={{ maxHeight: '360px' }}>
                 <div className="list-group list-group-flush">
-                    {SCHEDULE_ITEMS.map((program, index) => {
-                        const isActive = currentProgram.title === program.title;
+                    {upcoming.map((program, index) => {
+                        const isActive = currentProgram?.title === program.title &&
+                                         currentProgram?.timeLabel === program.timeLabel;
                         return (
-                            <div key={index} className={`list-group-item border-0 border-bottom p-3 transition-colors ${isActive ? 'bg-blue-50' : 'hover-bg-light'}`}>
-                                <div className="d-flex gap-3">
-                                    <div className="text-center pt-1" style={{minWidth: '50px'}}>
-                                        <span className={`d-block fw-bold small ${isActive ? 'text-abc-red' : 'text-abc-blue'}`}>
-                                            {program.time}
+                            <div
+                                key={index}
+                                className={`list-group-item border-0 border-bottom p-3 ${isActive ? 'rs-active-row' : ''}`}
+                            >
+                                <div className="d-flex gap-3 align-items-start">
+                                    <div className="text-center pt-1 flex-shrink-0" style={{ minWidth: '52px' }}>
+                                        <Clock size={11} className={isActive ? 'text-abc-red' : 'text-muted'} />
+                                        <span className={`d-block fw-bold`} style={{ fontSize: '0.68rem', color: isActive ? 'var(--abc-red)' : 'var(--abc-blue)' }}>
+                                            {program.timeLabel.split('–')[0].trim()}
                                         </span>
                                     </div>
-                                    <div className="border-start ps-3 border-2 border-light">
-                                        <h6 className={`fw-bold mb-1 small ${isActive ? 'text-abc-blue' : 'text-dark'}`}>
+                                    <div className="border-start ps-3 flex-grow-1" style={{ borderColor: '#e5e7eb' }}>
+                                        <div className="d-flex align-items-center gap-1 mb-1">
+                                            {isActive && <span className="badge bg-abc-red" style={{ fontSize: '0.55rem' }}>AL AIRE</span>}
+                                            <span className="opacity-50">{TYPE_ICON[program.type]}</span>
+                                        </div>
+                                        <h6 className={`fw-bold mb-0`} style={{ fontSize: '0.8rem', color: isActive ? 'var(--abc-blue)' : '#1f2937' }}>
                                             {program.title}
-                                            {isActive && <span className="badge bg-abc-red ms-2" style={{fontSize: '0.6rem'}}>AL AIRE</span>}
                                         </h6>
-                                        <p className="small text-muted mb-0" style={{fontSize: '0.75rem'}}>{program.host}</p>
-                                    </div>
-                                    <div className="ms-auto text-muted opacity-50">
-                                        {getIcon(program.type)}
+                                        <p className="mb-0 text-muted" style={{ fontSize: '0.7rem' }}>{program.slogan}</p>
                                     </div>
                                 </div>
                             </div>
@@ -93,20 +206,25 @@ export default function RadioSchedule() {
                     })}
                 </div>
             </div>
+
             <div className="card-footer bg-white p-3 text-center border-0">
-                <button className="btn btn-outline-secondary btn-sm rounded-pill px-4 fw-bold w-100">
+                <Link
+                    href={route('corporate.programming')}
+                    className="btn btn-outline-secondary btn-sm rounded-pill px-4 fw-bold w-100"
+                >
                     Ver Parrilla Completa
-                </button>
+                </Link>
             </div>
-            
+
             <style>{`
-                .animate-pulse { animation: pulse 2s infinite; }
-                .bg-blue-50 { background-color: #f0f9ff; }
-                @keyframes pulse {
-                    0% { opacity: 1; }
-                    50% { opacity: 0.5; }
-                    100% { opacity: 1; }
+                .rs-pulse { animation: rs-pulse-anim 2s infinite; }
+                @keyframes rs-pulse-anim {
+                    0%,100% { opacity: 1; }
+                    50%      { opacity: 0.5; }
                 }
+                .rs-active-row { background-color: #f0f9ff !important; }
+                .list-group-item { transition: background-color 0.2s; }
+                .list-group-item:hover { background-color: #fafafa; }
             `}</style>
         </div>
     );

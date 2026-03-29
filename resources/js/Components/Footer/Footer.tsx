@@ -92,10 +92,10 @@ export default function Footer() {
               <div className="col-6">
                 <h4 className="text-white h6 fw-bold mb-4 border-bottom border-secondary d-inline-block pb-1">La Radio</h4>
                 <ul className="list-unstyled small space-y-2">
-                  <li className="mb-2"><a href={route('corporate.about')} className="text-white-50 text-decoration-none footer-link">Quiénes Somos</a></li>
-                  <li className="mb-2"><a href={route('corporate.programming')} className="text-white-50 text-decoration-none footer-link">Programación</a></li>
-                  <li className="mb-2"><a href={route('corporate.advertise')} className="text-white-50 text-decoration-none footer-link">Anúnciate</a></li>
-                  <li className="mb-2"><a href={route('corporate.contact')} className="text-white-50 text-decoration-none footer-link">Contáctanos</a></li>
+                  <li className="mb-2"><Link href={route('corporate.about')} className="text-white-50 text-decoration-none footer-link">Quiénes Somos</Link></li>
+                  <li className="mb-2"><Link href={route('corporate.programming')} className="text-white-50 text-decoration-none footer-link">Programación</Link></li>
+                  <li className="mb-2"><Link href={route('corporate.advertise')} className="text-white-50 text-decoration-none footer-link">Anúnciate</Link></li>
+                  <li className="mb-2"><Link href={route('corporate.contact')} className="text-white-50 text-decoration-none footer-link">Contáctanos</Link></li>
                 </ul>
               </div>
             </div>

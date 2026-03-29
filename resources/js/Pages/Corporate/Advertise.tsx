@@ -1,15 +1,15 @@
 import React from 'react';
 import { Head } from '@inertiajs/react';
-import MainLayout from '@/Layouts/MainLayout';
+import { withMainLayout } from '@/Layouts/MainLayout';
 import { TrendingUp, Users, Radio, Target, BarChart3, Megaphone, CheckCircle2 } from 'lucide-react';
 
 interface AdvertiseProps {
     title: string;
 }
 
-export default function Advertise({ title }: AdvertiseProps) {
+function Advertise({ title }: AdvertiseProps) {
     return (
-        <MainLayout>
+        <>
             <Head title={title} />
 
             <div className="advertise-page">
@@ -267,6 +267,10 @@ export default function Advertise({ title }: AdvertiseProps) {
                     }
                 `}</style>
             </div>
-        </MainLayout>
+        </>
     );
 }
+
+Advertise.layout = withMainLayout;
+
+export default Advertise;

@@ -1,14 +1,14 @@
 import { Head, Link } from '@inertiajs/react';
-import MainLayout from '@/Layouts/MainLayout';
+import { withMainLayout } from '@/Layouts/MainLayout';
 import { ArrowLeft, Target, Eye, Radio, MapPin, Users, Award, Mic2, CheckCircle, PlayCircle } from 'lucide-react';
 
 interface AboutProps {
     title: string;
 }
 
-export default function About({ title }: AboutProps) {
+function About({ title }: AboutProps) {
     return (
-        <MainLayout>
+        <>
             <Head title={title} />
 
             <div className="animate-fade-in pb-5">
@@ -196,6 +196,10 @@ export default function About({ title }: AboutProps) {
 
                 </div>
             </div>
-        </MainLayout>
+        </>
     );
 }
+
+About.layout = withMainLayout;
+
+export default About;

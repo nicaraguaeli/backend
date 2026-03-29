@@ -1,15 +1,15 @@
 import React from 'react';
 import { Head } from '@inertiajs/react';
-import MainLayout from '@/Layouts/MainLayout';
+import { withMainLayout } from '@/Layouts/MainLayout';
 import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react';
 
 interface ContactProps {
     title: string;
 }
 
-export default function Contact({ title }: ContactProps) {
+function Contact({ title }: ContactProps) {
     return (
-        <MainLayout>
+        <>
             <Head title={title} />
 
             <div className="contact-page">
@@ -200,6 +200,10 @@ export default function Contact({ title }: ContactProps) {
                     }
                 `}</style>
             </div>
-        </MainLayout>
+        </>
     );
 }
+
+Contact.layout = withMainLayout;
+
+export default Contact;

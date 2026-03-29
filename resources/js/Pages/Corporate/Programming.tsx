@@ -1,41 +1,178 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head } from '@inertiajs/react';
-import MainLayout from '@/Layouts/MainLayout';
-import { Clock, Radio, Calendar, Mic } from 'lucide-react';
+import { withMainLayout } from '@/Layouts/MainLayout';
+import { Clock, Radio, Calendar, Music, Mic2, Newspaper, Trophy, Info } from 'lucide-react';
 
 interface ProgrammingProps {
     title: string;
 }
 
-export default function Programming({ title }: ProgrammingProps) {
-    const [selectedDay, setSelectedDay] = useState('Lunes');
+interface ScheduleItem {
+    startH: number;
+    startM: number;
+    endH:   number;
+    endM:   number;
+    timeLabel: string;
+    title:  string;
+    slogan: string;
+    type:   'music' | 'news' | 'sports' | 'show';
+}
 
-    const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+function toMinutes(h: number, m: number) { return h * 60 + m; }
 
-    const schedule = [
-        { time: '06:00 - 09:00', program: 'Buenos Días Nicaragua', host: 'María González', description: 'Noticias y entretenimiento matutino' },
-        { time: '09:00 - 12:00', program: 'La Mañana en ABC', host: 'Carlos Martínez', description: 'Música y actualidad nacional' },
-        { time: '12:00 - 14:00', program: 'Mediodía Informativo', host: 'Ana Rodríguez', description: 'Noticias al mediodía' },
-        { time: '14:00 - 17:00', program: 'Tarde Musical', host: 'Roberto López', description: 'Los mejores éxitos musicales' },
-        { time: '17:00 - 19:00', program: 'Deportivas ABC', host: 'Luis Hernández', description: 'Todo el deporte nacional e internacional' },
-        { time: '19:00 - 21:00', program: 'Noche de Noticias', host: 'Patricia Sánchez', description: 'Análisis y noticias del día' },
-        { time: '21:00 - 00:00', program: 'Música sin Fronteras', host: 'DJ Alex', description: 'La mejor música para la noche' },
-        { time: '00:00 - 06:00', program: 'Trasnoche ABC', host: 'Programación Musical', description: 'Música continua' },
-    ];
+const SCHEDULE: Record<string, ScheduleItem[]> = {
+    Lunes: [
+        { startH: 0,  startM: 0,  endH: 5,  endM: 0,  timeLabel: '12:00am – 05:00am', title: 'La radio que nunca duerme',     slogan: 'Música continua',                                                  type: 'music'  },
+        { startH: 5,  startM: 0,  endH: 6,  endM: 0,  timeLabel: '05:00am – 06:00am', title: 'El Tempranero',                 slogan: 'Donde vos sos el primero',                                         type: 'show'   },
+        { startH: 6,  startM: 0,  endH: 7,  endM: 0,  timeLabel: '06:00am – 07:00am', title: 'Noticias ABC',                  slogan: 'El radio informativo completo',                                     type: 'news'   },
+        { startH: 7,  startM: 0,  endH: 8,  endM: 0,  timeLabel: '07:00am – 08:00am', title: 'Aquí entre nos',                slogan: 'Para estar más cerca de vos',                                      type: 'show'   },
+        { startH: 8,  startM: 0,  endH: 12, endM: 0,  timeLabel: '08:00am – 12:00md', title: 'Cada mañana',                   slogan: 'La mañana de tu radio',                                            type: 'show'   },
+        { startH: 12, startM: 0,  endH: 12, endM: 40, timeLabel: '12:00md – 12:40md', title: 'Noticias ABC',                  slogan: 'El radio informativo completo',                                     type: 'news'   },
+        { startH: 12, startM: 40, endH: 13, endM: 10, timeLabel: '12:40md – 01:10md', title: 'Deportivas ABC',                slogan: 'Siempre en la jugada',                                             type: 'sports' },
+        { startH: 13, startM: 10, endH: 14, endM: 0,  timeLabel: '01:10md – 02:00pm', title: 'Clásicos en inglés',            slogan: 'Para usted',                                                       type: 'music'  },
+        { startH: 14, startM: 0,  endH: 14, endM: 15, timeLabel: '02:00pm – 02:15pm', title: 'Una historia, una canción',     slogan: 'Porque siempre hay una historia que nos llega directo al corazón',  type: 'show'   },
+        { startH: 14, startM: 15, endH: 17, endM: 0,  timeLabel: '02:15pm – 05:00pm', title: 'Tardes Románticas',             slogan: 'La FM de tus sentimientos',                                        type: 'music'  },
+        { startH: 17, startM: 0,  endH: 19, endM: 0,  timeLabel: '05:00pm – 07:00pm', title: 'Doble Hora Grupera',            slogan: 'Hecha a tu manera',                                                type: 'music'  },
+        { startH: 19, startM: 0,  endH: 21, endM: 0,  timeLabel: '07:00pm – 09:00pm', title: 'Espacio Ranchero y más',        slogan: 'Más de tu música favorita',                                        type: 'music'  },
+        { startH: 21, startM: 0,  endH: 21, endM: 15, timeLabel: '09:00pm – 09:15pm', title: 'Una historia, una canción',     slogan: 'Porque siempre hay una historia que nos llega directo al corazón',  type: 'show'   },
+        { startH: 21, startM: 15, endH: 22, endM: 30, timeLabel: '09:15pm – 10:30pm', title: 'Ligaditas a tu recuerdo',       slogan: 'Canciones inolvidables',                                           type: 'music'  },
+        { startH: 22, startM: 30, endH: 24, endM: 0,  timeLabel: '10:30pm – 12:00am', title: 'Clásicos en inglés',            slogan: 'Para usted',                                                       type: 'music'  },
+    ],
+    Martes: [
+        { startH: 0,  startM: 0,  endH: 4,  endM: 0,  timeLabel: '12:00am – 04:00am', title: 'La radio que nunca duerme',     slogan: 'Música continua',                                                  type: 'music'  },
+        { startH: 4,  startM: 0,  endH: 6,  endM: 0,  timeLabel: '04:00am – 06:00am', title: 'El Tempranero',                 slogan: 'Donde vos sos el primero',                                         type: 'show'   },
+        { startH: 6,  startM: 0,  endH: 7,  endM: 0,  timeLabel: '06:00am – 07:00am', title: 'Noticias ABC',                  slogan: 'El radio informativo completo',                                     type: 'news'   },
+        { startH: 7,  startM: 0,  endH: 8,  endM: 0,  timeLabel: '07:00am – 08:00am', title: 'Aquí entre nos',                slogan: 'Para estar más cerca de vos',                                      type: 'show'   },
+        { startH: 8,  startM: 0,  endH: 12, endM: 0,  timeLabel: '08:00am – 12:00md', title: 'Cada mañana',                   slogan: 'La mañana de tu radio',                                            type: 'show'   },
+        { startH: 12, startM: 0,  endH: 12, endM: 40, timeLabel: '12:00md – 12:40md', title: 'Noticias ABC',                  slogan: 'El radio informativo completo',                                     type: 'news'   },
+        { startH: 12, startM: 40, endH: 13, endM: 10, timeLabel: '12:40md – 01:10md', title: 'Deportivas ABC',                slogan: 'Siempre en la jugada',                                             type: 'sports' },
+        { startH: 13, startM: 10, endH: 14, endM: 0,  timeLabel: '01:10md – 02:00pm', title: 'Clásicos en inglés',            slogan: 'Para usted',                                                       type: 'music'  },
+        { startH: 14, startM: 0,  endH: 17, endM: 0,  timeLabel: '02:00pm – 05:00pm', title: 'Tardes Románticas',             slogan: 'La FM de tus sentimientos',                                        type: 'music'  },
+        { startH: 17, startM: 0,  endH: 19, endM: 0,  timeLabel: '05:00pm – 07:00pm', title: 'Doble Hora Grupera',            slogan: 'Hecha a tu manera',                                                type: 'music'  },
+        { startH: 19, startM: 0,  endH: 21, endM: 0,  timeLabel: '07:00pm – 09:00pm', title: 'Espacio Ranchero y más',        slogan: 'Más de tu música favorita',                                        type: 'music'  },
+        { startH: 21, startM: 0,  endH: 22, endM: 30, timeLabel: '09:00pm – 10:30pm', title: 'Ligaditas a tu recuerdo',       slogan: 'Canciones inolvidables',                                           type: 'music'  },
+        { startH: 22, startM: 30, endH: 24, endM: 0,  timeLabel: '10:30pm – 12:00am', title: 'Clásicos en inglés',            slogan: 'Para usted',                                                       type: 'music'  },
+    ],
+    Viernes: [
+        { startH: 0,  startM: 0,  endH: 5,  endM: 0,  timeLabel: '12:00am – 05:00am', title: 'La radio que nunca duerme',     slogan: 'Música continua',                                                  type: 'music'  },
+        { startH: 5,  startM: 0,  endH: 6,  endM: 0,  timeLabel: '05:00am – 06:00am', title: 'El Tempranero',                 slogan: 'Donde vos sos el primero',                                         type: 'show'   },
+        { startH: 6,  startM: 0,  endH: 7,  endM: 0,  timeLabel: '06:00am – 07:00am', title: 'Noticias ABC',                  slogan: 'El radio informativo completo',                                     type: 'news'   },
+        { startH: 7,  startM: 0,  endH: 8,  endM: 0,  timeLabel: '07:00am – 08:00am', title: 'El arte de saber vivir',        slogan: 'Con su amiga Hirtcia Parrilla',                                    type: 'show'   },
+        { startH: 8,  startM: 0,  endH: 12, endM: 0,  timeLabel: '08:00am – 12:00md', title: 'Cada mañana',                   slogan: 'La mañana de tu radio',                                            type: 'show'   },
+        { startH: 12, startM: 0,  endH: 12, endM: 40, timeLabel: '12:00md – 12:40md', title: 'Noticias ABC',                  slogan: 'El radio informativo completo',                                     type: 'news'   },
+        { startH: 12, startM: 40, endH: 13, endM: 10, timeLabel: '12:40md – 01:10md', title: 'Deportivas ABC',                slogan: 'Siempre en la jugada',                                             type: 'sports' },
+        { startH: 13, startM: 10, endH: 14, endM: 0,  timeLabel: '01:10md – 02:00pm', title: 'Clásicos en inglés',            slogan: 'Para usted',                                                       type: 'music'  },
+        { startH: 14, startM: 0,  endH: 14, endM: 15, timeLabel: '02:00pm – 02:15pm', title: 'Una historia, una canción',     slogan: 'Porque siempre hay una historia que nos llega directo al corazón',  type: 'show'   },
+        { startH: 14, startM: 15, endH: 17, endM: 0,  timeLabel: '02:15pm – 05:00pm', title: 'Tardes Románticas',             slogan: 'La FM de tus sentimientos',                                        type: 'music'  },
+        { startH: 17, startM: 0,  endH: 18, endM: 0,  timeLabel: '05:00pm – 06:00pm', title: 'Doble Hora Grupera',            slogan: 'Hecha a tu manera',                                                type: 'music'  },
+        { startH: 18, startM: 0,  endH: 19, endM: 0,  timeLabel: '06:00pm – 07:00pm', title: 'Viernes de bandas',             slogan: 'Especial de bandas',                                               type: 'music'  },
+        { startH: 19, startM: 0,  endH: 21, endM: 0,  timeLabel: '07:00pm – 09:00pm', title: 'Pedímela cantando',             slogan: 'Si le hacés a la cantada, pedímela cantando',                      type: 'show'   },
+        { startH: 21, startM: 0,  endH: 21, endM: 15, timeLabel: '09:00pm – 09:15pm', title: 'Una historia, una canción',     slogan: 'Porque siempre hay una historia que nos llega directo al corazón',  type: 'show'   },
+        { startH: 21, startM: 15, endH: 24, endM: 0,  timeLabel: '09:15pm – 12:00am', title: 'Clásicos en inglés',            slogan: 'Por fin es viernes – Especial de clásicos en inglés',              type: 'music'  },
+    ],
+    Sábado: [
+        { startH: 0,  startM: 0,  endH: 5,  endM: 0,  timeLabel: '12:00am – 05:00am', title: 'La radio que nunca duerme',          slogan: 'Música continua',                                             type: 'music' },
+        { startH: 5,  startM: 0,  endH: 8,  endM: 0,  timeLabel: '05:00am – 08:00am', title: 'Sábado en blanco y negro',           slogan: 'Para que le pongás color a tu día',                           type: 'show'  },
+        { startH: 8,  startM: 0,  endH: 12, endM: 0,  timeLabel: '08:00am – 12:00md', title: 'Sábado 7',                           slogan: 'Tu día diferente',                                            type: 'show'  },
+        { startH: 12, startM: 0,  endH: 16, endM: 0,  timeLabel: '12:00md – 04:00pm', title: 'Ponele ganas a tu fin de semana',    slogan: 'Programación sabatina',                                       type: 'show'  },
+        { startH: 16, startM: 0,  endH: 17, endM: 0,  timeLabel: '04:00pm – 05:00pm', title: 'La Ruta 997',                        slogan: 'Conduciendo con vos',                                         type: 'music' },
+        { startH: 17, startM: 0,  endH: 18, endM: 0,  timeLabel: '05:00pm – 06:00pm', title: 'El sonidito caliente',                slogan: 'Música continua',                                             type: 'music' },
+        { startH: 18, startM: 0,  endH: 21, endM: 0,  timeLabel: '06:00pm – 09:00pm', title: 'Antesala de Haga su fiesta en casa', slogan: 'Música y saludos',                                            type: 'show'  },
+        { startH: 21, startM: 0,  endH: 24, endM: 0,  timeLabel: '09:00pm – 05:30am', title: 'Haga su fiesta en casa',              slogan: 'Nosotros ponemos la música',                                  type: 'show'  },
+    ],
+    Domingo: [
+        { startH: 5,  startM: 30, endH: 6,  endM: 45, timeLabel: '05:30am – 06:45am', title: 'Los Alegres de San José',                  slogan: 'El programa con mayor tradición',                            type: 'show'  },
+        { startH: 6,  startM: 45, endH: 7,  endM: 0,  timeLabel: '06:45am – 07:00am', title: 'Jesús te ama',                             slogan: 'Un espacio de fe y reflexión',                               type: 'show'  },
+        { startH: 7,  startM: 0,  endH: 8,  endM: 30, timeLabel: '07:00am – 08:30am', title: 'Épocas de oro',                            slogan: 'Donde el tiempo y la nostalgia se detienen',                 type: 'music' },
+        { startH: 8,  startM: 30, endH: 9,  endM: 0,  timeLabel: '08:30am – 09:00am', title: 'Recordando con los conjuntos nicaragüenses', slogan: 'Con Martín García',                                         type: 'show'  },
+        { startH: 9,  startM: 0,  endH: 12, endM: 0,  timeLabel: '09:00am – 12:00md', title: 'Programación dominical',                   slogan: 'Música y saludos',                                          type: 'show'  },
+        { startH: 12, startM: 0,  endH: 13, endM: 0,  timeLabel: '12:00md – 01:00pm', title: 'Música del recuerdo a la carta',            slogan: 'Buen provecho',                                             type: 'music' },
+        { startH: 13, startM: 0,  endH: 14, endM: 0,  timeLabel: '01:00pm – 02:00pm', title: 'Clásicos en inglés',                       slogan: 'Para usted',                                                type: 'music' },
+        { startH: 14, startM: 0,  endH: 17, endM: 0,  timeLabel: '02:00pm – 05:00pm', title: 'Espacio dominguero',                       slogan: 'Está como lo quiero',                                       type: 'show'  },
+        { startH: 17, startM: 0,  endH: 17, endM: 30, timeLabel: '05:00pm – 05:30pm', title: 'Las rancheras de siempre',                 slogan: 'Inolvidables',                                              type: 'music' },
+        { startH: 17, startM: 30, endH: 18, endM: 0,  timeLabel: '05:30pm – 06:00pm', title: 'De dos en dos',                            slogan: 'Dos canciones con un mismo artista',                         type: 'music' },
+        { startH: 18, startM: 0,  endH: 19, endM: 0,  timeLabel: '06:00pm – 07:00pm', title: 'El especial de tu artista favorito',       slogan: 'Una hora con la música de tu artista, dúo o grupo favorito', type: 'music' },
+        { startH: 19, startM: 0,  endH: 24, endM: 0,  timeLabel: '07:00pm – 05:00am', title: 'La radio que nunca duerme',                slogan: 'Música continua',                                           type: 'music' },
+    ],
+};
+
+SCHEDULE['Miércoles'] = SCHEDULE['Lunes'];
+SCHEDULE['Jueves']    = SCHEDULE['Martes'];
+
+const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'] as const;
+const DAY_JS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+const TYPE_ICON: Record<string, React.ReactNode> = {
+    news:   <Newspaper size={15} />,
+    sports: <Trophy size={15} />,
+    show:   <Mic2 size={15} />,
+    music:  <Music size={15} />,
+};
+
+const TYPE_COLOR: Record<string, string> = {
+    news:   '#1d4ed8',
+    sports: '#15803d',
+    show:   '#7c3aed',
+    music:  '#dc2626',
+};
+
+const TYPE_LABEL: Record<string, string> = {
+    news:   'Noticias',
+    sports: 'Deportes',
+    show:   'Programa',
+    music:  'Música',
+};
+
+function getCurrentProgram(items: ScheduleItem[]): ScheduleItem | null {
+    const now = new Date();
+    const nowMins = toMinutes(now.getHours(), now.getMinutes());
+    return items.find(p => {
+        const start = toMinutes(p.startH, p.startM);
+        const end   = p.endH === 24 ? 1440 : toMinutes(p.endH, p.endM);
+        return nowMins >= start && nowMins < end;
+    }) ?? null;
+}
+
+function Programming({ title }: ProgrammingProps) {
+    const todayName = DAY_JS[new Date().getDay()];
+    const [selectedDay, setSelectedDay] = useState<string>(todayName);
+    const [nowProgram, setNowProgram] = useState<ScheduleItem | null>(null);
+
+    useEffect(() => {
+        const update = () => {
+            const todayItems = SCHEDULE[todayName] ?? SCHEDULE['Lunes'];
+            setNowProgram(getCurrentProgram(todayItems));
+        };
+        update();
+        const id = setInterval(update, 30_000);
+        return () => clearInterval(id);
+    }, [todayName]);
+
+    const items = SCHEDULE[selectedDay] ?? SCHEDULE['Lunes'];
+    const isToday = selectedDay === todayName;
+
+    // Companion note
+    const sameAs: Record<string, string> = {
+        Miércoles: 'Lunes',
+        Jueves: 'Martes',
+    };
 
     return (
-        <MainLayout>
+        <>
             <Head title={title} />
 
-            <div className="programming-page">
-                {/* Hero Section */}
-                <div className="hero-section">
+            <div className="prog-page">
+                {/* Hero */}
+                <div className="prog-hero">
                     <div className="container">
                         <div className="row justify-content-center text-center">
-                            <div className="col-lg-8">
-                                <h1 className="display-3 fw-bold text-white mb-4">Programación</h1>
-                                <p className="lead text-white-75">
-                                    Una programación completa diseñada a tu gusto. Música, noticias, deportes y entretenimiento.
+                            <div className="col-lg-7">
+                                <div className="d-flex justify-content-center align-items-center gap-3 mb-3">
+                                    <Radio size={36} color="rgba(255,255,255,0.8)" />
+                                </div>
+                                <h1 className="display-4 fw-bold text-white mb-3">Programación</h1>
+                                <p className="lead prog-hero-sub">
+                                    Música, noticias, deportes y entretenimiento — toda la semana en Radio ABC Stereo 99.7 FM
                                 </p>
                             </div>
                         </div>
@@ -43,253 +180,249 @@ export default function Programming({ title }: ProgrammingProps) {
                 </div>
 
                 <div className="container py-5">
+
+                    {/* Note */}
+                    <div className="prog-note mb-4 d-flex align-items-start gap-2">
+                        <Info size={16} className="flex-shrink-0 mt-1" style={{ color: '#1d4ed8' }} />
+                        <p className="mb-0 small">
+                            <strong>Nota:</strong> La programación de <strong>Lunes y Miércoles</strong> es la misma.
+                            La de <strong>Martes y Jueves</strong> es la misma.
+                            Viernes, Sábado y Domingo tienen su propia parrilla.
+                        </p>
+                    </div>
+
                     {/* Day Selector */}
-                    <div className="day-selector mb-5">
-                        <div className="d-flex gap-2 flex-wrap justify-content-center">
-                            {days.map((day) => (
+                    <div className="prog-day-bar mb-4">
+                        <div className="d-flex gap-2 flex-wrap justify-content-center p-3">
+                            {DAYS.map((day) => (
                                 <button
                                     key={day}
-                                    className={`day-btn ${selectedDay === day ? 'active' : ''}`}
+                                    className={`prog-day-btn ${selectedDay === day ? 'active' : ''} ${day === todayName ? 'today' : ''}`}
                                     onClick={() => setSelectedDay(day)}
                                 >
                                     {day}
+                                    {day === todayName && <span className="prog-today-dot" />}
                                 </button>
                             ))}
                         </div>
                     </div>
 
-                    {/* Schedule */}
-                    <div className="schedule-container">
-                        <div className="schedule-header mb-4">
-                            <Calendar size={24} className="text-abc-red me-2" />
-                            <h2 className="h4 fw-bold mb-0">Programación del {selectedDay}</h2>
-                        </div>
-
-                        <div className="row g-4">
-                            {schedule.map((item, index) => (
-                                <div key={index} className="col-lg-6">
-                                    <div className="program-card">
-                                        <div className="program-time">
-                                            <Clock size={20} />
-                                            <span>{item.time}</span>
-                                        </div>
-                                        <div className="program-content">
-                                            <div className="d-flex align-items-start gap-3">
-                                                <div className="program-icon">
-                                                    <Radio size={24} />
-                                                </div>
-                                                <div className="flex-grow-1">
-                                                    <h3 className="h5 fw-bold mb-1">{item.program}</h3>
-                                                    <div className="program-host mb-2">
-                                                        <Mic size={16} className="me-1" />
-                                                        {item.host}
-                                                    </div>
-                                                    <p className="text-muted small mb-0">{item.description}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                    {/* Current program banner (only when viewing today) */}
+                    {isToday && nowProgram && (
+                        <div className="prog-now-banner mb-4">
+                            <div className="d-flex align-items-center gap-3">
+                                <span className="badge bg-abc-red prog-live-badge">AL AIRE</span>
+                                <div>
+                                    <div className="fw-bold text-white">{nowProgram.title}</div>
+                                    <div className="prog-now-slogan">{nowProgram.slogan}</div>
                                 </div>
-                            ))}
+                                <div className="ms-auto prog-now-time">
+                                    <Clock size={14} className="me-1" />
+                                    {nowProgram.timeLabel}
+                                </div>
+                            </div>
                         </div>
+                    )}
+
+                    {/* Same-day alias note */}
+                    {sameAs[selectedDay] && (
+                        <div className="prog-alias-note mb-3">
+                            <Info size={14} className="me-2" />
+                            La programación del <strong>{selectedDay}</strong> es idéntica a la del <strong>{sameAs[selectedDay]}</strong>.
+                        </div>
+                    )}
+
+                    {/* Schedule Header */}
+                    <div className="d-flex align-items-center gap-2 mb-3">
+                        <Calendar size={22} className="text-abc-red" />
+                        <h2 className="h4 fw-bold mb-0">Parrilla del {selectedDay}</h2>
                     </div>
 
-                    {/* Featured Programs */}
-                    <div className="featured-programs mt-5 py-5">
-                        <div className="text-center mb-5">
-                            <h2 className="display-6 fw-bold mb-3">Programas Destacados</h2>
-                            <p className="text-muted lead">Los favoritos de nuestra audiencia</p>
-                        </div>
-                        <div className="row g-4">
-                            {[
-                                { name: 'Noticias ABC I Edición', time: '06:00am - 07:00am', image: 'photo-1478737270239-2f02b77fc618' },
-                                { name: 'Aquí entre nos', time: '07:00am - 08:00am', image: 'photo-1461896836934-ffe607ba8211' },
-                                { name: 'Viernes Romántico', time: '05:00pm - 07:00pm', image: 'photo-1504711434969-e33886168f5c' },
-                            ].map((program, index) => (
-                                <div key={index} className="col-md-4">
-                                    <div className="featured-card">
-                                        <div className="featured-image">
-                                            <img
-                                                src={`https://images.unsplash.com/${program.image}?w=600&h=400&fit=crop`}
-                                                alt={program.name}
-                                                className="img-fluid"
-                                            />
-                                            <div className="featured-overlay">
-                                                <div className="featured-time">
-                                                    <Clock size={16} className="me-1" />
-                                                    {program.time}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="featured-content">
-                                            <h4 className="h5 fw-bold mb-0">{program.name}</h4>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                    {/* Schedule Table */}
+                    <div className="prog-table-wrap">
+                        <table className="prog-table w-100">
+                            <thead>
+                                <tr>
+                                    <th style={{ width: '180px' }}>Horario</th>
+                                    <th style={{ width: '120px' }}>Tipo</th>
+                                    <th>Programa</th>
+                                    <th className="prog-slogan-col">Eslogan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {items.map((item, i) => {
+                                    const isActive = isToday &&
+                                        nowProgram?.title     === item.title &&
+                                        nowProgram?.timeLabel === item.timeLabel;
+                                    return (
+                                        <tr key={i} className={isActive ? 'prog-row-active' : ''}>
+                                            <td className="prog-time-cell">
+                                                <Clock size={13} className="me-1 opacity-50" />
+                                                {item.timeLabel}
+                                                {isActive && (
+                                                    <span className="badge bg-abc-red ms-2" style={{ fontSize: '0.55rem', verticalAlign: 'middle' }}>
+                                                        AHORA
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td>
+                                                <span className="prog-type-pill" style={{ '--tc': TYPE_COLOR[item.type] } as React.CSSProperties}>
+                                                    {TYPE_ICON[item.type]}
+                                                    <span>{TYPE_LABEL[item.type]}</span>
+                                                </span>
+                                            </td>
+                                            <td className="prog-name-cell fw-bold">{item.title}</td>
+                                            <td className="prog-slogan-col text-muted" style={{ fontSize: '0.85rem' }}>{item.slogan}</td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-
-                <style>{`
-                    .programming-page {
-                        min-height: 100vh;
-                        background: #f8f9fa;
-                    }
-
-                    .hero-section {
-                        background: linear-gradient(135deg, #dc2626 0%, #991b1b 50%, #7f1d1d 100%);
-                        padding: 120px 0 80px;
-                    }
-
-                    .text-white-75 {
-                        color: rgba(255, 255, 255, 0.75);
-                    }
-
-                    .day-selector {
-                        background: white;
-                        padding: 24px;
-                        border-radius: 16px;
-                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-                    }
-
-                    .day-btn {
-                        padding: 12px 24px;
-                        border: 2px solid #e5e7eb;
-                        background: white;
-                        border-radius: 50px;
-                        font-weight: 600;
-                        color: #6b7280;
-                        transition: all 0.3s ease;
-                        cursor: pointer;
-                    }
-
-                    .day-btn:hover {
-                        border-color: #dc2626;
-                        color: #dc2626;
-                    }
-
-                    .day-btn.active {
-                        background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
-                        border-color: #dc2626;
-                        color: white;
-                    }
-
-                    .schedule-container {
-                        background: white;
-                        padding: 40px;
-                        border-radius: 16px;
-                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-                    }
-
-                    .schedule-header {
-                        display: flex;
-                        align-items: center;
-                    }
-
-                    .text-abc-red {
-                        color: #dc2626;
-                    }
-
-                    .program-card {
-                        background: #f8f9fa;
-                        border-radius: 12px;
-                        overflow: hidden;
-                        border: 2px solid #e5e7eb;
-                        transition: all 0.3s ease;
-                    }
-
-                    .program-card:hover {
-                        border-color: #dc2626;
-                        transform: translateY(-4px);
-                        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-                    }
-
-                    .program-time {
-                        background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
-                        color: white;
-                        padding: 12px 20px;
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
-                        font-weight: 600;
-                        font-size: 0.9rem;
-                    }
-
-                    .program-content {
-                        padding: 20px;
-                    }
-
-                    .program-icon {
-                        width: 48px;
-                        height: 48px;
-                        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-                        border-radius: 12px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        color: #dc2626;
-                        flex-shrink: 0;
-                    }
-
-                    .program-host {
-                        color: #6b7280;
-                        font-size: 0.9rem;
-                        display: flex;
-                        align-items: center;
-                    }
-
-                    .featured-card {
-                        background: white;
-                        border-radius: 16px;
-                        overflow: hidden;
-                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-                        transition: all 0.3s ease;
-                    }
-
-                    .featured-card:hover {
-                        transform: translateY(-8px);
-                        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-                    }
-
-                    .featured-image {
-                        position: relative;
-                        overflow: hidden;
-                        height: 200px;
-                    }
-
-                    .featured-image img {
-                        width: 100%;
-                        height: 100%;
-                        object-fit: cover;
-                        transition: transform 0.3s ease;
-                    }
-
-                    .featured-card:hover .featured-image img {
-                        transform: scale(1.1);
-                    }
-
-                    .featured-overlay {
-                        position: absolute;
-                        bottom: 0;
-                        left: 0;
-                        right: 0;
-                        background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-                        padding: 20px;
-                    }
-
-                    .featured-time {
-                        color: white;
-                        font-weight: 600;
-                        display: flex;
-                        align-items: center;
-                    }
-
-                    .featured-content {
-                        padding: 20px;
-                    }
-                `}</style>
             </div>
-        </MainLayout>
+
+            <style>{`
+                .prog-page { min-height: 100vh; background: #f3f4f6; }
+
+                /* Hero */
+                .prog-hero {
+                    background: linear-gradient(135deg, #dc2626 0%, #991b1b 50%, #1e3a5f 100%);
+                    padding: 110px 0 70px;
+                }
+                .prog-hero-sub { color: rgba(255,255,255,0.78); }
+
+                /* Note */
+                .prog-note {
+                    background: #eff6ff;
+                    border: 1px solid #bfdbfe;
+                    border-radius: 10px;
+                    padding: 14px 18px;
+                    color: #1e40af;
+                }
+
+                /* Day bar */
+                .prog-day-bar {
+                    background: white;
+                    border-radius: 14px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+                }
+                .prog-day-btn {
+                    position: relative;
+                    padding: 10px 22px;
+                    border: 2px solid #e5e7eb;
+                    background: white;
+                    border-radius: 50px;
+                    font-weight: 600;
+                    font-size: 0.9rem;
+                    color: #6b7280;
+                    cursor: pointer;
+                    transition: all 0.25s;
+                }
+                .prog-day-btn:hover { border-color: #dc2626; color: #dc2626; }
+                .prog-day-btn.active {
+                    background: linear-gradient(135deg, #dc2626, #991b1b);
+                    border-color: #dc2626;
+                    color: white;
+                    box-shadow: 0 4px 12px rgba(220,38,38,0.3);
+                }
+                .prog-today-dot {
+                    position: absolute;
+                    top: 4px; right: 6px;
+                    width: 7px; height: 7px;
+                    border-radius: 50%;
+                    background: #22c55e;
+                    border: 1px solid white;
+                }
+                .prog-day-btn.active .prog-today-dot { border-color: rgba(255,255,255,0.6); }
+
+                /* Now banner */
+                .prog-now-banner {
+                    background: linear-gradient(135deg, #1e3a5f, #0f2847);
+                    border-radius: 12px;
+                    padding: 18px 24px;
+                    color: white;
+                }
+                .prog-live-badge { font-size: 0.7rem; animation: pulse-anim 2s infinite; }
+                @keyframes pulse-anim { 0%,100%{opacity:1} 50%{opacity:.5} }
+                .prog-now-slogan { font-size: 0.78rem; color: rgba(255,255,255,0.65); }
+                .prog-now-time { font-size: 0.78rem; color: rgba(255,255,255,0.6); display:flex; align-items:center; }
+
+                /* Alias note */
+                .prog-alias-note {
+                    background: #fefce8;
+                    border: 1px solid #fde68a;
+                    border-radius: 8px;
+                    padding: 10px 16px;
+                    font-size: 0.85rem;
+                    color: #92400e;
+                    display: flex;
+                    align-items: center;
+                }
+
+                /* Table */
+                .prog-table-wrap {
+                    background: white;
+                    border-radius: 14px;
+                    box-shadow: 0 4px 14px rgba(0,0,0,0.07);
+                    overflow: hidden;
+                }
+                .prog-table { border-collapse: collapse; }
+                .prog-table thead tr {
+                    background: linear-gradient(135deg, #1e3a5f, #0f2847);
+                    color: white;
+                }
+                .prog-table thead th {
+                    padding: 14px 18px;
+                    font-size: 0.8rem;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                }
+                .prog-table tbody tr {
+                    border-bottom: 1px solid #f3f4f6;
+                    transition: background 0.15s;
+                }
+                .prog-table tbody tr:last-child { border-bottom: none; }
+                .prog-table tbody tr:hover { background: #f9fafb; }
+                .prog-table tbody td { padding: 14px 18px; vertical-align: middle; }
+
+                .prog-row-active { background: #eff6ff !important; }
+                .prog-row-active .prog-name-cell { color: #1d4ed8 !important; }
+
+                .prog-time-cell {
+                    font-size: 0.82rem;
+                    font-weight: 600;
+                    color: #374151;
+                    white-space: nowrap;
+                    font-family: 'Courier New', monospace;
+                }
+
+                .prog-type-pill {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 5px;
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    padding: 4px 10px;
+                    border-radius: 20px;
+                    color: var(--tc);
+                    background: color-mix(in srgb, var(--tc) 12%, white);
+                    border: 1px solid color-mix(in srgb, var(--tc) 25%, transparent);
+                }
+
+                .prog-slogan-col { font-style: italic; }
+
+                @media (max-width: 768px) {
+                    .prog-slogan-col { display: none; }
+                    .prog-time-cell { font-size: 0.72rem; }
+                    .prog-table thead th, .prog-table tbody td { padding: 10px 12px; }
+                }
+            `}</style>
+        </>
     );
 }
+
+Programming.layout = withMainLayout;
+
+export default Programming;

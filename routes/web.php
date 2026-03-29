@@ -27,9 +27,10 @@ Route::get('/', function () {
         ->orderBy('created_at', 'desc')
         ->first();
 
-    // 2. Most Read News (Sidebar)
+    // 2. Most Read News (Sidebar) — top 5 por vistas en los últimos 7 días
     $mostReadNews = \App\Models\News::with(['categories', 'author'])
         ->where('is_published', true)
+        ->where('published_at', '>=', now()->subDays(7))
         ->orderBy('views', 'desc')
         ->take(5)
         ->get();

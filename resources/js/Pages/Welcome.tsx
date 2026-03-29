@@ -195,7 +195,7 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
 
             <NacionalesSection news={nacionalesNews} />
 
-            {/* Video Gallery Section */}
+            {/* Video Gallery Section 
             {!videosLoading && videos.length > 0 && (
                 <div className="container my-5">
                     <VideoGallery
@@ -204,7 +204,7 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
                     />
                 </div>
             )}
-
+            */}
             <NewsTicker
                 news={[
                     ...(latestNews ? [latestNews] : []),

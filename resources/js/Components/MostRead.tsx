@@ -10,65 +10,11 @@ interface MostReadProps {
   className?: string;
 }
 
-// Fallback data for development/preview
-const MOCK_ITEMS: ArticleData[] = [
-  {
-    id: 101,
-    title: 'El nuevo puente que conectará la zona norte con el pacífico',
-    slug: 'puente-zona-norte',
-    excerpt: '',
-    content: '',
-    published_at: new Date().toISOString(),
-    image_path: '',
-    categories: [{ id: 1, name: 'Nacionales', slug: 'nacionales', is_active: 1, is_featured: 0, show_in_menu: 1, menu_order: 1 }]
-  },
-  {
-    id: 102,
-    title: 'Precio del combustible baja por tercera semana consecutiva',
-    slug: 'precio-combustible-baja',
-    excerpt: '',
-    content: '',
-    published_at: new Date().toISOString(),
-    image_path: '',
-    categories: [{ id: 2, name: 'Economía', slug: 'economia', is_active: 1, is_featured: 0, show_in_menu: 1, menu_order: 2 }]
-  },
-  {
-    id: 103,
-    title: 'Artista nacional gana premio Grammy Latino',
-    slug: 'artista-grammy',
-    excerpt: '',
-    content: '',
-    published_at: new Date().toISOString(),
-    image_path: '',
-    categories: [{ id: 3, name: 'Farándula', slug: 'farandula', is_active: 1, is_featured: 0, show_in_menu: 1, menu_order: 3 }]
-  },
-  {
-    id: 104,
-    title: 'Descubren sitio arqueológico en el occidente del país',
-    slug: 'sitio-arqueologico',
-    excerpt: '',
-    content: '',
-    published_at: new Date().toISOString(),
-    image_path: '',
-    categories: [{ id: 4, name: 'Cultura', slug: 'cultura', is_active: 1, is_featured: 0, show_in_menu: 1, menu_order: 4 }]
-  },
-  {
-    id: 105,
-    title: 'La selección nacional avanza a la siguiente ronda',
-    slug: 'seleccion-nacional',
-    excerpt: '',
-    content: '',
-    published_at: new Date().toISOString(),
-    image_path: '',
-    categories: [{ id: 5, name: 'Deportes', slug: 'deportes', is_active: 1, is_featured: 0, show_in_menu: 1, menu_order: 5 }]
-  }
-];
-
 export default function MostRead({ items, className = '' }: MostReadProps) {
-  // Use provided items or fallback to mock data if empty
-  const displayItems = (items && items.length > 0) ? items : MOCK_ITEMS;
+  // Use strictly the provided items from the database
+  const displayItems = items || [];
 
-  if (!displayItems || displayItems.length === 0) return null;
+  if (displayItems.length === 0) return null;
 
   return (
     <div className={`most-read-widget bg-white rounded-lg shadow-sm border ${className}`}>
@@ -118,8 +64,7 @@ export default function MostRead({ items, className = '' }: MostReadProps) {
                 </h6>
                 <div className="d-flex align-items-center gap-1 text-muted" style={{ fontSize: '0.7rem' }}>
                   <Eye size={11} />
-                  {/* Fake views for demo purposes */}
-                  {`${15 - (index * 2)}k lecturas`}
+                  {`${item.views || 0} lecturas`}
                 </div>
               </div>
             </Link>

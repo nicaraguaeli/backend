@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { Play, Pause, Volume2, VolumeX, Share2, Facebook, Twitter, Link2, ArrowLeft, Clock, User, Calendar } from 'lucide-react';
-import MainLayout from '@/Layouts/MainLayout';
+import { withMainLayout } from '@/Layouts/MainLayout';
 import { asset, url } from '@/url';
 
 interface AudioReportaje {
@@ -21,7 +21,7 @@ interface Props {
     audioReport: AudioReportaje;
 }
 
-export default function AudioReportajeDetail({ audioReport }: Props) {
+function AudioReportajeDetail({ audioReport }: Props) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
@@ -143,7 +143,7 @@ export default function AudioReportajeDetail({ audioReport }: Props) {
     };
 
     return (
-        <MainLayout>
+        <>
             <Head title={audioReport.titulo} />
 
             <div className="min-vh-100 bg-light">
@@ -369,6 +369,10 @@ export default function AudioReportajeDetail({ audioReport }: Props) {
                     background: #0d6efd;
                 }
             `}</style>
-        </MainLayout>
+        </>
     );
 }
+
+AudioReportajeDetail.layout = withMainLayout;
+
+export default AudioReportajeDetail;
