@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Vacantes')
+@section('title', 'Empleos')
 
 @section('content_header')
-    <h1>Vacantes</h1>
+    <h1>Empleos</h1>
 @stop
 
 @section('content')
@@ -13,7 +13,7 @@
             {{-- Acciones y búsqueda --}}
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                 <a href="{{ route('admin.vacancies.create') }}" class="btn btn-primary">
-                    <i class="fas fa-plus mr-1"></i> Crear Vacante
+                    <i class="fas fa-plus mr-1"></i> Crear Empleo
                 </a>
 
                 <form method="GET" action="{{ route('admin.vacancies.index') }}" class="form-inline">
@@ -40,7 +40,7 @@
 
             @if($vacancies->count())
                 <div class="table-responsive">
-                    <table class="table table-sm table-hover" aria-label="Lista de vacantes">
+                    <table class="table table-sm table-hover" aria-label="Lista de empleos">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -72,14 +72,14 @@
                                     </td>
                                     <td>
                                         @if($vacancy->is_active)
-                                            <span class="badge badge-success">Activa</span>
+                                            <span class="badge badge-success">Activo</span>
                                         @else
-                                            <span class="badge badge-secondary">Inactiva</span>
+                                            <span class="badge badge-secondary">Inactivo</span>
                                         @endif
                                     </td>
                                     <td>
                                         <a href="{{ route('admin.vacancies.edit', $vacancy) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
-                                        <form action="{{ route('admin.vacancies.destroy', $vacancy) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Confirmar eliminar esta vacante?')">
+                                        <form action="{{ route('admin.vacancies.destroy', $vacancy) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Confirmar eliminar este empleo?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-outline-danger">Borrar</button>
@@ -95,7 +95,7 @@
                     {{ $vacancies->links() }}
                 </div>
             @else
-                <p class="text-muted mt-3">No se encontraron vacantes{{ request('q') ? ' para "' . request('q') . '"' : '' }}.</p>
+                <p class="text-muted mt-3">No se encontraron empleos{{ request('q') ? ' para "' . request('q') . '"' : '' }}.</p>
             @endif
         </div>
     </div>

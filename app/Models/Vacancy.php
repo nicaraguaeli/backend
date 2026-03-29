@@ -16,6 +16,7 @@ class Vacancy extends Model
         'country',
         'employment_type',
         'description',
+        'file_path',
         'expires_at',
         'is_active',
     ];

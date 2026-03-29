@@ -33,7 +33,7 @@
 
     <div class="col-md-4">
 
-     <div class="form-group">
+         <div class="form-group">
             <label>Imagen (opcional)</label>
             <div class="custom-file">
                 <input type="file" class="custom-file-input" id="image_path" name="image_path" accept="image/*">
@@ -42,17 +42,27 @@
         </div>
 
         <div class="form-group">
-            {{-- Hidden input para enviar imagen recortada como base64 --}}
-            <input type="hidden" name="cropped_image" id="cropped_image">
-        </div>
-
-        <div class="form-group">
-            <label>Previsualización de la imagen</label>
+            <label>Previsualización</label>
             <div>
-                @if(!empty($vacancy->image_path))
-                    <img id="imagePreview" src="{{ asset('storage/' . $vacancy->image_path) }}" class="image-preview" alt="Previsualización" style="max-height:300px; width:auto; object-fit:contain;">
+                @if(!empty($vacancy->file_path))
+                    {{-- Imagen ya guardada en edición --}}
+                    <div class="mb-2">
+                        <img id="imagePreview"
+                             src="{{ asset('storage/' . $vacancy->file_path) }}"
+                             class="image-preview"
+                             alt="Imagen actual"
+                             style="max-height:200px; width:auto; object-fit:contain; border:1px solid #ddd; border-radius:4px; padding:4px;">
+                        <div class="mt-1">
+                            <small class="text-muted">URL: </small>
+                            <small><code>{{ asset('storage/' . $vacancy->file_path) }}</code></small>
+                        </div>
+                    </div>
                 @else
-                    <img id="imagePreview" class="image-preview d-none" alt="Previsualización" style="max-height:300px; width:auto; object-fit:contain;">
+                    <img id="imagePreview"
+                         class="image-preview d-none"
+                         alt="Previsualización"
+                         style="max-height:200px; width:auto; object-fit:contain; border:1px solid #ddd; border-radius:4px; padding:4px;">
+                    <p id="noImageText" class="text-muted small">Ninguna imagen seleccionada.</p>
                 @endif
             </div>
         </div>

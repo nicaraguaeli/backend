@@ -63,15 +63,20 @@ class VacancyController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'title' => 'required|string|max:255',
-            'company' => 'nullable|string|max:255',
-            'city' => 'nullable|string', // location guarda city_id
+            'title'           => 'required|string|max:255',
+            'company'         => 'nullable|string|max:255',
+            'city'            => 'nullable|string',
             'employment_type' => 'nullable|string|max:100',
-            'description' => 'nullable|string',
-            'expires_at' => 'required|date|after:today',
-
-
+            'description'     => 'nullable|string',
+            'expires_at'      => 'required|date|after:today',
+            'image_path'      => 'nullable|image|max:4096',
         ]);
+
+        // Subida opcional de imagen
+        if ($request->hasFile('image_path')) {
+            $data['file_path'] = $request->file('image_path')->store('vacancies', 'public');
+        }
+        unset($data['image_path']); // no existe como columna
 
         Vacancy::create($data);
 
@@ -94,16 +99,27 @@ class VacancyController extends Controller
     public function update(Request $request, Vacancy $vacancy)
     {
         $data = $request->validate([
-            'title' => 'required|string|max:255',
-            'company' => 'nullable|string|max:255',
-            'city' => 'nullable|string',
+            'title'           => 'required|string|max:255',
+            'company'         => 'nullable|string|max:255',
+            'city'            => 'nullable|string',
             'employment_type' => 'nullable|string|max:100',
-            'description' => 'nullable|string',
-            'expires_at' => 'required|date',
-            'is_active' => 'nullable|boolean',
+            'description'     => 'nullable|string',
+            'expires_at'      => 'required|date',
+            'is_active'       => 'nullable|boolean',
+            'image_path'      => 'nullable|image|max:4096',
         ]);
 
         $data['is_active'] = $request->has('is_active') ? (bool) $request->input('is_active') : false;
+
+        // Subida opcional de imagen (reemplaza la anterior)
+        if ($request->hasFile('image_path')) {
+            // Eliminar imagen anterior si existe
+            if ($vacancy->file_path) {
+                Storage::disk('public')->delete($vacancy->file_path);
+            }
+            $data['file_path'] = $request->file('image_path')->store('vacancies', 'public');
+        }
+        unset($data['image_path']);
 
         $vacancy->update($data);
 
