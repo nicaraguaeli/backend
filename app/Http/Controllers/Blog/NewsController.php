@@ -207,7 +207,12 @@ class NewsController extends Controller
 
         if (strlen($q) >= 2) {
             $paginator = News::where('is_published', true)
-                ->where('title', 'like', "%{$q}%")
+                ->where(function ($query) use ($q) {
+                    $query->where('title',   'like', "%{$q}%")
+                          ->orWhere('excerpt', 'like', "%{$q}%")
+                          ->orWhere('lead',    'like', "%{$q}%")
+                          ->orWhere('content', 'like', "%{$q}%");
+                })
                 ->orderBy('published_at', 'desc')
                 ->paginate(20)
                 ->withQueryString();
@@ -235,7 +240,10 @@ class NewsController extends Controller
         }
 
         $results = News::where('is_published', true)
-            ->where('title', 'like', "%{$q}%")
+            ->where(function ($query) use ($q) {
+                $query->where('title',   'like', "%{$q}%")
+                      ->orWhere('excerpt', 'like', "%{$q}%");
+            })
             ->orderByRaw("CASE WHEN title LIKE ? THEN 0 ELSE 1 END", ["{$q}%"]) // prefer prefix matches
             ->orderBy('published_at', 'desc') // más recientes primero
             ->limit(8)
