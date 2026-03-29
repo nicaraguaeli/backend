@@ -208,8 +208,9 @@ class NewsController extends Controller
         $results = News::where('is_published', true)
             ->where('title', 'like', "%{$q}%")
             ->orderByRaw("CASE WHEN title LIKE ? THEN 0 ELSE 1 END", ["{$q}%"]) // prefer prefix matches
+            ->orderBy('published_at', 'desc') // más recientes primero
             ->limit(8)
-            ->get(['id', 'title', 'slug', 'excerpt']);
+            ->get(['id', 'title', 'slug', 'excerpt', 'published_at']);
 
         return response()->json($results);
     }

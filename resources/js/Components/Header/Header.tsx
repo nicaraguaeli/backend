@@ -163,7 +163,8 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
     e.preventDefault();
     const q = searchQuery.trim();
     if (!q) return;
-    // If user has an active suggestion, go to it first
+
+    // Si hay una sugerencia activa (navegando con teclado), ir a ella
     if (activeSuggestion !== null && suggestions[activeSuggestion]) {
       const s = suggestions[activeSuggestion];
       router.visit(route('news.show', { slug: s.slug }));
@@ -174,7 +175,39 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
       return;
     }
 
-    // Navigate to a /search route with query param
+    // Si hay sugerencias cargadas, mostrarlas (click en botón con sugerencias listas)
+    if (suggestions.length > 0) {
+      setShowSuggestions(true);
+      searchRef.current?.focus();
+      return;
+    }
+
+    // Si no hay sugerencias cargadas aún, hacer fetch y mostrar
+    if (q.length >= 2) {
+      fetch(url(`api/news/suggestions?q=${encodeURIComponent(q)}`))
+        .then(res => res.ok ? res.json() : [])
+        .then((data) => {
+          const results = Array.isArray(data) ? data : [];
+          setSuggestions(results);
+          if (results.length > 0) {
+            setShowSuggestions(true);
+            searchRef.current?.focus();
+          } else {
+            // No hay sugerencias: ir a la página de búsqueda
+            router.visit(url(`search?q=${encodeURIComponent(q)}`));
+            setIsMobileMenuOpen(false);
+            setSearchQuery('');
+          }
+        })
+        .catch(() => {
+          router.visit(url(`search?q=${encodeURIComponent(q)}`));
+          setIsMobileMenuOpen(false);
+          setSearchQuery('');
+        });
+      return;
+    }
+
+    // Fallback: ir a la página de búsqueda
     router.visit(url(`search?q=${encodeURIComponent(q)}`));
     setIsMobileMenuOpen(false);
     setSearchQuery('');
