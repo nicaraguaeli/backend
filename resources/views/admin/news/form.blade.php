@@ -159,7 +159,7 @@
                         <div class="form-group">
                             <label for="country_id">País</label>
                             <select name="country_id" id="country_id" class="form-control select2"
-                                    data-cities-url="{{ url('admin/countries/COUNTRY_ID/cities') }}">
+                                    data-cities-url="{{ url('admin/paises/COUNTRY_ID/ciudades') }}">
                                 <option value="">Seleccionar país...</option>
                                 @foreach($countries as $country)
                                     <option value="{{ $country->id }}" {{ old('country_id', $country_id ?? '') == $country->id ? 'selected' : '' }}>{{ $country->name }}</option>

@@ -107,7 +107,7 @@ class NewsController extends Controller
             'country_id' => 'required|exists:countries,id',
             'tags' => 'nullable|array',
             'tags.*' => 'distinct',
-            'add_watermark' => 'sometimes|boolean', // <-- validación añadida
+            'add_watermark' => 'sometimes|boolean',
         ]);
          
         
@@ -141,6 +141,10 @@ class NewsController extends Controller
         }
 
         $news = News::create($data);
+
+        // Anteponer el ID al slug para garantizar unicidad: 28291_titulo-de-la-noticia
+        $news->slug = $news->id . '_' . $data['slug'];
+        $news->save();
 
         // Sync relations (authors can be multiple)
         $news->categories()->sync($request->categories);

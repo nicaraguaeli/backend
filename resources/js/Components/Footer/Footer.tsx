@@ -1,11 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
 import { Facebook, Twitter, Instagram, Youtube, Phone, MessageCircle, Building2, MapPin, Send } from 'lucide-react';
-
+import { route } from 'ziggy-js';
 import { SOCIAL_LINKS } from '../../constants';
+import { fetchCategories } from '../../services/newsService';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const [menuCategories, setMenuCategories] = useState<{ label: string; href: string }[]>([]);
+
+  useEffect(() => {
+    fetchCategories().then(categories => {
+      const visible = categories
+        .filter(cat => Boolean(Number(cat.is_active)) && Boolean(Number(cat.show_in_menu)))
+        .sort((a, b) => (Number(a.menu_order) || 0) - (Number(b.menu_order) || 0))
+        .slice(0, 5)
+        .map(cat => ({
+          label: cat.name,
+          href: route('category.show', { slug: cat.slug }),
+        }));
+      setMenuCategories(visible);
+    }).catch(() => {});
+  }, []);
 
   return (
     <footer className="bg-abc-blue text-white pt-5 pb-3 border-top border-4 border-abc-red overflow-hidden position-relative">
@@ -57,19 +73,27 @@ export default function Footer() {
               <div className="col-6">
                 <h4 className="text-white h6 fw-bold mb-4 border-bottom border-secondary d-inline-block pb-1">Noticias</h4>
                 <ul className="list-unstyled small space-y-2">
-                  <li className="mb-2"><Link href="/" className="text-white-50 text-decoration-none footer-link">Nacionales</Link></li>
-                  <li className="mb-2"><Link href="/" className="text-white-50 text-decoration-none footer-link">Deportivos</Link></li>
-                  <li className="mb-2"><Link href="/" className="text-white-50 text-decoration-none footer-link">Farándula</Link></li>
-                  <li className="mb-2"><Link href="/" className="text-white-50 text-decoration-none footer-link">Tecnología</Link></li>
+                  {menuCategories.length > 0
+                    ? menuCategories.map(cat => (
+                        <li key={cat.href} className="mb-2">
+                          <Link href={cat.href} className="text-white-50 text-decoration-none footer-link">{cat.label}</Link>
+                        </li>
+                      ))
+                    : [1,2,3,4,5].map(i => (
+                        <li key={i} className="mb-2">
+                          <span className="d-inline-block bg-secondary rounded" style={{ width: '90px', height: '12px', opacity: 0.3 }} />
+                        </li>
+                      ))
+                  }
                 </ul>
               </div>
               <div className="col-6">
                 <h4 className="text-white h6 fw-bold mb-4 border-bottom border-secondary d-inline-block pb-1">La Radio</h4>
                 <ul className="list-unstyled small space-y-2">
-                  <li className="mb-2"><Link href="/quienes-somos" className="text-white-50 text-decoration-none footer-link">Quiénes Somos</Link></li>
-                  <li className="mb-2"><Link href="/programacion" className="text-white-50 text-decoration-none footer-link">Programación</Link></li>
-                  <li className="mb-2"><Link href="/anunciate" className="text-white-50 text-decoration-none footer-link">Anúnciate</Link></li>
-                  <li className="mb-2"><Link href="/contactanos" className="text-white-50 text-decoration-none footer-link">Contáctanos</Link></li>
+                  <li className="mb-2"><a href={route('corporate.about')} className="text-white-50 text-decoration-none footer-link">Quiénes Somos</a></li>
+                  <li className="mb-2"><a href={route('corporate.programming')} className="text-white-50 text-decoration-none footer-link">Programación</a></li>
+                  <li className="mb-2"><a href={route('corporate.advertise')} className="text-white-50 text-decoration-none footer-link">Anúnciate</a></li>
+                  <li className="mb-2"><a href={route('corporate.contact')} className="text-white-50 text-decoration-none footer-link">Contáctanos</a></li>
                 </ul>
               </div>
             </div>

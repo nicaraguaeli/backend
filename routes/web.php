@@ -204,7 +204,8 @@ Route::get('/category/{slug}', function ($slug) {
 })->name('category.show');
 
 // Ruta para Detalle de Noticia (React)
-Route::get('/news/{slug}', [BlogNewsController::class, 'show'])->name('news.show');
+Route::get('/nota/{slug}', [BlogNewsController::class, 'show'])->name('news.show');
+
 
 // Rutas API para el Blog (React consumirá esto)
 Route::get('api/news', [BlogNewsController::class, 'index'])->name('api.news.index');
