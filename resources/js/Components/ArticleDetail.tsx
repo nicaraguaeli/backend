@@ -200,7 +200,7 @@ export default function ArticleDetail({
       document.title = previousTitle;
       setMetaTag('meta[property="og:title"]', 'content', 'Radio ABC Stereo - La voz del norte');
       setMetaTag('meta[property="og:description"]', 'content', 'Noticias de última hora, deportes, farándula y la mejor programación musical.');
-      setMetaTag('meta[property="og:image"]', 'content', 'https://radioabcstereo.com/img/brand.png');
+      setMetaTag('meta[property="og:image"]', 'content', asset('storage/logotipo.png'));
     };
   }, [article]);
 

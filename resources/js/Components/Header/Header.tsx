@@ -286,7 +286,7 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
               {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
             </button>
             <a href={route('home')} onClick={(e) => { e.preventDefault(); if (onNavigate) onNavigate('home'); router.visit(route('home')); }} className="navbar-brand m-0 brand-logo-wrapper">
-              <img src="https://radioabcstereo.com/img/brand.png" alt="Radio ABC Stereo" className="brand-logo" />
+              <img src={asset('storage/logotipo.png')} alt="Radio ABC Stereo" className="brand-logo" />
             </a>
           </div>
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
 import { Facebook, Twitter, Instagram, Youtube, Phone, MessageCircle, Building2, MapPin, Send } from 'lucide-react';
 import { route } from 'ziggy-js';
+import { asset } from '@/url';
 import { SOCIAL_LINKS } from '../../constants';
 import { fetchCategories } from '../../services/newsService';
 
@@ -37,7 +38,7 @@ export default function Footer() {
           <div className="col-md-6 col-lg-3">
             <div className="mb-4">
               <img
-                src="https://radioabcstereo.com/img/brand.png"
+                src={asset('storage/logotipo.png')}
                 alt="ABC Stereo"
                 className="bg-white p-2 rounded video-card-hover"
                 style={{ height: '52px', width: 'auto' }}

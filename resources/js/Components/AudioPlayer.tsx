@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Play, Pause, Volume2, VolumeX, Radio, SkipBack, SkipForward, FileText, ChevronUp } from 'lucide-react';
+import { asset } from '@/url';
 import { AudioState } from '../types';
 
 interface AudioPlayerProps {
@@ -89,7 +90,7 @@ export default function AudioPlayer({ audioState, onTogglePlay, onToggleInfo }: 
   };
 
   const isPodcast = audioState.type === 'podcast';
-  const displayImage = isPodcast ? (audioState.data?.imageUrl || "https://radioabcstereo.com/img/brand.png") : "https://radioabcstereo.com/img/brand.png";
+  const displayImage = isPodcast ? (audioState.data?.imageUrl || asset('storage/logotipo.png')) : asset('storage/logotipo.png');
   const displayTitle = isPodcast ? audioState.data?.title : currentProgram;
   const displaySubtitle = isPodcast ? audioState.data?.subtitle : "ABC Stereo 99.7 FM";
   const statusLabel = isPodcast ? 'PODCAST' : (error ? 'OFF' : 'ON AIR');
@@ -132,7 +133,7 @@ export default function AudioPlayer({ audioState, onTogglePlay, onToggleInfo }: 
                  src={displayImage} 
                  alt="Cover" 
                  className="w-100 h-100 object-fit-cover"
-                 onError={(e) => (e.target as HTMLImageElement).src = 'https://radioabcstereo.com/img/brand.png'}
+                 onError={(e) => (e.target as HTMLImageElement).src = asset('storage/logotipo.png')}
                />
             </div>
             

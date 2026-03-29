@@ -27,9 +27,12 @@
             <meta property="og:type" content="website">
             <meta property="og:title" content="Radio ABC Stereo | Inicio | ABC Stereo">
             <meta property="og:description" content="Noticias de última hora, deportes, farándula y la mejor programación musical.">
-            <meta property="og:image" content="{{ asset('img/brand.png') }}">
+            <meta property="og:image" content="{{ asset('storage/logotipo.png') }}">
         @endif
 
+        <!-- Favicon -->
+        <link rel="icon" href="{{ asset('storage/logotipo.png') }}" type="image/png">
+        
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700&display=swap" rel="stylesheet" />

@@ -211,7 +211,7 @@
             <div class="card card-widget widget-user-2 shadow-sm mt-4">
                 <div class="widget-user-header bg-warning">
                     <div class="widget-user-image">
-                         <img class="img-circle elevation-2 bg-white p-1" src="https://radioabcstereo.com/img/brand.png" alt="User Avatar">
+                         <img class="img-circle elevation-2 bg-white p-1" src="{{ asset('storage/logotipo.png') }}" alt="User Avatar">
                     </div>
                     <h3 class="widget-user-username text-white fw-bold text-shadow">ABC Stereo</h3>
                     <h5 class="widget-user-desc text-white text-shadow">Panel de Administración</h5>
