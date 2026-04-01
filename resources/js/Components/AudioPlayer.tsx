@@ -97,7 +97,7 @@ export default function AudioPlayer({ audioState, onTogglePlay, onToggleInfo }: 
   const statusColor = isPodcast ? 'bg-abc-blue' : (error ? 'bg-secondary' : 'bg-danger');
 
   return (
-    <div className="fixed-bottom bg-abc-blue border-top border-4 border-abc-red shadow-lg text-white" style={{ zIndex: 1060 }}>
+    <div className={`fixed-bottom bg-abc-blue border-top border-4 border-abc-red shadow-lg text-white transition-player ${audioState.isPlaying ? 'player-visible' : 'player-hidden'}`} style={{ zIndex: 1060 }}>
       <audio 
         ref={audioRef} 
         onTimeUpdate={handleTimeUpdate}
@@ -217,6 +217,18 @@ export default function AudioPlayer({ audioState, onTogglePlay, onToggleInfo }: 
       </div>
       
       <style>{`
+        .transition-player {
+          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+        }
+        .player-visible {
+          transform: translateY(0);
+          opacity: 1;
+        }
+        .player-hidden {
+          transform: translateY(100%);
+          opacity: 0;
+          pointer-events: none;
+        }
         .pulse-animation {
           animation: pulse-border 2s infinite;
         }

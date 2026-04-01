@@ -181,15 +181,7 @@ function Programming({ title }: ProgrammingProps) {
 
                 <div className="container py-5">
 
-                    {/* Note */}
-                    <div className="prog-note mb-4 d-flex align-items-start gap-2">
-                        <Info size={16} className="flex-shrink-0 mt-1" style={{ color: '#1d4ed8' }} />
-                        <p className="mb-0 small">
-                            <strong>Nota:</strong> La programación de <strong>Lunes y Miércoles</strong> es la misma.
-                            La de <strong>Martes y Jueves</strong> es la misma.
-                            Viernes, Sábado y Domingo tienen su propia parrilla.
-                        </p>
-                    </div>
+
 
                     {/* Day Selector */}
                     <div className="prog-day-bar mb-4">
@@ -224,13 +216,7 @@ function Programming({ title }: ProgrammingProps) {
                         </div>
                     )}
 
-                    {/* Same-day alias note */}
-                    {sameAs[selectedDay] && (
-                        <div className="prog-alias-note mb-3">
-                            <Info size={14} className="me-2" />
-                            La programación del <strong>{selectedDay}</strong> es idéntica a la del <strong>{sameAs[selectedDay]}</strong>.
-                        </div>
-                    )}
+
 
                     {/* Schedule Header */}
                     <div className="d-flex align-items-center gap-2 mb-3">

@@ -41,7 +41,11 @@ function AudioReportajeDetail({ audioReport }: Props) {
     // Format date helper
     const formatDate = (dateString: string) => {
         try {
-            const date = new Date(dateString);
+            const safeDateString = dateString.replace(' ', 'T');
+            const date = new Date(safeDateString);
+            if (isNaN(date.getTime())) {
+                return dateString;
+            }
             return date.toLocaleDateString('es-ES', {
                 year: 'numeric',
                 month: 'long',

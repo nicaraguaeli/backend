@@ -26,6 +26,13 @@ class NewsController extends Controller
         $news = $query->orderBy('published_at', 'desc')
             ->paginate(12);
             
+        // Map elements to include serialized_author
+        $news->getCollection()->transform(function ($item) {
+            return array_merge($item->toArray(), [
+                'author' => $item->serialized_author,
+            ]);
+        });
+            
         return response()->json($news);
     }
 

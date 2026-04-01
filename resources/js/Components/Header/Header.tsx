@@ -3,7 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { router, Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { asset, url } from '@/url';
-import { Menu, X, Search, Play, Pause, Facebook, Twitter, Instagram, Youtube, ChevronDown } from 'lucide-react';
+import { Menu, X, Search, Play, Pause, Facebook, Instagram, Youtube, ChevronDown } from 'lucide-react';
+
+const Tiktok = ({ size = 24, fill = "currentColor", className }: any) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} className={className} xmlns="http://www.w3.org/2000/svg">
+    <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 2.23-.9 4.45-2.31 6.13-1.48 1.83-3.79 3.01-6.19 3.04-2.58.07-5.26-.78-7.14-2.6-1.84-1.74-2.92-4.26-3-6.85-.09-2.73 1.05-5.56 3.08-7.48 1.9-1.83 4.58-2.86 7.18-2.64v4.06c-1.28-.21-2.61-.1-3.8.44-1.11.51-2.03 1.43-2.5 2.54-.48 1.15-.56 2.45-.25 3.65.3 1.17 1.08 2.22 2.11 2.84 1.05.62 2.34.84 3.53.64 1.18-.18 2.29-.81 3.02-1.72.76-.92 1.15-2.12 1.15-3.3V0h3.58z"/>
+  </svg>
+);
 import { NavItem, AudioState } from '../../types';
 import { fetchCategories } from '../../services/newsService';
 import { SOCIAL_LINKS } from '../../constants';
@@ -268,7 +274,7 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
             <div className="d-flex gap-3 align-items-center">
               <span className="text-light me-2" style={{ fontSize: '11px' }}>Síguenos:</span>
               <a href={SOCIAL_LINKS.facebook} target="_blank" rel="noreferrer" className="text-white hover-opacity"><Facebook size={16} fill="currentColor" /></a>
-              <a href={SOCIAL_LINKS.twitter} target="_blank" rel="noreferrer" className="text-white hover-opacity"><Twitter size={16} fill="currentColor" /></a>
+              <a href={SOCIAL_LINKS.tiktok} target="_blank" rel="noreferrer" className="text-white hover-opacity"><Tiktok size={16} fill="currentColor" /></a>
               <a href={SOCIAL_LINKS.instagram} target="_blank" rel="noreferrer" className="text-white hover-opacity"><Instagram size={16} /></a>
               <a href={SOCIAL_LINKS.youtube} target="_blank" rel="noreferrer" className="text-white hover-opacity"><Youtube size={16} fill="currentColor" /></a>
             </div>
