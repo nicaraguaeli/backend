@@ -75,7 +75,7 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
 
     return (
         <>
-            <Head title="Radio ABC Stereo | Inicio | ABC Stereo" />
+            <Head title="PORTADA" />
 
             {homeTopBanner && (
                 <div className="container mt-4 mb-2">
