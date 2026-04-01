@@ -36,11 +36,11 @@ export default function FeaturedSection({ posts, onPostClick }: FeaturedSectionP
           <div className="d-flex align-items-center gap-2 mb-2">
             <Sparkles size={20} className="text-abc-gold sparkle-icon" />
             <span className="text-abc-gold text-uppercase fw-bold small letter-spacing-3">
-              Contenido Exclusivo
+              Contenido de Valor
             </span>
           </div>
           <h2 className="display-4 fw-bold text-white font-serif mb-2 header-title">
-            Noticias Destacadas
+            Reportajes Destacados
           </h2>
           <div className="header-underline"></div>
         </div>
