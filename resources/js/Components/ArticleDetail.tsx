@@ -3,8 +3,8 @@ import { Link as InertiaLink } from '@inertiajs/react';
 import { asset } from '@/url';
 import { route } from 'ziggy-js';
 import {
-  Calendar, User, MapPin, Share2, Facebook, Twitter, ArrowLeft,
-  Link, Check, Eye, Volume2, CircleStop, Printer, ArrowRight,
+  Calendar, User, MapPin, Share2, ArrowLeft,
+  Check, Eye, Volume2, CircleStop, Printer, ArrowRight,
   BookOpen, Tag, Clock, TrendingUp, ChevronRight, Newspaper
 } from 'lucide-react';
 
@@ -245,10 +245,23 @@ export default function ArticleDetail({
     setIsReading(true);
   };
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: article.title,
+          text: article.excerpt || article.lead || '',
+          url: window.location.href,
+        });
+      } catch {
+        // usuario canceló
+      }
+    } else {
+      // Fallback: copiar enlace
+      navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   if (!article) {
@@ -342,12 +355,9 @@ export default function ArticleDetail({
                   <Printer size={18} />
                 </button>
                 <div className="vr mx-2 d-none d-md-block"></div>
-                <button onClick={handleCopyLink} className="btn btn-outline-dark btn-sm rounded-circle p-2 border-0 bg-light position-relative" title="Copiar enlace">
-                  {copied ? <Check size={18} className="text-success" /> : <Link size={18} />}
+                <button onClick={handleShare} className="btn btn-outline-dark btn-sm rounded-circle p-2 border-0 bg-light position-relative" title="Compartir">
+                  {copied ? <Check size={18} className="text-success" /> : <Share2 size={18} />}
                 </button>
-                <button className="btn btn-outline-primary btn-sm rounded-circle p-2 border-0 bg-light"><Facebook size={18} /></button>
-                <button className="btn btn-outline-info btn-sm rounded-circle p-2 border-0 bg-light"><Twitter size={18} /></button>
-                <button className="btn btn-outline-secondary btn-sm rounded-circle p-2 border-0 bg-light"><Share2 size={18} /></button>
               </div>
             </div>
           </header>
