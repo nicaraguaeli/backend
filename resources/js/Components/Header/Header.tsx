@@ -50,68 +50,48 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
   useEffect(() => {
     const loadMenu = async () => {
       try {
+        // API now returns top-level categories with their children nested
         const categories = await fetchCategories();
 
-        // Filter by is_active AND show_in_menu (tolerant to '1'/'0' strings)
+        // Filter top-level visible categories
         const visibleCategories = categories.filter(cat => {
           const isActive = Boolean(Number(cat.is_active));
           const showInMenu = Boolean(Number(cat.show_in_menu));
           return isActive && showInMenu;
         });
 
-        // Sort by menu_order (safe when null/undefined)
+        // Sort by menu_order
         visibleCategories.sort((a, b) => (Number(a.menu_order) || 0) - (Number(b.menu_order) || 0));
 
-        const MAX_VISIBLE_ITEMS = 6;
-        let dynamicNavItems: NavItem[];
-        let remainingItems: NavItem[] = [];
+        // Build nav items: if a category has visible children → subItems dropdown
+        const dynamicNavItems: NavItem[] = visibleCategories.map(cat => {
+          const visibleChildren = (cat.children || []).filter(child => {
+            return Boolean(Number(child.is_active)) && Boolean(Number(child.show_in_menu));
+          }).sort((a, b) => (Number(a.menu_order) || 0) - (Number(b.menu_order) || 0));
 
-        if (visibleCategories.length > MAX_VISIBLE_ITEMS) {
-          // Take the first 7 items for the main nav
-          dynamicNavItems = visibleCategories.slice(0, MAX_VISIBLE_ITEMS).map(cat => ({
+          const navItem: NavItem = {
             label: cat.name,
             href: route('category.show', { slug: cat.slug }),
-          }));
+          };
 
-          // The rest go into the '+Contenido' dropdown
-          remainingItems = visibleCategories.slice(MAX_VISIBLE_ITEMS).map(cat => ({
-            label: cat.name,
-            href: route('category.show', { slug: cat.slug }),
-          }));
+          if (visibleChildren.length > 0) {
+            navItem.subItems = visibleChildren.map(child => ({
+              label: child.name,
+              href: route('category.show', { slug: child.slug }),
+            }));
+          }
 
-        } else {
-          // If 7 or fewer, all are in the main nav
-          dynamicNavItems = visibleCategories.map(cat => ({
-            label: cat.name,
-            href: route('category.show', { slug: cat.slug }),
-          }));
-        }
+          return navItem;
+        });
 
-        const megaMenuItems = [
-          ...remainingItems
-        ];
-
-        const finalNavItems = [
-          ...dynamicNavItems,
-        ];
-
-        // Add fixed 'Audioreportajes' link before '+Contenido'
-        finalNavItems.push({
+        // Add fixed 'Audioreportajes' link
+        dynamicNavItems.push({
           label: 'Audioreportajes',
           href: '#',
           target: 'podcastview',
         });
 
-        // Only add "+Contenido" if there are items for it
-        if (megaMenuItems.length > 0) {
-          finalNavItems.push({
-            label: '+Contenido',
-            href: '#',
-            subItems: megaMenuItems
-          });
-        }
-
-        setNavItems(finalNavItems);
+        setNavItems(dynamicNavItems);
       } catch (err) {
         console.error('Error loading menu categories:', err);
         setNavItems([]);

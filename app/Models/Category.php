@@ -10,7 +10,7 @@ class Category extends Model
 
     // Solo columnas reales
     protected $fillable = [
-        'name', 'slug', 'is_active', 'is_featured', 'show_in_menu', 'menu_order', 'image_path', 'theme_color', 'theme_color_secondary'
+        'name', 'slug', 'is_active', 'is_featured', 'show_in_menu', 'menu_order', 'image_path', 'theme_color', 'theme_color_secondary', 'parent_id'
     ];
 
     protected $appends = ['image_url'];
@@ -20,7 +20,15 @@ class Category extends Model
         return $this->image_path ? asset('storage/' . $this->image_path) : null;
     }
 
-    
+    public function parent()
+    {
+        return $this->belongsTo(Category::class, 'parent_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(Category::class, 'parent_id');
+    }
 
     public function news()
     {

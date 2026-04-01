@@ -17,11 +17,14 @@ class CategoryController extends Controller
     {
         // Order primarily by menu_order (nulls pushed to the end), then by name
         $categories = Category::withCount('news')
+            ->with('parent')
             ->orderByRaw('COALESCE(menu_order, 999999) asc')
             ->orderBy('name')
             ->paginate(25);
 
-        return view('admin.categories.index', compact('categories'));
+        $parentCategories = Category::orderBy('name')->get();
+
+        return view('admin.categories.index', compact('categories', 'parentCategories'));
     }
 
     public function store(Request $request)
@@ -32,6 +35,7 @@ class CategoryController extends Controller
             'image_path' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'theme_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
             'theme_color_secondary' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
+            'parent_id' => 'nullable|exists:categories,id',
         ]);
 
         $data = [
@@ -39,6 +43,7 @@ class CategoryController extends Controller
             'slug' => Str::slug($validated['slug']),
             'theme_color' => $request->input('theme_color'),
             'theme_color_secondary' => $request->input('theme_color_secondary'),
+            'parent_id' => $request->input('parent_id'),
         ];
 
         try {
@@ -65,6 +70,7 @@ class CategoryController extends Controller
         }
 
         if ($request->expectsJson()) {
+            $category->load('parent');
             return response()->json([
                 'success' => true, 
                 'data' => $category, 
@@ -96,6 +102,7 @@ class CategoryController extends Controller
                 'image_path' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
                 'theme_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
                 'theme_color_secondary' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
+                'parent_id' => 'nullable|exists:categories,id|not_in:' . $category->id,
             ]);
 
             $data = [
@@ -103,6 +110,7 @@ class CategoryController extends Controller
                 'slug' => Str::slug($validated['slug']),
                 'theme_color' => $request->input('theme_color'),
                 'theme_color_secondary' => $request->input('theme_color_secondary'),
+                'parent_id' => $request->input('parent_id'),
             ];
 
             if ($request->hasFile('image_path')) {
@@ -113,6 +121,7 @@ class CategoryController extends Controller
         }
 
         if ($request->expectsJson()) {
+             $category->load('parent');
              return response()->json([
                 'success' => true, 
                 'data' => $category, 

@@ -18,6 +18,7 @@ export interface Category {
   description?: string;
   theme_color?: string;
   theme_color_secondary?: string;
+  children?: Category[];
 }
 
 export interface BlogPost {

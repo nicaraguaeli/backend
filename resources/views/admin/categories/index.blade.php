@@ -31,6 +31,7 @@
                                     <th class="text-center" style="width: 50px;"></th>
                                     <th>#</th>
                                     <th>Nombre</th>
+                                    <th>Categoría Padre</th>
                                     <th class="text-center">Imagen</th>
                                     <th class="text-center">Menú</th>
                                     <th class="text-center">Activo</th>
@@ -42,7 +43,7 @@
                                     @include('admin.categories.partials.category-row', ['category' => $category])
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="text-center text-muted">No hay categorías registradas.</td>
+                                        <td colspan="9" class="text-center text-muted">No hay categorías registradas.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -78,6 +79,15 @@
                     <div class="form-group">
                         <label for="slug">Slug</label>
                         <input type="text" class="form-control" id="slug" name="slug" placeholder="Slug amigable" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="parent_id">Categoría Padre (Opcional)</label>
+                        <select class="form-control" id="parent_id" name="parent_id">
+                            <option value="">Ninguna</option>
+                            @foreach($parentCategories as $parent)
+                                <option value="{{ $parent->id }}">{{ $parent->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="image_path">Imagen</label>
@@ -197,6 +207,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const categoryIdInput = document.getElementById('category_id');
     const nameInput = document.getElementById('name');
     const slugInput = document.getElementById('slug');
+    const parentIdInput = document.getElementById('parent_id');
     const imageInput = document.getElementById('image_path');
     const imagePreview = document.getElementById('image-preview');
     const submitBtn = document.getElementById('form-submit-btn');
@@ -262,6 +273,7 @@ document.addEventListener('DOMContentLoaded', function () {
         modalTitle.textContent = 'Crear Categoría';
         submitBtn.textContent = 'Guardar';
         categoryIdInput.value = '';
+        parentIdInput.value = '';
         imagePreview.style.display = 'none';
         imagePreview.src = '#';
         document.querySelector('.custom-file-label').textContent = 'Elegir imagen...';
@@ -290,6 +302,7 @@ document.addEventListener('DOMContentLoaded', function () {
         categoryIdInput.value = category.id;
         nameInput.value = category.name;
         slugInput.value = category.slug;
+        parentIdInput.value = category.parent_id || '';
 
         if (category.image_url) {
             imagePreview.src = category.image_url;
@@ -363,7 +376,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     const row = document.querySelector(`tr[data-id='${id}']`);
                     if(row) row.outerHTML = newRowHtml;
                 } else { // Create
-                    const emptyRow = tableBody.querySelector('td[colspan="8"]');
+                    const emptyRow = tableBody.querySelector('td[colspan="9"]');
                     if(emptyRow) emptyRow.parentElement.remove();
                     tableBody.insertAdjacentHTML('afterbegin', newRowHtml);
                 }

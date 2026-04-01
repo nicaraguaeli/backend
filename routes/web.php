@@ -206,7 +206,7 @@ Route::get('/search', [BlogNewsController::class, 'search'])->name('search');
 Route::get('api/news', [BlogNewsController::class, 'index'])->name('api.news.index');
 
 Route::get('api/categories', function () {
-    return response()->json(\App\Models\Category::all());
+    return response()->json(\App\Models\Category::with('children')->whereNull('parent_id')->get());
 })->name('api.categories.index');
 
 // API para AudioReportajes (consumido por React)

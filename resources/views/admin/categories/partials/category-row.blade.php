@@ -4,6 +4,7 @@
     </td>
     <td class="align-middle index-col font-weight-bold"></td>
     <td class="align-middle category-name">{{ $category->name }}</td>
+    <td class="align-middle category-parent">{{ $category->parent ? $category->parent->name : '-' }}</td>
     <td class="align-middle text-center">
         @if($category->image_path)
             <img src="{{ asset('storage/' . $category->image_path) }}" alt="{{ $category->name }}" style="width: 50px; height: auto; border-radius: 5px;">
