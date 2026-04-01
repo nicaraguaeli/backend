@@ -76,8 +76,16 @@ class AudioReportController extends Controller
             'created_at' => optional($audioReport->published_at ?? $audioReport->created_at)->toDateTimeString(),
         ];
 
+        $meta = [
+            'title' => $audioReport->title . ' | Radio ABC Stereo',
+            'description' => $audioReport->excerpt ?? 'Escucha este audioreportaje en Radio ABC Stereo.',
+            'image' => $audioReport->image_path ? (str_starts_with($audioReport->image_path, 'http') ? $audioReport->image_path : asset('storage/' . ltrim($audioReport->image_path, '/'))) : asset('storage/logotipo.png'),
+            'url' => route('audioreportaje.show', $audioReport->slug),
+            'type' => 'article'
+        ];
+
         return \Inertia\Inertia::render('AudioReportajeDetail', [
             'audioReport' => $data
-        ]);
+        ])->withViewData(['meta' => $meta]);
     }
 }
