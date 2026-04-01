@@ -16,19 +16,6 @@ const splitIntoColumns = (items: PodcastEpisode[], cols: number) => {
   return columns;
 };
 
-const relativeDate = (iso?: string) => {
-  if (!iso) return '';
-  const then = new Date(iso);
-  if (isNaN(then.getTime())) return '';
-  const now = new Date();
-  const diffSeconds = Math.floor((now.getTime() - then.getTime()) / 1000);
-  if (diffSeconds < 60) return 'HACE UNOS SEG';
-  if (diffSeconds < 3600) return `HACE ${Math.floor(diffSeconds / 60)} MIN`;
-  if (diffSeconds < 86400) return `HACE ${Math.floor(diffSeconds / 3600)} HRS`;
-  const days = Math.floor(diffSeconds / 86400);
-  return days === 1 ? 'HACE 1 DÍA' : `HACE ${days} DÍAS`;
-};
-
 const colorForIndex = (i: number) => {
   const hue = (i * 47) % 360;
   return `hsl(${hue} 70% 48%)`;
@@ -36,13 +23,16 @@ const colorForIndex = (i: number) => {
 
 const formatPublishedDate = (iso?: string) => {
   if (!iso) return '';
+  // Avoid parsing issues and timezone offsets by handling basic format if it matches "YYYY-MM-DD"
   const d = new Date(iso);
   if (isNaN(d.getTime())) return '';
-  try {
-    return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-  } catch (e) {
-    return d.toISOString().split('T')[0];
-  }
+  
+  const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+  const day = d.getDate();
+  const month = months[d.getMonth()];
+  const year = d.getFullYear();
+  
+  return `${day} ${month} ${year}`;
 };
 
 export default function TopEpisodes({ episodes, onPlay }: TopEpisodesProps) {
@@ -153,7 +143,7 @@ export default function TopEpisodes({ episodes, onPlay }: TopEpisodesProps) {
                     <p className="te-desc mb-1 text-muted" title={ep.excerpt}>{ep.excerpt}</p>
                     <div className="te-meta-row text-muted small d-flex justify-content-between">
                       <span>
-                        {formatPublishedDate(ep.date)}{relativeDate(ep.date) ? ` · ${relativeDate(ep.date)}` : ''}
+                        {formatPublishedDate(ep.date)}
                       </span>
                       <span>{ep.duration}</span>
                     </div>
