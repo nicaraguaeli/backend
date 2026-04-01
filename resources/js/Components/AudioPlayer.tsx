@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Play, Pause, Volume2, VolumeX, Radio, SkipBack, SkipForward, FileText, ChevronUp } from 'lucide-react';
 import { asset } from '@/url';
 import { AudioState } from '../types';
+import { SCHEDULE, getTodayKey, getCurrentProgram as getCurrentScheduleProgram } from '../utils/scheduleUtils';
 
 interface AudioPlayerProps {
   audioState: AudioState;
@@ -24,22 +25,16 @@ export default function AudioPlayer({ audioState, onTogglePlay, onToggleInfo }: 
   const RADIO_STREAM_URL = "https://hoth.alonhosting.com:4205/stream";
 
   // Lógica de programación horaria (Solo para Radio)
-  const getCurrentProgram = () => {
-    const now = new Date();
-    const hour = now.getHours();
-    if (hour === 6) return 'El Espacio Ranchero';
-    if (hour === 7) return 'Noticias ABC Matutino';
-    if (hour >= 8 && hour < 11) return 'Cumpleañeros';
-    if (hour === 11) return 'El Club de la Amistad';
-    if (hour === 12) return 'Noticias ABC Meridiano';
-    if (hour >= 14 && hour < 16) return 'Tardes Musicales';
-    if (hour >= 20 && hour < 22) return 'Clásicos de Siempre';
-    return 'Música Continua';
+  const fetchCurrentProgram = () => {
+    const todayKey = getTodayKey();
+    const todayItems = SCHEDULE[todayKey] ?? SCHEDULE['Lunes'];
+    const program = getCurrentScheduleProgram(todayItems);
+    return program ? program.title : 'La radio que nunca duerme';
   };
 
   useEffect(() => {
-    setCurrentProgram(getCurrentProgram());
-    const interval = setInterval(() => setCurrentProgram(getCurrentProgram()), 60000);
+    setCurrentProgram(fetchCurrentProgram());
+    const interval = setInterval(() => setCurrentProgram(fetchCurrentProgram()), 60000);
     return () => clearInterval(interval);
   }, []);
 

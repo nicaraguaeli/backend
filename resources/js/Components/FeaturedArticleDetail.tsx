@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Calendar, User, Eye, Share2, Bookmark, Clock, Tag, TrendingUp, Sparkles } from 'lucide-react';
+import { Head } from '@inertiajs/react';
+import { ArrowLeft, Calendar, User, Eye, Share2, Clock, Tag, TrendingUp, Sparkles } from 'lucide-react';
 import { asset } from '@/url';
 import { ArticleData } from '@/types';
 import axios from 'axios';
 import { getCategoryThemeColors, getCategoryGradient, getCategoryCSSVariables } from '@/utils/categoryTheme';
+import { shareViaWebShare, shareOnFacebook, ShareableContent } from '@/utils/shareUtils';
 
 interface Props {
     article: ArticleData;
@@ -53,11 +55,39 @@ export default function FeaturedArticleDetail({ article, onBack }: Props) {
     };
 
     const handleArticleClick = (slug: string) => {
-        window.location.href = `/news/${slug}`;
+        window.location.href = `/nota/${slug}`;
+    };
+
+    const handleShare = async () => {
+        const shareContent: ShareableContent = {
+            title: article.title,
+            slug: article.slug,
+            type: 'article'
+        };
+        
+        try {
+            const shared = await shareViaWebShare(shareContent);
+            if (!shared) {
+                // Si la API de Web Share no está disponible o el usuario la cancela, usamos Facebook como respaldo
+                shareOnFacebook(shareContent);
+            }
+        } catch (error) {
+            shareOnFacebook(shareContent);
+        }
     };
 
     return (
         <div className="featured-article-detail" style={cssVars as React.CSSProperties}>
+            <Head>
+                <meta property="og:title" content={article.title} />
+                <meta property="og:description" content={article.lead || ''} />
+                <meta property="og:image" content={article.image_path ? asset(`storage/${article.image_path}`) : asset('storage/logotipo.png')} />
+                <meta property="og:type" content="article" />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={article.title} />
+                <meta name="twitter:description" content={article.lead || ''} />
+                <meta name="twitter:image" content={article.image_path ? asset(`storage/${article.image_path}`) : asset('storage/logotipo.png')} />
+            </Head>
             {/* Hero Header with Category Badge */}
             <div className="article-hero">
                 <div className="hero-overlay"></div>
@@ -138,13 +168,9 @@ export default function FeaturedArticleDetail({ article, onBack }: Props) {
 
                             {/* Share Section */}
                             <div className="article-actions">
-                                <button className="action-btn">
+                                <button className="action-btn" onClick={handleShare}>
                                     <Share2 size={20} />
                                     <span>Compartir</span>
-                                </button>
-                                <button className="action-btn">
-                                    <Bookmark size={20} />
-                                    <span>Guardar</span>
                                 </button>
                             </div>
                         </article>

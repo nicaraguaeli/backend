@@ -3,7 +3,7 @@
 export interface ShareableContent {
     title: string;
     slug: string;
-    type: 'video' | 'audio';
+    type: 'video' | 'audio' | 'article';
 }
 
 /**
@@ -11,7 +11,10 @@ export interface ShareableContent {
  */
 export const generateShareUrl = (content: ShareableContent): string => {
     const baseUrl = window.location.origin;
-    const path = content.type === 'video' ? 'video-reportajes' : 'audio-reportajes';
+    let path = '';
+    if (content.type === 'video') path = 'video-reportajes';
+    else if (content.type === 'audio') path = 'audio-reportajes';
+    else if (content.type === 'article') path = 'nota';
     return `${baseUrl}/${path}/${content.slug}`;
 };
 

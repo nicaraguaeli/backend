@@ -156,13 +156,13 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
                 onCategoryClick={(slug) => router.visit(route('category.show', { slug }))}
             />
 
-            {/* ── CTA Audioreportajes ── 
+
             <AudioreportajesCTA
                 onNavigate={() => {
                     window.history.pushState(null, '', '#audioreportajes');
                     window.dispatchEvent(new PopStateEvent('popstate'));
                 }}
-            />*/}
+            />*/
 
             {footerBanner && (
                 <div className="container my-5">
