@@ -34,13 +34,16 @@ const BASE_URL = (window as any).APP_URL || (window?.location?.origin ? `${windo
 // Helper para formatear fecha
 const formatDate = (dateString: string): string => {
   try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+    const safeDateString = dateString ? dateString.replace(' ', 'T') : '';
+    const d = new Date(safeDateString);
+    if (isNaN(d.getTime())) return dateString;
+
+    const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
   } catch (e) {
     return dateString;
   }
 };
-
 export const fetchPodcasts = async (): Promise<PodcastEpisode[]> => {
   try {
     // Ensure API_URL is prefixed correctly if it's relative

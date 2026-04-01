@@ -96,17 +96,7 @@ Route::get('/', function () {
             'published_at' => now()->subDays(1)->toDateTimeString(),
             'category' => 'Noticias'
         ],
-        [
-            'id' => 2,
-            'title' => 'Entrevista Exclusiva: Análisis Político Nacional',
-            'description' => 'Conversamos con expertos sobre la situación política actual del país.',
-            'thumbnail' => 'https://via.placeholder.com/640x360/CC0000/FFFFFF?text=Pol%C3%ADtica',
-            'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-            'views' => 8930,
-            'duration' => '18:45',
-            'published_at' => now()->subDays(2)->toDateTimeString(),
-            'category' => 'Noticias'
-        ],
+        
         [
             'id' => 3,
             'title' => 'Resumen Deportivo: Lo Mejor de la Semana',

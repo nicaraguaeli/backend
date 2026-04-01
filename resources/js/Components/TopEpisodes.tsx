@@ -21,20 +21,6 @@ const colorForIndex = (i: number) => {
   return `hsl(${hue} 70% 48%)`;
 };
 
-const formatPublishedDate = (iso?: string) => {
-  if (!iso) return '';
-  // Avoid parsing issues and timezone offsets by handling basic format if it matches "YYYY-MM-DD"
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return '';
-  
-  const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-  const day = d.getDate();
-  const month = months[d.getMonth()];
-  const year = d.getFullYear();
-  
-  return `${day} ${month} ${year}`;
-};
-
 export default function TopEpisodes({ episodes, onPlay }: TopEpisodesProps) {
   const columns = splitIntoColumns(episodes, 3);
   const containerRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -142,9 +128,7 @@ export default function TopEpisodes({ episodes, onPlay }: TopEpisodesProps) {
                     <h4 className="te-title mb-1">{ep.title}</h4>
                     <p className="te-desc mb-1 text-muted" title={ep.excerpt}>{ep.excerpt}</p>
                     <div className="te-meta-row text-muted small d-flex justify-content-between">
-                      <span>
-                        {formatPublishedDate(ep.date)}
-                      </span>
+                      <span>{ep.date}</span>
                       <span>{ep.duration}</span>
                     </div>
                   </div>
