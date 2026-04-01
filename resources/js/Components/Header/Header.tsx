@@ -371,32 +371,51 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div className="d-lg-none">
-          {/* Backdrop with fade-in animation */}
+          {/* Backdrop */}
           <div
-            className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 animate-fade-in-overlay"
-            style={{ zIndex: 1040 }}
+            className="position-fixed top-0 start-0 w-100 h-100 animate-fade-in-overlay"
+            style={{ zIndex: 1040, background: 'rgba(5,15,40,0.72)', backdropFilter: 'blur(4px)' }}
             onClick={() => setIsMobileMenuOpen(false)}
-          ></div>
+          />
 
-          {/* Menu Drawer with sliding animation */}
+          {/* Menu Drawer */}
           <div
-            className="position-fixed top-0 start-0 h-100 bg-white shadow animate-slide-right"
-            style={{ zIndex: 1050, width: '320px', overflowY: 'auto' }}
+            className="position-fixed top-0 start-0 h-100 animate-slide-right mobile-drawer"
+            style={{ zIndex: 1050, width: '300px', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}
           >
-            <div className="d-flex align-items-center justify-content-between p-3 bg-abc-blue text-white">
-              <h5 className="m-0">Menú</h5>
-              <button className="btn btn-link text-white p-0" onClick={() => setIsMobileMenuOpen(false)}><X size={24} /></button>
+            {/* Drawer Header */}
+            <div className="mobile-drawer-header d-flex align-items-center justify-content-between">
+              <img src={asset('storage/logowhite.png')} alt="Radio ABC Stereo" style={{ height: '55px', width: 'auto', maxWidth: '200px', objectFit: 'contain' }} />
+              <button className="mobile-drawer-close" onClick={() => setIsMobileMenuOpen(false)} aria-label="Cerrar menú">
+                <X size={20} />
+              </button>
             </div>
-            <div className="p-3 bg-light border-bottom position-relative">
-              <form onSubmit={handleSearch} className="input-group input-group-sm" role="search" aria-label="Buscar">
-                <input type="text" className="form-control" placeholder="Buscar..." aria-label="Buscar" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={handleKeyDown} onBlur={() => setTimeout(() => setShowSuggestions(false), 150)} onFocus={() => { if (suggestions.length) setShowSuggestions(true); }} />
-                <button className="btn btn-outline-secondary" type="submit"><Search size={16} /></button>
-              </form>
 
+            {/* Search */}
+            <div className="mobile-drawer-search position-relative">
+              <form onSubmit={handleSearch} className="d-flex gap-2" role="search" aria-label="Buscar">
+                <div className="flex-grow-1 position-relative">
+                  <Search size={15} className="mobile-search-icon" />
+                  <input
+                    type="text"
+                    className="mobile-search-input"
+                    placeholder="Buscar noticias..."
+                    aria-label="Buscar"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                    onFocus={() => { if (suggestions.length) setShowSuggestions(true); }}
+                  />
+                </div>
+                <button className="mobile-search-btn" type="submit">IR</button>
+              </form>
               {showSuggestions && suggestions.length > 0 && (
-                <div className="search-suggestions dropdown-menu show mt-1 w-100 shadow-sm" style={{ left: 0 }} role="listbox" aria-label="Sugerencias de búsqueda">
+                <div className="search-suggestions dropdown-menu show mt-1 w-100 shadow" style={{ left: 0 }} role="listbox">
                   {suggestions.map((s, idx) => (
-                    <button key={s.id} type="button" role="option" aria-selected={activeSuggestion === idx} className={`dropdown-item text-truncate ${activeSuggestion === idx ? 'active' : ''}`} onMouseDown={(e) => { e.preventDefault(); router.visit(route('news.show', { slug: s.slug })); setShowSuggestions(false); setSuggestions([]); setSearchQuery(''); setIsMobileMenuOpen(false); }}>
+                    <button key={s.id} type="button" role="option" aria-selected={activeSuggestion === idx}
+                      className={`dropdown-item text-truncate ${activeSuggestion === idx ? 'active' : ''}`}
+                      onMouseDown={(e) => { e.preventDefault(); router.visit(route('news.show', { slug: s.slug })); setShowSuggestions(false); setSuggestions([]); setSearchQuery(''); setIsMobileMenuOpen(false); }}>
                       <strong className="d-block">{s.title}</strong>
                       {s.excerpt && <small className="text-muted d-block">{s.excerpt}</small>}
                     </button>
@@ -404,162 +423,314 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
                 </div>
               )}
             </div>
-            <div className="list-group list-group-flush">
+
+            {/* Navigation Items */}
+            <nav className="mobile-drawer-nav flex-grow-1">
+              <p className="mobile-nav-section-label">SECCIONES</p>
               {navItems.map((item) => {
                 if (item.subItems) {
                   const subItems = item.subItems;
+                  const isOpen = openSections[item.label];
                   return (
-                    <div key={item.label} className="list-group-item bg-light p-0 border-bottom">
-                      <button className="p-3 fw-bold text-abc-blue d-flex align-items-center justify-content-between w-100 btn btn-link" onClick={() => toggleSection(item.label)}>
-                        <span className="text-start">{item.label}</span>
-                        <ChevronDown size={16} className={openSections[item.label] ? 'rotate-180' : ''} />
+                    <div key={item.label} className="mobile-nav-group">
+                      <button
+                        className={`mobile-nav-item mobile-nav-parent ${isOpen ? 'open' : ''}`}
+                        onClick={() => toggleSection(item.label)}
+                      >
+                        <span>{item.label}</span>
+                        <ChevronDown size={15} className={`mobile-chevron ${isOpen ? 'rotated' : ''}`} />
                       </button>
-                      {openSections[item.label] && (
-                        <div className="bg-white ps-3">
-                          {subItems.map((sub: any) => {
-                            const isSpecial = SPECIAL_HIGHLIGHTS.includes(sub.label);
-                            return (
-                              <a key={sub.label} href={sub.href} className={`list-group-item list-group-item-action border-0 ps-3 py-2 ${isSpecial ? 'text-gray fw-bold' : 'text-secondary'}`} onClick={(e) => handleNavClick(e, sub.label, false, sub.target, sub.href)}>
-                                {sub.label}
-                              </a>
-                            );
-                          })}
+                      {isOpen && (
+                        <div className="mobile-nav-children">
+                          {subItems.map((sub: any) => (
+                            <a
+                              key={sub.label}
+                              href={sub.href}
+                              className="mobile-nav-child"
+                              onClick={(e) => handleNavClick(e, sub.label, false, sub.target, sub.href)}
+                            >
+                              <span className="mobile-child-dot" />
+                              {sub.label}
+                            </a>
+                          ))}
                         </div>
                       )}
                     </div>
                   );
                 }
-                return <a key={item.label} href={item.href} className="list-group-item list-group-item-action fw-bold text-secondary" onClick={(e) => handleNavClick(e, item.label, false, undefined, item.href)}>{item.label}</a>;
+                return (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    className="mobile-nav-item"
+                    onClick={(e) => handleNavClick(e, item.label, false, (item as any).target, item.href)}
+                  >
+                    {item.label}
+                  </a>
+                );
               })}
-              {/*<a href="#" className="list-group-item list-group-item-action fw-bold text-abc-gold" onClick={navigateToVideos}>AbcTV</a>*/}
-              <a href="#" className="list-group-item list-group-item-action fw-bold text-secondary" onClick={navigateToPodcast}>AUDIOREPORTAJES</a>
-              <a href="#" className="list-group-item list-group-item-action fw-bold text-secondary" onClick={navigateToJobs}>Empleos</a>
-              <Link href={route('corporate.about')} className="list-group-item list-group-item-action fw-bold text-secondary" onClick={() => setIsMobileMenuOpen(false)}>Quiénes Somos</Link>
-              <Link href={route('corporate.advertise')} className="list-group-item list-group-item-action fw-bold text-secondary" onClick={() => setIsMobileMenuOpen(false)}>Anúnciate</Link>
-              <Link href={route('corporate.contact')} className="list-group-item list-group-item-action fw-bold text-secondary" onClick={() => setIsMobileMenuOpen(false)}>Contáctanos</Link>
-              <Link href={route('corporate.programming')} className="list-group-item list-group-item-action fw-bold text-secondary" onClick={() => setIsMobileMenuOpen(false)}>Programación</Link>
+
+              {/* Divider + Extra Links */}
+              <div className="mobile-nav-divider" />
+              <p className="mobile-nav-section-label">RADIO ABC</p>
+              <a href="#" className="mobile-nav-item" onClick={navigateToJobs}>Empleos</a>
+              <Link href={route('corporate.programming')} className="mobile-nav-item" onClick={() => setIsMobileMenuOpen(false)}>Programación</Link>
+              <Link href={route('corporate.about')} className="mobile-nav-item" onClick={() => setIsMobileMenuOpen(false)}>Quiénes Somos</Link>
+              <Link href={route('corporate.advertise')} className="mobile-nav-item" onClick={() => setIsMobileMenuOpen(false)}>Anúnciate</Link>
+              <Link href={route('corporate.contact')} className="mobile-nav-item" onClick={() => setIsMobileMenuOpen(false)}>Contáctanos</Link>
+            </nav>
+
+            {/* Social Links Footer */}
+            <div className="mobile-drawer-footer">
+              <p className="mobile-footer-label">Síguenos</p>
+              <div className="d-flex gap-3">
+                <a href={SOCIAL_LINKS.facebook} target="_blank" rel="noreferrer" className="mobile-social-link" aria-label="Facebook"><Facebook size={18} fill="currentColor" /></a>
+                <a href={SOCIAL_LINKS.tiktok} target="_blank" rel="noreferrer" className="mobile-social-link" aria-label="TikTok"><Tiktok size={18} /></a>
+                <a href={SOCIAL_LINKS.instagram} target="_blank" rel="noreferrer" className="mobile-social-link" aria-label="Instagram"><Instagram size={18} /></a>
+                <a href={SOCIAL_LINKS.youtube} target="_blank" rel="noreferrer" className="mobile-social-link" aria-label="YouTube"><Youtube size={18} fill="currentColor" /></a>
+              </div>
             </div>
           </div>
         </div>
       )}
       <style>{`
-        /* Logo Positioning & Styling */
+        /* ===== LOGO ===== */
         @media (min-width: 992px) {
           .brand-logo-wrapper {
-            position: absolute;
-            top: -5px;
-            left: 12px;
-            z-index: 1050;
-            display: block;
+            position: absolute; top: -5px; left: 12px;
+            z-index: 1050; display: block;
           }
           .brand-logo {
-            height: 115px;
-            width: auto;
+            height: 115px; width: auto;
             filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));
             transition: transform 0.3s ease;
             padding-top: 10px;
           }
-          .brand-logo:hover {
-            transform: scale(1.02);
-          }
-          .search-container {
-            margin-left: 180px !important;
-          }
+          .brand-logo:hover { transform: scale(1.02); }
+          .search-container { margin-left: 180px !important; }
         }
-        
-        @media (max-width: 991.98px) {
-          .brand-logo {
-            height: 45px;
-          }
-        }
+        @media (max-width: 991.98px) { .brand-logo { height: 45px; } }
 
+        /* ===== DESKTOP NAV ===== */
         .dropdown-hover:hover .dropdown-menu { display: block; margin-top: 0; animation: fadeIn 0.2s ease-in; }
         .dropdown-item:hover { background-color: #f8f9fa; color: var(--abc-blue); }
-        .item-card:hover { background-color: #f8f9fa; }
-        .item-card:hover h6 { color: var(--abc-blue) !important; }
         .hover-opacity:hover { opacity: 0.8; }
-        
-        /* Mobile Menu Animations */
-        .animate-slide-right {
-          animation: slideRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        
-        @keyframes slideRight {
-          from { transform: translateX(-100%); }
-          to { transform: translateX(0); }
-        }
-        
-        .animate-fade-in-overlay {
-          animation: fadeInOverlay 0.3s ease-out forwards;
-        }
-        
-        @keyframes fadeInOverlay {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        .rotate-180 { transform: rotate(180deg); transition: transform 0.2s ease; }
-        /* Search suggestions */
-        .search-suggestions { position: absolute; z-index: 2050; max-height: 280px; overflow-y: auto; }
-        .search-suggestions .dropdown-item { white-space: normal; }
-        .search-suggestions .dropdown-item small { display: block; }
 
-        /* +Contenido — dark panel design */
+        /* ===== DESKTOP DROPDOWN PANEL ===== */
         .nav-dropdown-panel {
-          display: none;
-          position: absolute;
-          top: 100%;
-          right: 0;
-          min-width: 240px;
-          background: #0f1f3d;
-          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
-          border-radius: 0 0 8px 8px;
-          padding: 6px 0 10px;
-          z-index: 1000;
-          overflow: hidden;
+          display: none; position: absolute; top: 100%; right: 0;
+          min-width: 240px; background: #0f1f3d;
+          box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+          border-radius: 0 0 8px 8px; padding: 6px 0 10px;
+          z-index: 1000; overflow: hidden;
           animation: dropFadeIn 0.18s ease-out;
         }
         .dropdown-hover:hover .nav-dropdown-panel { display: block; }
         .nav-dropdown-item {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          padding: 10px 20px;
-          text-decoration: none;
-          color: rgba(255,255,255,0.75);
-          font-size: 0.78rem;
-          font-weight: 500;
-          letter-spacing: 0.3px;
+          display: flex; align-items: center; gap: 14px;
+          padding: 10px 20px; text-decoration: none;
+          color: rgba(255,255,255,0.75); font-size: 0.78rem;
+          font-weight: 500; letter-spacing: 0.3px;
           border-left: 2px solid transparent;
           transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
           white-space: nowrap;
         }
-        .nav-dropdown-item + .nav-dropdown-item {
-          border-top: 1px solid rgba(255,255,255,0.06);
+        .nav-dropdown-item + .nav-dropdown-item { border-top: 1px solid rgba(255,255,255,0.06); }
+        .nav-dropdown-item:hover { background: rgba(255,255,255,0.05); color: #ffffff; border-left-color: var(--abc-red, #c0392b); }
+        .nav-dropdown-num { font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.2); min-width: 18px; transition: color 0.15s ease; }
+        .nav-dropdown-item:hover .nav-dropdown-num { color: var(--abc-red, #c0392b); }
+        .nav-dropdown-text { flex: 1; text-transform: capitalize; }
+        @keyframes dropFadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ===== MOBILE OVERLAY ANIMATIONS ===== */
+        .animate-slide-right { animation: slideRight 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideRight { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+        .animate-fade-in-overlay { animation: fadeInOverlay 0.3s ease-out forwards; }
+        @keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
+
+        /* ===== MOBILE DRAWER ===== */
+        .mobile-drawer {
+          background: #0b1c3a;
+          box-shadow: 4px 0 40px rgba(0,0,0,0.45);
         }
-        .nav-dropdown-item:hover {
+
+        /* Drawer Header */
+        .mobile-drawer-header {
+          padding: 16px 18px;
+          background: linear-gradient(135deg, #0b1c3a 0%, #142d5e 100%);
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+          flex-shrink: 0;
+        }
+        .mobile-drawer-close {
+          background: rgba(255,255,255,0.08);
+          border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 8px;
+          color: rgba(255,255,255,0.8);
+          padding: 6px 8px;
+          cursor: pointer;
+          transition: background 0.2s ease, color 0.2s ease;
+          display: flex; align-items: center;
+        }
+        .mobile-drawer-close:hover { background: rgba(192,57,43,0.7); color: #fff; border-color: transparent; }
+
+        /* Search */
+        .mobile-drawer-search {
+          padding: 14px 16px;
+          background: rgba(255,255,255,0.04);
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+          flex-shrink: 0;
+        }
+        .mobile-search-input {
+          width: 100%;
+          background: rgba(255,255,255,0.07);
+          border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 8px;
+          padding: 9px 12px 9px 36px;
+          color: #fff;
+          font-size: 0.82rem;
+          outline: none;
+          transition: border-color 0.2s ease, background 0.2s ease;
+        }
+        .mobile-search-input::placeholder { color: rgba(255,255,255,0.35); }
+        .mobile-search-input:focus { border-color: rgba(192,57,43,0.7); background: rgba(255,255,255,0.1); }
+        .mobile-search-icon {
+          position: absolute; left: 11px; top: 50%;
+          transform: translateY(-50%);
+          color: rgba(255,255,255,0.35);
+          pointer-events: none;
+        }
+        .mobile-search-btn {
+          background: var(--abc-red, #c0392b);
+          border: none; border-radius: 8px;
+          color: #fff; font-size: 0.72rem;
+          font-weight: 700; letter-spacing: 0.8px;
+          padding: 0 14px; cursor: pointer;
+          transition: background 0.2s ease;
+          flex-shrink: 0;
+        }
+        .mobile-search-btn:hover { background: #a93226; }
+
+        /* Nav Section Label */
+        .mobile-nav-section-label {
+          font-size: 0.62rem;
+          font-weight: 800;
+          letter-spacing: 1.4px;
+          color: rgba(255,255,255,0.3);
+          margin: 0;
+          padding: 14px 18px 6px;
+        }
+
+        /* Nav */
+        .mobile-drawer-nav { padding-bottom: 8px; }
+
+        /* Nav Item (leaf) */
+        .mobile-nav-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 11px 18px;
+          text-decoration: none;
+          color: rgba(255,255,255,0.78);
+          font-size: 0.83rem;
+          font-weight: 600;
+          letter-spacing: 0.2px;
+          border-left: 2px solid transparent;
+          transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+          background: transparent;
+          border-top: 1px solid rgba(255,255,255,0.04);
+          cursor: pointer;
+          width: 100%;
+          text-align: left;
+        }
+        .mobile-nav-item:first-of-type { border-top: none; }
+        .mobile-nav-item:hover, .mobile-nav-item:focus {
           background: rgba(255,255,255,0.05);
           color: #ffffff;
           border-left-color: var(--abc-red, #c0392b);
+          outline: none;
         }
-        .nav-dropdown-num {
-          font-size: 0.65rem;
-          font-weight: 700;
-          color: rgba(255,255,255,0.2);
-          font-variant-numeric: tabular-nums;
-          min-width: 18px;
-          transition: color 0.15s ease;
+
+        /* Parent with subItems */
+        .mobile-nav-parent.open {
+          color: #ffffff;
+          background: rgba(192,57,43,0.12);
+          border-left-color: var(--abc-red, #c0392b);
         }
-        .nav-dropdown-item:hover .nav-dropdown-num {
-          color: var(--abc-red, #c0392b);
+
+        /* Chevron */
+        .mobile-chevron {
+          color: rgba(255,255,255,0.4);
+          transition: transform 0.25s ease;
         }
-        .nav-dropdown-text {
-          flex: 1;
-          text-transform: capitalize;
+        .mobile-chevron.rotated { transform: rotate(180deg); color: var(--abc-red, #c0392b); }
+
+        /* Children container */
+        .mobile-nav-children {
+          background: rgba(0,0,0,0.25);
+          border-left: 2px solid var(--abc-red, #c0392b);
+          margin-left: 18px;
+          border-radius: 0 0 4px 4px;
+          animation: childFadeIn 0.2s ease;
         }
-        @keyframes dropFadeIn {
-          from { opacity: 0; transform: translateY(-6px); }
-          to   { opacity: 1; transform: translateY(0); }
+        @keyframes childFadeIn {
+          from { opacity: 0; transform: translateY(-4px); }
+          to { opacity: 1; transform: translateY(0); }
         }
+        .mobile-nav-child {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 9px 16px;
+          text-decoration: none;
+          color: rgba(255,255,255,0.6);
+          font-size: 0.79rem;
+          font-weight: 500;
+          border-top: 1px solid rgba(255,255,255,0.04);
+          transition: color 0.15s ease, background 0.15s ease;
+        }
+        .mobile-nav-child:first-of-type { border-top: none; }
+        .mobile-nav-child:hover { color: #fff; background: rgba(255,255,255,0.04); }
+        .mobile-child-dot {
+          width: 5px; height: 5px;
+          border-radius: 50%;
+          background: var(--abc-red, #c0392b);
+          flex-shrink: 0;
+          opacity: 0.7;
+        }
+
+        /* Divider */
+        .mobile-nav-divider {
+          height: 1px;
+          background: rgba(255,255,255,0.07);
+          margin: 10px 18px;
+        }
+
+        /* Footer */
+        .mobile-drawer-footer {
+          padding: 16px 18px;
+          background: rgba(0,0,0,0.3);
+          border-top: 1px solid rgba(255,255,255,0.07);
+          flex-shrink: 0;
+        }
+        .mobile-footer-label {
+          font-size: 0.6rem;
+          font-weight: 800;
+          letter-spacing: 1.4px;
+          color: rgba(255,255,255,0.3);
+          margin: 0 0 10px;
+        }
+        .mobile-social-link {
+          color: rgba(255,255,255,0.5);
+          transition: color 0.2s ease, transform 0.2s ease;
+          display: inline-flex;
+        }
+        .mobile-social-link:hover { color: #fff; transform: translateY(-2px); }
+
+        /* ===== SHARED ===== */
+        .search-suggestions { position: absolute; z-index: 2050; max-height: 280px; overflow-y: auto; }
+        .search-suggestions .dropdown-item { white-space: normal; }
+        .search-suggestions .dropdown-item small { display: block; }
+        .rotate-180 { transform: rotate(180deg); transition: transform 0.2s ease; }
       `}</style>
     </header>
   );
