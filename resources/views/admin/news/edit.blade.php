@@ -310,7 +310,7 @@ function fetchRelatedNews() {
 
         let html = '';
         data.forEach(n => {
-            const url = `{{ url('/') }}/news/${n.slug}`;
+            const url = `{{ url('/') }}/nota/${n.slug}`;
             // Asumiendo que n.image_path existe, si no usar placeholder
             const image = n.image_path ? `/storage/${n.image_path}` : 'https://via.placeholder.com/150';
 
