@@ -72,6 +72,9 @@ class VacancyController extends Controller
             'image_path'      => 'nullable|image|max:4096',
         ]);
 
+        // Las vacantes nuevas se crean como activas por defecto
+        $data['is_active'] = true;
+
         // Subida opcional de imagen
         if ($request->hasFile('image_path')) {
             $data['file_path'] = $request->file('image_path')->store('vacancies', 'public');

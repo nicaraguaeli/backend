@@ -2,7 +2,7 @@ import React from 'react';
 import { asset } from '@/url';
 import { route } from 'ziggy-js';
 import { ArticleData } from '../types';
-import { Clock, ArrowRight, Star, TrendingUp, Sparkles, Eye } from 'lucide-react';
+import { Clock, ArrowRight, Star, TrendingUp, Sparkles } from 'lucide-react';
 
 interface FeaturedSectionProps {
   posts: ArticleData[];
@@ -127,16 +127,10 @@ export default function FeaturedSection({ posts, onPostClick }: FeaturedSectionP
                   </h5>
 
                   <div className="secondary-footer">
-                    <div className="d-flex align-items-center justify-content-between">
                       <span className="read-more-link">
                         <span>Leer más</span>
                         <ArrowRight size={16} className="arrow-icon" />
                       </span>
-                      <div className="d-flex align-items-center gap-1 text-white text-opacity-50 small">
-                        <Eye size={14} />
-                        <span>{Math.floor(Math.random() * 500) + 100}</span>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>

@@ -4,7 +4,7 @@ import { asset } from '@/url';
 import { route } from 'ziggy-js';
 import {
   Calendar, User, MapPin, Share2, ArrowLeft,
-  Check, Eye, Volume2, CircleStop, Printer, ArrowRight,
+  Check, Volume2, CircleStop, Printer, ArrowRight,
   BookOpen, Tag, Clock, TrendingUp, ChevronRight, Newspaper
 } from 'lucide-react';
 

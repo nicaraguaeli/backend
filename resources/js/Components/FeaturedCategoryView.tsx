@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Calendar, User, Eye, TrendingUp, Sparkles, Grid, List } from 'lucide-react';
+import { ArrowLeft, Calendar, User, TrendingUp, Sparkles, Grid, List } from 'lucide-react';
 import { asset } from '@/url';
 import axios from 'axios';
 import { getCategoryThemeColors, getCategoryGradient, getCategoryCSSVariables } from '@/utils/categoryTheme';
@@ -12,7 +12,7 @@ interface Article {
     excerpt: string;
     image_path?: string;
     published_at: string;
-    views: number;
+
     author?: {
         name: string;
     };
@@ -174,10 +174,7 @@ export default function FeaturedCategoryView({ category, onBack, onPostClick }: 
                                                 {article.author.name}
                                             </span>
                                         )}
-                                        <span className="meta-item">
-                                            <Eye size={14} />
-                                            {article.views.toLocaleString()}
-                                        </span>
+
                                     </div>
                                 </div>
                             </article>

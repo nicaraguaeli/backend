@@ -64,12 +64,7 @@ class NewsController extends Controller
             'type' => 'article'
         ];
 
-        // If article belongs to a featured category, use special layout
-        if ($hasFeaturedCategory) {
-            return \Inertia\Inertia::render('FeaturedArticle', [
-                'article' => $news
-            ])->withViewData(['meta' => $meta]);
-        }
+        // We removed early return here to calculate related news later
 
         // Regular article flow
         // --- Fetch all news sets with deduplication ---
@@ -155,7 +150,7 @@ class NewsController extends Controller
             ->get();
 
 
-        return \Inertia\Inertia::render('Article', [
+        return \Inertia\Inertia::render($hasFeaturedCategory ? 'FeaturedArticle' : 'Article', [
             'article'                  => $articleData,
             'mostReadNews'             => $serializeNews($mostReadNews),
             'relatedNews'              => $serializeNews($relatedNews),

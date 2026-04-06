@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BlogPost } from '../types';
-import { Clock, ArrowRight, ChevronLeft, ChevronRight, Home, TrendingUp, Calendar, Eye, User } from 'lucide-react';
+import { Clock, ArrowRight, ChevronLeft, ChevronRight, Home, TrendingUp, Calendar, User } from 'lucide-react';
 import { fetchNewsByCategory } from '../services/newsService';
 
 interface CategoryViewProps {
@@ -154,12 +154,7 @@ export default function CategoryView({ category, categoryName, onPostClick, onBa
                     <Calendar size={14} />
                     <span>{formatDate(featuredPost.date)}</span>
                   </div>
-                  {featuredPost.views && (
-                    <div className="d-flex align-items-center gap-1">
-                      <Eye size={14} />
-                      <span>{featuredPost.views.toLocaleString()}</span>
-                    </div>
-                  )}
+
                 </div>
 
                 <h2 className="display-6 fw-bold font-serif text-abc-blue mb-3 lh-sm">
@@ -218,12 +213,7 @@ export default function CategoryView({ category, categoryName, onPostClick, onBa
 
                     <div className="card-body d-flex flex-column p-4">
                       <div className="d-flex align-items-center gap-2 mb-3 text-muted small">
-                        {post.views && (
-                          <div className="d-flex align-items-center gap-1">
-                            <Eye size={12} />
-                            <span>{post.views.toLocaleString()}</span>
-                          </div>
-                        )}
+
                         <span className="text-abc-blue fw-bold">• {post.author}</span>
                       </div>
 

@@ -68,14 +68,14 @@ class NewsController extends Controller
 
         // load helper lists once
         $categories = Category::orderBy('name')->get();
-        $authors = Author::orderBy('name')->get();
+        $authors = Author::where('is_active', true)->orderBy('name')->get();
 
         return view('admin.news.index', compact('news', 'categories', 'authors'));
     }
 
     public function create()
     {
-        $authors = Author::all();
+        $authors = Author::where('is_active', true)->orderBy('name')->get();
         $categories = Category::all();
         $countries = Country::orderBy('name')->get();
         $tags = Tag::orderBy('name')->get();
@@ -174,7 +174,7 @@ class NewsController extends Controller
 
     public function edit(News $news)
     {
-        $authors = Author::all();
+        $authors = Author::where('is_active', true)->orderBy('name')->get();
         $categories = Category::all();
         $countries = Country::orderBy('name')->get();
         $tags = Tag::orderBy('name')->get();

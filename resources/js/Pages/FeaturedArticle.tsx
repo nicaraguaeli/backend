@@ -6,14 +6,15 @@ import { ArticleData } from '@/types';
 
 interface Props {
     article: ArticleData;
+    relatedNews?: ArticleData[];
 }
 
-const FeaturedArticlePage = ({ article }: Props) => {
+const FeaturedArticlePage = ({ article, relatedNews = [] }: Props) => {
     return (
         <>
-            <Head title={article.title} />
             <FeaturedArticleDetail
                 article={article}
+                relatedNews={relatedNews}
                 onBack={() => router.visit('/')}
             />
         </>
