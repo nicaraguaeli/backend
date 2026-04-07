@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
-import { Facebook, Instagram, Youtube, Phone, MessageCircle, Building2, MapPin, Send } from 'lucide-react';
+import { Facebook, Instagram, Youtube, Phone, MessageCircle, MapPin, Send } from 'lucide-react';
+import axios from 'axios';
 
 const Tiktok = ({ size = 24, fill = "currentColor", className }: any) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} className={className} xmlns="http://www.w3.org/2000/svg">
@@ -39,18 +40,17 @@ export default function Footer() {
     if (!email) return;
     setSubStatus('loading');
     try {
-      const res = await fetch('/boletin/suscribirse', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? '' },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json();
+      const { data } = await axios.post('/boletin/suscribirse', { email });
       setSubStatus('success');
       setSubMessage(data.message ?? '¡Suscrito correctamente!');
       setEmail('');
-    } catch {
+    } catch (err: any) {
       setSubStatus('error');
-      setSubMessage('Hubo un error. Intenta de nuevo.');
+      // Muestra el mensaje de validación de Laravel si existe
+      const serverMsg = err?.response?.data?.message
+        || err?.response?.data?.errors?.email?.[0]
+        || 'Hubo un error. Intenta de nuevo.';
+      setSubMessage(serverMsg);
     }
   };
 
