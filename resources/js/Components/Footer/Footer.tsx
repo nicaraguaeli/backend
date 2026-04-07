@@ -15,6 +15,9 @@ import { fetchCategories } from '../../services/newsService';
 export default function Footer() {
   const currentYear = new Date().getFullYear();
   const [menuCategories, setMenuCategories] = useState<{ label: string; href: string }[]>([]);
+  const [email, setEmail] = useState('');
+  const [subStatus, setSubStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [subMessage, setSubMessage] = useState('');
 
   useEffect(() => {
     fetchCategories().then(categories => {
@@ -26,9 +29,30 @@ export default function Footer() {
           label: cat.name,
           href: route('category.show', { slug: cat.slug }),
         }));
+
       setMenuCategories(visible);
     }).catch(() => { });
   }, []);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    setSubStatus('loading');
+    try {
+      const res = await fetch('/boletin/suscribirse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? '' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      setSubStatus('success');
+      setSubMessage(data.message ?? '¡Suscrito correctamente!');
+      setEmail('');
+    } catch {
+      setSubStatus('error');
+      setSubMessage('Hubo un error. Intenta de nuevo.');
+    }
+  };
 
   return (
     <footer className="bg-abc-blue text-white pt-5 pb-3 border-top border-4 border-abc-red overflow-hidden position-relative">
@@ -161,18 +185,36 @@ export default function Footer() {
             {/* Newsletter */}
             <h4 className="text-white h6 fw-bold mb-3">Boletín</h4>
             <div className="newsletter-box mt-3">
-              <p className="small text-white-50 mb-2">Suscríbete para recibir noticias.</p>
-              <form className="position-relative">
-                <input
-                  type="email"
-                  placeholder="Tu correo"
-                  className="form-control bg-dark border-secondary text-white small pe-5 rounded-pill"
-                  style={{ paddingRight: '40px' }}
-                />
-                <button className="btn btn-sm btn-abc-red position-absolute top-50 end-0 translate-middle-y rounded-circle me-1 d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }}>
-                  <Send size={14} />
-                </button>
-              </form>
+              <p className="small text-white-50 mb-2">Suscríbete para recibir noticias semanales.</p>
+              {subStatus === 'success' ? (
+                <div className="small text-success fw-bold d-flex align-items-center gap-2">
+                  <span>✅</span> {subMessage}
+                </div>
+              ) : (
+                <form className="position-relative" onSubmit={handleSubscribe}>
+                  <input
+                    type="email"
+                    placeholder="Tu correo"
+                    className="form-control bg-dark border-secondary text-white small pe-5 rounded-pill"
+                    style={{ paddingRight: '40px' }}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={subStatus === 'loading'}
+                  />
+                  <button
+                    type="submit"
+                    disabled={subStatus === 'loading'}
+                    className="btn btn-sm btn-abc-red position-absolute top-50 end-0 translate-middle-y rounded-circle me-1 d-flex align-items-center justify-content-center"
+                    style={{ width: '32px', height: '32px' }}
+                  >
+                    {subStatus === 'loading' ? <span className="spinner-border spinner-border-sm" /> : <Send size={14} />}
+                  </button>
+                  {subStatus === 'error' && (
+                    <small className="text-danger d-block mt-1">{subMessage}</small>
+                  )}
+                </form>
+              )}
             </div>
           </div>
         </div>

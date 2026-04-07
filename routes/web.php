@@ -218,6 +218,11 @@ Route::get('/audioreportaje/{slug}', [App\Http\Controllers\Api\AudioReportContro
 // Suggestions endpoint for search typeahead
 Route::get('api/news/suggestions', [App\Http\Controllers\Blog\NewsController::class, 'suggestions'])->name('api.news.suggestions');
 
+// Boletín / Newsletter
+Route::post('/boletin/suscribirse', [App\Http\Controllers\SubscriberController::class, 'subscribe'])->name('newsletter.subscribe');
+Route::get('/boletin/cancelar/{token}', [App\Http\Controllers\SubscriberController::class, 'unsubscribe'])->name('newsletter.unsubscribe');
+
+
 // Ruta para Empleos (React)
 Route::get('/empleos', function () {
     $vacancies = \App\Models\Vacancy::where('is_active', true)
@@ -362,6 +367,11 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], fu
     Route::put('perfil', [App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('profile.update');
     Route::get('contrasena', [App\Http\Controllers\Admin\ProfileController::class, 'editPassword'])->name('password.edit');
     Route::put('contrasena', [App\Http\Controllers\Admin\ProfileController::class, 'updatePassword'])->name('password.update');
+
+    // Suscriptores del Boletín
+    Route::get('suscriptores', [App\Http\Controllers\Admin\SubscriberAdminController::class, 'index'])->name('subscribers.index');
+    Route::delete('suscriptores/{subscriber}', [App\Http\Controllers\Admin\SubscriberAdminController::class, 'destroy'])->name('subscribers.destroy');
+    Route::post('suscriptores/enviar-ahora', [App\Http\Controllers\Admin\SubscriberAdminController::class, 'sendNow'])->name('subscribers.send-now');
 
 });
 

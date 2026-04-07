@@ -426,6 +426,11 @@ return [
             ],
         ]
     ],
+    [
+        'text' => 'Suscriptores',
+        'icon' => 'fas fa-envelope-open-text',
+        'route' => 'admin.subscribers.index',
+    ],
 
 
     ],
