@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
-import { Eye, TrendingUp } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 import { asset } from '@/url';
 import { route } from 'ziggy-js';
 import { ArticleData } from '../types';
@@ -62,10 +62,7 @@ export default function MostRead({ items, className = '' }: MostReadProps) {
                 <h6 className="mb-1 text-dark fw-bold line-clamp-2 lh-sm small">
                   {item.title}
                 </h6>
-                <div className="d-flex align-items-center gap-1 text-muted" style={{ fontSize: '0.7rem' }}>
-                  <Eye size={11} />
-                  {`${item.views || 0} lecturas`}
-                </div>
+
               </div>
             </Link>
           )

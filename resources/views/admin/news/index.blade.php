@@ -164,7 +164,7 @@
                             <th class="d-none d-sm-table-cell">Categoria</th>
                             <th class="d-none d-md-table-cell">Visto</th>
                             <th class="text-center">Destacar</th>
-                            <th class="text-center">Hero</th>
+                            <th class="text-center">Portada</th>
                             <th class="text-center">Publicar</th>
                             <th class="d-none d-lg-table-cell">Creado el</th>
                         </tr>
