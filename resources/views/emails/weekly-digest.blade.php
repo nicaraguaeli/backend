@@ -1,107 +1,203 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Resumen Semanal — Radio ABC Stereo</title>
+    <!--[if mso]>
+    <noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
+    <![endif]-->
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Georgia, 'Times New Roman', serif; background: #f4f4f4; color: #1a1a1a; }
-        .wrapper { max-width: 620px; margin: 30px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        /* Header */
-        .header { background: #003087; padding: 32px 40px; text-align: center; }
-        .header img { height: 48px; width: auto; }
-        .header-title { color: #ffffff; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; margin-top: 12px; opacity: 0.8; font-family: Arial, sans-serif; }
-        .red-bar { height: 4px; background: #dc2626; }
-        /* Hero */
-        .hero { padding: 32px 40px 24px; border-bottom: 1px solid #f0f0f0; }
-        .week-label { display: inline-block; background: #dc2626; color: #fff; font-size: 11px; font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 12px; border-radius: 3px; font-family: Arial, sans-serif; margin-bottom: 16px; }
-        .hero h1 { font-size: 26px; color: #003087; line-height: 1.3; margin-bottom: 8px; }
-        .hero p { font-size: 14px; color: #666; font-family: Arial, sans-serif; line-height: 1.6; }
-        /* Articles */
-        .articles { padding: 24px 40px; }
-        .article-item { display: flex; gap: 16px; padding: 20px 0; border-bottom: 1px solid #f0f0f0; }
-        .article-item:last-child { border-bottom: none; }
-        .article-number { font-size: 28px; font-weight: bold; color: #e8e8e8; font-family: Arial, sans-serif; line-height: 1; flex-shrink: 0; width: 36px; }
-        .article-body { flex: 1; }
-        .article-category { font-size: 10px; font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase; color: #dc2626; font-family: Arial, sans-serif; margin-bottom: 6px; }
-        .article-title { font-size: 17px; color: #1a1a2e; line-height: 1.4; margin-bottom: 8px; }
-        .article-title a { color: #1a1a2e; text-decoration: none; }
-        .article-title a:hover { color: #003087; }
-        .article-excerpt { font-size: 13px; color: #666; font-family: Arial, sans-serif; line-height: 1.6; margin-bottom: 10px; }
-        .article-meta { font-size: 11px; color: #999; font-family: Arial, sans-serif; }
-        .read-more { display: inline-block; font-size: 12px; font-weight: bold; color: #dc2626; text-decoration: none; font-family: Arial, sans-serif; letter-spacing: 0.5px; }
-        .article-image { width: 100px; height: 75px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+        /* RESET */
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body, table, td, a { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
+        table, td { mso-table-lspace:0; mso-table-rspace:0; border-collapse:collapse; }
+        img { border:0; height:auto; line-height:100%; outline:none; text-decoration:none; display:block; }
+        body { background-color:#f0f4f8; font-family: Georgia, 'Times New Roman', serif; }
+
+        /* WRAPPER */
+        .email-wrapper { width:100%; background:#f0f4f8; padding:24px 0; }
+        .email-container { max-width:620px; margin:0 auto; }
+
+        /* HEADER */
+        .header-block { background:linear-gradient(135deg, #002060 0%, #003087 100%); border-radius:12px 12px 0 0; overflow:hidden; }
+        .header-red-strip { height:5px; background:linear-gradient(90deg, #b91c1c, #dc2626, #ef4444); }
+        .header-inner { padding:32px 40px; text-align:center; }
+        .header-logo-img { max-height:56px; width:auto; margin:0 auto 12px; }
+        .header-logo-text { color:#fff; font-size:28px; font-weight:bold; letter-spacing:1px; font-family:Georgia,serif; }
+        .header-logo-sub { color:rgba(255,255,255,0.65); font-size:11px; letter-spacing:4px; text-transform:uppercase; font-family:Arial,sans-serif; margin-top:4px; }
+
+        /* WEEK BAND */
+        .week-band { background:#dc2626; padding:10px 40px; text-align:center; }
+        .week-band span { color:#fff; font-size:12px; letter-spacing:2px; text-transform:uppercase; font-family:Arial,sans-serif; font-weight:bold; }
+
+        /* INTRO */
+        .intro-block { background:#ffffff; padding:32px 40px 24px; border-left:1px solid #e2e8f0; border-right:1px solid #e2e8f0; }
+        .intro-block h1 { font-size:24px; color:#0f172a; line-height:1.35; margin-bottom:10px; font-family:Georgia,serif; }
+        .intro-block p { font-size:14px; color:#64748b; line-height:1.7; font-family:Arial,sans-serif; }
+
+        /* DIVIDER */
+        .divider { height:1px; background:linear-gradient(90deg, transparent, #dc2626, transparent); margin:0 40px; }
+
+        /* ARTICLES */
+        .articles-block { background:#ffffff; padding:8px 24px 24px; border-left:1px solid #e2e8f0; border-right:1px solid #e2e8f0; }
+        .article-row { padding:20px 16px; border-radius:8px; margin-bottom:8px; transition:background 0.2s; display:block; text-decoration:none; color:inherit; }
+        .article-row:hover { background:#f8fafc; }
+        .article-index { display:inline-block; width:28px; height:28px; background:#dc2626; color:#fff; border-radius:50%; text-align:center; line-height:28px; font-size:12px; font-weight:bold; font-family:Arial,sans-serif; flex-shrink:0; }
+        .article-category { font-size:10px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; color:#dc2626; font-family:Arial,sans-serif; margin-bottom:5px; }
+        .article-title { font-size:17px; color:#0f172a; line-height:1.4; font-family:Georgia,serif; margin-bottom:7px; text-decoration:none; }
+        .article-title:hover { color:#003087; }
+        .article-excerpt { font-size:13px; color:#64748b; font-family:Arial,sans-serif; line-height:1.65; margin-bottom:10px; }
+        .article-meta { font-size:11px; color:#94a3b8; font-family:Arial,sans-serif; }
+        .article-meta b { color:#64748b; }
+        .btn-read { display:inline-block; font-size:11px; font-weight:bold; color:#dc2626; text-decoration:none; font-family:Arial,sans-serif; letter-spacing:1px; text-transform:uppercase; border-bottom:2px solid #dc2626; padding-bottom:1px; }
+        .article-thumb { width:90px; height:68px; object-fit:cover; border-radius:6px; float:right; margin-left:16px; }
+        .article-separator { height:1px; background:#f1f5f9; margin:0 16px; }
+
         /* CTA */
-        .cta-section { background: #f8f9fc; padding: 28px 40px; text-align: center; border-top: 1px solid #e8e8e8; }
-        .cta-title { font-size: 15px; color: #003087; margin-bottom: 8px; }
-        .cta-sub { font-size: 13px; color: #666; font-family: Arial, sans-serif; margin-bottom: 16px; }
-        .cta-btn { display: inline-block; background: #003087; color: #fff; padding: 12px 28px; border-radius: 4px; text-decoration: none; font-size: 13px; font-weight: bold; font-family: Arial, sans-serif; }
-        /* Footer */
-        .footer { padding: 24px 40px; text-align: center; background: #1a1a2e; }
-        .footer p { font-size: 11px; color: #888; font-family: Arial, sans-serif; line-height: 1.8; }
-        .footer a { color: #aaa; }
+        .cta-block { background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:36px 40px; text-align:center; }
+        .cta-badge { display:inline-block; background:rgba(220,38,38,0.15); color:#f87171; font-size:10px; letter-spacing:2px; text-transform:uppercase; font-family:Arial,sans-serif; font-weight:bold; padding:5px 14px; border-radius:20px; border:1px solid rgba(220,38,38,0.3); margin-bottom:14px; }
+        .cta-title { font-size:20px; color:#ffffff; font-family:Georgia,serif; margin-bottom:8px; }
+        .cta-sub { font-size:13px; color:rgba(255,255,255,0.6); font-family:Arial,sans-serif; margin-bottom:20px; line-height:1.6; }
+        .cta-btn { display:inline-block; background:linear-gradient(135deg, #dc2626, #b91c1c); color:#fff !important; padding:13px 30px; border-radius:50px; text-decoration:none; font-size:13px; font-weight:bold; font-family:Arial,sans-serif; letter-spacing:0.5px; }
+
+        /* FOOTER */
+        .footer-block { background:#0f172a; border-radius:0 0 12px 12px; padding:24px 40px; text-align:center; }
+        .footer-social { margin-bottom:14px; }
+        .footer-social a { display:inline-block; width:32px; height:32px; background:rgba(255,255,255,0.08); border-radius:50%; line-height:32px; text-align:center; margin:0 4px; text-decoration:none; color:rgba(255,255,255,0.6); font-size:12px; font-family:Arial,sans-serif; }
+        .footer-text { font-size:11px; color:rgba(255,255,255,0.4); font-family:Arial,sans-serif; line-height:2; }
+        .footer-text a { color:rgba(255,255,255,0.5); text-decoration:underline; }
+
+        /* RESPONSIVE */
+        @media (max-width:600px) {
+            .email-wrapper { padding:0 !important; }
+            .header-inner, .intro-block, .articles-block, .cta-block, .footer-block { padding-left:20px !important; padding-right:20px !important; }
+            .week-band { padding-left:20px !important; padding-right:20px !important; }
+            .article-thumb { display:none !important; }
+            .header-logo-text { font-size:22px !important; }
+            .cta-title { font-size:18px !important; }
+        }
     </style>
 </head>
 <body>
-<div class="wrapper">
-    <div class="red-bar"></div>
-    <!-- Header -->
-    <div class="header">
-        <div style="font-size:22px; font-weight:bold; color:#fff; letter-spacing:1px;">📻 Radio ABC Stereo</div>
-        <div class="header-title">Boletín Semanal de Noticias</div>
-    </div>
+<div class="email-wrapper">
+<div class="email-container">
 
-    <!-- Hero -->
-    <div class="hero">
-        <span class="week-label">Semana del {{ now()->startOfWeek()->format('d M') }} al {{ now()->endOfWeek()->format('d M Y') }}</span>
-        <h1>Las noticias más importantes de la semana</h1>
-        <p>Aquí tienes un resumen de los {{ $news->count() }} artículos más relevantes publicados esta semana en RadioABCStereo.</p>
-    </div>
-
-    <!-- Articles -->
-    <div class="articles">
-        @foreach($news as $index => $article)
-        <div class="article-item">
-            <div class="article-number">{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</div>
-            <div class="article-body">
-                @if($article->categories->first())
-                <div class="article-category">{{ $article->categories->first()->name }}</div>
-                @endif
-                <div class="article-title">
-                    <a href="{{ url('/nota/' . $article->slug) }}">{{ $article->title }}</a>
-                </div>
-                @if($article->excerpt)
-                <div class="article-excerpt">{{ Str::limit($article->excerpt, 120) }}</div>
-                @endif
-                <div class="article-meta">
-                    {{ optional($article->serialized_author)['name'] ?? 'Redacción' }} &bull;
-                    {{ \Carbon\Carbon::parse($article->published_at)->format('d \d\e M') }}
-                </div>
-                <a href="{{ url('/nota/' . $article->slug) }}" class="read-more">Leer nota →</a>
-            </div>
-            @if($article->image_path)
-            <img src="{{ asset('storage/' . $article->image_path) }}" alt="{{ $article->title }}" class="article-image">
-            @endif
+    {{-- ══ HEADER ══ --}}
+    <div class="header-block">
+        <div class="header-red-strip"></div>
+        <div class="header-inner">
+            {{-- Logo: usa url() para garantizar URL absoluta en emails --}}
+            <img src="{{ url('storage/logotipo.png') }}"
+                 alt="Radio ABC Stereo"
+                 class="header-logo-img"
+                 onerror="this.style.display='none'">
+            <div class="header-logo-text">Radio ABC Stereo</div>
+            <div class="header-logo-sub">Boletín Informativo Semanal</div>
         </div>
+    </div>
+
+    {{-- ══ WEEK BAND ══ --}}
+    <div class="week-band">
+        <span>
+            📅 &nbsp;
+            Semana del {{ now()->startOfWeek()->locale('es')->isoFormat('D [de] MMMM') }}
+            al {{ now()->endOfWeek()->locale('es')->isoFormat('D [de] MMMM [de] YYYY') }}
+        </span>
+    </div>
+
+    {{-- ══ INTRO ══ --}}
+    <div class="intro-block">
+        <h1>Las noticias más importantes de la semana</h1>
+        <p style="margin-top:8px;">
+            Hola, te traemos un resumen con las <strong>{{ $news->count() }} noticias más relevantes</strong>
+            publicadas esta semana en el portal de Radio ABC Stereo, la voz de Estelí.
+        </p>
+    </div>
+
+    <div class="divider"></div>
+
+    {{-- ══ ARTICLES ══ --}}
+    <div class="articles-block">
+        @foreach($news as $index => $article)
+
+        {{-- Contenedor del artículo --}}
+        <div class="article-row">
+
+            {{-- Imagen a la derecha (float) --}}
+            @if($article->image_path)
+            <img src="{{ url('storage/' . $article->image_path) }}"
+                 alt="{{ $article->title }}"
+                 class="article-thumb"
+                 onerror="this.style.display='none'">
+            @endif
+
+            {{-- Número + Categoría --}}
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                <span class="article-index">{{ $index + 1 }}</span>
+                @if($article->categories->first())
+                <span class="article-category">{{ $article->categories->first()->name }}</span>
+                @endif
+            </div>
+
+            {{-- Título --}}
+            <a href="{{ url('/nota/' . $article->slug) }}" class="article-title" style="display:block; text-decoration:none; color:#0f172a;">
+                {{ $article->title }}
+            </a>
+
+            {{-- Excerpt --}}
+            @if($article->excerpt)
+            <p class="article-excerpt" style="margin-top:6px;">
+                {{ Str::limit($article->excerpt, 130) }}
+            </p>
+            @endif
+
+            {{-- Meta + CTA --}}
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-top:10px; clear:both;">
+                <span class="article-meta">
+                    <b>{{ optional($article->serialized_author)['name'] ?? ($article->author?->name ?? 'Redacción') }}</b>
+                    &nbsp;·&nbsp;
+                    {{ \Carbon\Carbon::parse($article->published_at)->locale('es')->isoFormat('D MMM') }}
+                </span>
+                <a href="{{ url('/nota/' . $article->slug) }}" class="btn-read">Leer nota →</a>
+            </div>
+
+        </div>
+
+        @if(!$loop->last)
+        <div class="article-separator"></div>
+        @endif
+
         @endforeach
     </div>
 
-    <!-- CTA -->
-    <div class="cta-section">
+    {{-- ══ CTA ══ --}}
+    <div class="cta-block">
+        <div class="cta-badge">📻 En vivo 24/7</div>
         <div class="cta-title">¿Quieres escucharnos en vivo?</div>
-        <div class="cta-sub">La mejor programación de Estelí, Nicaragua. 24 horas al día.</div>
-        <a href="{{ url('/') }}" class="cta-btn">Ir al portal →</a>
+        <div class="cta-sub">
+            La mejor programación informativa de Estelí, Nicaragua.<br>
+            Noticias, música y entretenimiento las 24 horas del día.
+        </div>
+        <a href="{{ url('/') }}" class="cta-btn">Visitar el Portal &rarr;</a>
     </div>
 
-    <!-- Footer -->
-    <div class="footer">
-        <p>
-            Radio ABC Stereo &bull; Estelí, Nicaragua<br>
-            Recibiste este boletín porque te suscribiste en nuestro sitio web.<br>
+    {{-- ══ FOOTER ══ --}}
+    <div class="footer-block">
+        <div class="footer-text">
+            <strong style="color:rgba(255,255,255,0.7);">Radio ABC Stereo</strong><br>
+            Parque Infantil 2c½ al oeste · Bo. El Calvario, Estelí, Nicaragua<br>
+            <br>
+            Recibiste este boletín porque te suscribiste en
+            <a href="{{ url('/') }}">radioabcstereo.com</a><br>
             <a href="{{ url('/boletin/cancelar/' . $unsubscribeToken) }}">Cancelar suscripción</a>
-        </p>
+            &nbsp;·&nbsp;
+            <a href="{{ url('/') }}">Ver en el portal</a>
+        </div>
     </div>
+
+</div>
 </div>
 </body>
 </html>
