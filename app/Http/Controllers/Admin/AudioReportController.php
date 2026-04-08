@@ -144,6 +144,28 @@ class AudioReportController extends Controller
 
     public function destroy(AudioReport $audioReport)
     {
-        //
+        if (auth()->user()->role !== 'admin') {
+            if (request()->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Solo los administradores pueden eliminar audioreportajes.'], 403);
+            }
+            abort(403, 'Solo los administradores pueden eliminar audioreportajes.');
+        }
+
+        // Delete associated files
+        if (!empty($audioReport->image_path) && Storage::disk('public')->exists($audioReport->image_path)) {
+            Storage::disk('public')->delete($audioReport->image_path);
+        }
+        if (!empty($audioReport->audio_url) && Storage::disk('public')->exists($audioReport->audio_url)) {
+            Storage::disk('public')->delete($audioReport->audio_url);
+        }
+
+        $audioReport->delete();
+
+        if (request()->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Audioreportaje eliminado correctamente.']);
+        }
+
+        return redirect()->route('admin.audio_reports.index')
+            ->with('success', 'Audioreportaje eliminado correctamente.');
     }
 }

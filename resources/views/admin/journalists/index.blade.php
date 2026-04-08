@@ -14,9 +14,11 @@
                 <div class="card-header">
                     <h3 class="card-title">Listado de Autores</h3>
                     <div class="card-tools">
-                        <a href="{{ route('admin.journalists.create') }}" class="btn btn-primary btn-sm">
-                            <i class="fas fa-plus"></i> Crear Autor
-                        </a>
+                        @if(auth()->user()->role === 'admin')
+                            <a href="{{ route('admin.journalists.create') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Crear Autor
+                            </a>
+                        @endif
                     </div>
                 </div>
                 <div class="card-body">
@@ -61,8 +63,12 @@
                                             </div>
                                         </td>
                                         <td class="align-middle text-center">
-                                            <a href="{{ route('admin.journalists.edit', $journalist) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
-                                            <button type="button" class="btn btn-sm btn-outline-danger delete-journalist-btn" data-id="{{ $journalist->id }}">Eliminar</button>
+                                            @if(auth()->user()->role === 'admin')
+                                                <a href="{{ route('admin.journalists.edit', $journalist) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
+                                                <button type="button" class="btn btn-sm btn-outline-danger delete-journalist-btn" data-id="{{ $journalist->id }}">Eliminar</button>
+                                            @else
+                                                <span class="text-muted small">Sin acceso</span>
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty

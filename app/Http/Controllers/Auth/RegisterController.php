@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
@@ -64,9 +66,24 @@ class RegisterController extends Controller
     protected function create(array $data)
     {
         return User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
+            'name'      => $data['name'],
+            'email'     => $data['email'],
+            'password'  => Hash::make($data['password']),
+            'role'      => 'Editor',
+            'is_active' => 0,
         ]);
+    }
+
+    /**
+     * The user has been registered — do NOT auto-login.
+     * Redirect to login with an informational message instead.
+     */
+    protected function registered(Request $request, $user)
+    {
+        // Log out immediately in case the trait logged them in
+        Auth::logout();
+
+        return redirect()->route('login')
+            ->with('status', 'Tu cuenta ha sido creada y está pendiente de aprobación por un administrador.');
     }
 }

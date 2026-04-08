@@ -149,6 +149,13 @@ class CategoryController extends Controller
 
     public function destroy(Request $request, Category $category)
     {
+        if (auth()->user()->role !== 'admin') {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Solo los administradores pueden eliminar categorías.'], 403);
+            }
+            abort(403, 'Solo los administradores pueden eliminar categorías.');
+        }
+
         if ($category->image_path) {
             Storage::disk('public')->delete($category->image_path);
         }

@@ -4,97 +4,100 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
 use App\Models\User;
 
 class UserController extends Controller
 {
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index()
     {
-        $users = User::all();
+        $users = User::orderBy('created_at', 'desc')->get();
         return view('admin.users.index', compact('users'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         //
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
+    public function edit(User $user)
     {
-        //
+        return view('admin.users.edit', compact('user'));
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * Update user role and active status (admin only).
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, User $user)
     {
-        //
-    }
+        // Only admins can modify users
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'No tienes permisos para realizar esta acción.');
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
-    }
-
-    public function updateStatus(Request $request, User $user)
-    {
         $request->validate([
-            'status' => 'required|in:active,inactive',
+            'role'      => 'required|in:admin,Editor',
+            'is_active' => 'required|boolean',
         ]);
 
-        $user->status = $request->status;
+        $user->update([
+            'role'      => $request->role,
+            'is_active' => $request->is_active,
+        ]);
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'Usuario actualizado correctamente.');
+    }
+
+    /**
+     * Delete a user (admin only).
+     */
+    public function destroy(User $user)
+    {
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Solo los administradores pueden eliminar usuarios.');
+        }
+
+        // Prevent self-deletion
+        if (auth()->id() === $user->id) {
+            return redirect()->route('admin.users.index')
+                ->with('error', 'No puedes eliminar tu propia cuenta.');
+        }
+
+        $user->delete();
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'Usuario eliminado correctamente.');
+    }
+
+    /**
+     * Quick AJAX toggle for status (kept for backward compatibility).
+     */
+    public function updateStatus(Request $request, User $user)
+    {
+        if (auth()->user()->role !== 'admin') {
+            return response()->json(['message' => 'No autorizado.'], 403);
+        }
+
+        $request->validate([
+            'is_active' => 'required|boolean',
+        ]);
+
+        $user->is_active = $request->is_active;
         $user->save();
 
-        return response()->json(['message' => 'User status updated successfully.']);
+        return response()->json(['message' => 'Estado actualizado correctamente.']);
     }
 }

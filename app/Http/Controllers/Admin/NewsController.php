@@ -305,6 +305,10 @@ if ($imagePath) {
 
     public function destroy(News $news)
     {
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Solo los administradores pueden eliminar noticias.');
+        }
+
         $news->delete();
 
         return redirect()->route('admin.news.index')->with('success', 'News deleted successfully.');

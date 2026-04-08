@@ -45,11 +45,13 @@
                                     <td class="align-middle">
                                         <button type="button" class="btn btn-sm btn-outline-secondary edit-tag-btn" data-id="{{ $tag->id }}" data-name="{{ $tag->name }}">Editar</button>
 
-                                        <form action="{{ route('admin.tags.destroy', $tag) }}" method="POST" class="d-inline delete-tag-form" data-id="{{ $tag->id }}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="button" class="btn btn-sm btn-outline-danger delete-tag-btn" data-id="{{ $tag->id }}">Borrar</button>
-                                        </form>
+                                        @if(auth()->user()->role === 'admin')
+                                            <form action="{{ route('admin.tags.destroy', $tag) }}" method="POST" class="d-inline delete-tag-form" data-id="{{ $tag->id }}">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button" class="btn btn-sm btn-outline-danger delete-tag-btn" data-id="{{ $tag->id }}">Borrar</button>
+                                            </form>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
@@ -148,17 +150,22 @@ document.addEventListener('DOMContentLoaded', function () {
                 tr.setAttribute('data-id', tag.id);
                 tr.setAttribute('data-name', tag.name);
                 tr.setAttribute('data-news-count', newsCount);
+                const isAdmin = {{ auth()->user()->role === 'admin' ? 'true' : 'false' }};
+                const deleteHtml = isAdmin
+                    ? `<form action="/admin/tags/${tag.id}" method="POST" class="d-inline delete-tag-form" data-id="${tag.id}">
+                           <input type="hidden" name="_token" value="${token}">
+                           <input type="hidden" name="_method" value="DELETE">
+                           <button type="button" class="btn btn-sm btn-outline-danger delete-tag-btn" data-id="${tag.id}">Borrar</button>
+                       </form>`
+                    : '';
                 tr.innerHTML = `<td class="align-middle">${tag.id}</td>
                                 <td class="align-middle tag-name">${tag.name}</td>
                                 <td class="align-middle text-center news-count">${newsCount}</td>
                                 <td class="align-middle">
                                     <button type="button" class="btn btn-sm btn-outline-secondary edit-tag-btn" data-id="${tag.id}" data-name="${tag.name}">Editar</button>
-                                    <form action="/admin/tags/${tag.id}" method="POST" class="d-inline delete-tag-form" data-id="${tag.id}">
-                                        <input type="hidden" name="_token" value="${token}">
-                                        <input type="hidden" name="_method" value="DELETE">
-                                        <button type="button" class="btn btn-sm btn-outline-danger delete-tag-btn" data-id="${tag.id}">Borrar</button>
-                                    </form>
+                                    ${deleteHtml}
                                 </td>`;
+
                 if (tbody.firstChild) tbody.insertBefore(tr, tbody.firstChild);
                 else tbody.appendChild(tr);
             } else {

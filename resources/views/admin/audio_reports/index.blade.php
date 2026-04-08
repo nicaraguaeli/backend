@@ -51,13 +51,15 @@
                                 <a href="{{ route('admin.audio_reports.edit', $report) }}" class="btn btn-info btn-sm">
                                     <i class="fas fa-pencil-alt"></i>
                                 </a>
-                                <form action="{{ route('admin.audio_reports.destroy', $report) }}" method="POST" style="display: inline-block;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro?')">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
+                                @if(auth()->user()->role === 'admin')
+                                    <form action="{{ route('admin.audio_reports.destroy', $report) }}" method="POST" style="display: inline-block;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                @endif
                             </td>
                         </tr>
                     @empty

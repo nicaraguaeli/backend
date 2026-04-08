@@ -141,7 +141,9 @@
                     <div class="btn-group">
                         <button id="bulkPublish" class="btn btn-sm btn-outline-success" title="Publicar seleccionados">Publicar</button>
                         <button id="bulkUnpublish" class="btn btn-sm btn-outline-secondary" title="Despublicar seleccionados">Despublicar</button>
-                        <button id="bulkDelete" class="btn btn-sm btn-outline-danger" title="Mover a papelera">Borrar</button>
+                        @if(auth()->user()->role === 'admin')
+                            <button id="bulkDelete" class="btn btn-sm btn-outline-danger" title="Mover a papelera">Borrar</button>
+                        @endif
                     </div>
                     <small id="selectedCount" class="text-muted ml-2">0 seleccionados</small>
                 </div>
@@ -180,12 +182,16 @@
                                     <strong><a href="{{ route('admin.news.edit', $new) }}">{{ $new->title }}</a></strong>
                                     <div class="row-actions">
                                         <a href="{{ route('admin.news.edit', $new) }}">Editar</a> |
-                                        <a href="#" class="quick-edit-btn" data-id="{{ $new->id }}" data-toggle="tooltip" title="Edicion rápida">Edicion Rapida</a> |
-                                        <form action="{{ route('admin.news.destroy', $new) }}" method="POST" style="display: inline;" class="delete-form" data-id="{{ $new->id }}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="button" class="btn-link text-danger trash-btn" data-id="{{ $new->id }}">Eliminar</button>
-                                        </form> |
+                                        <a href="#" class="quick-edit-btn" data-id="{{ $new->id }}" data-toggle="tooltip" title="Edicion rápida">Edicion Rapida</a>
+                                        @if(auth()->user()->role === 'admin')
+                                            |
+                                            <form action="{{ route('admin.news.destroy', $new) }}" method="POST" style="display: inline;" class="delete-form" data-id="{{ $new->id }}">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button" class="btn-link text-danger trash-btn" data-id="{{ $new->id }}">Eliminar</button>
+                                            </form>
+                                        @endif
+                                        |
                                         <a href="{{ route('admin.news.preview', $new) }}"
    class="view-btn"
    target="_blank">

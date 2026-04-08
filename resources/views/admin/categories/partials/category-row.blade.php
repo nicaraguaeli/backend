@@ -32,10 +32,13 @@
     </td>
     <td class="align-middle text-center">
         <button class="btn btn-sm btn-outline-secondary edit-btn" data-category='{{ json_encode($category) }}'>Editar</button>
-        <form action="{{ route('admin.categories.destroy', $category->id) }}" method="POST" class="d-inline delete-category-form">
-            @csrf
-            @method('DELETE')
-            <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
-        </form>
+        @if(auth()->user()->role === 'admin')
+            <form action="{{ route('admin.categories.destroy', $category->id) }}" method="POST" class="d-inline delete-category-form">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+            </form>
+        @endif
     </td>
+
 </tr>

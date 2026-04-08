@@ -146,6 +146,14 @@
                 <form method="POST" action="{{ route('login') }}">
                     @csrf
 
+                    {{-- Registration success / pending approval message --}}
+                    @if (session('status'))
+                        <div class="alert alert-info mb-3" role="alert">
+                            <i class="fas fa-info-circle me-2"></i>
+                            {{ session('status') }}
+                        </div>
+                    @endif
+
                     <div class="form-floating mb-3">
                         <input type="email" class="form-control @error('email') is-invalid @enderror" 
                                id="email" name="email" placeholder="nombre@ejemplo.com" 

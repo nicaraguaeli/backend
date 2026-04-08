@@ -1,46 +1,85 @@
 {{-- resources/views/admin/news/form.blade.php --}}
 
+{{-- ====== ERROR SUMMARY ====== --}}
+@if ($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+        <strong><i class="fas fa-exclamation-triangle mr-1"></i> Por favor corrige los siguientes errores:</strong>
+        <ul class="mb-0 mt-1 pl-4">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+@endif
+
 <div class="row">
     <div class="col-md-8">
         <div class="form-group">
-            <label for="title">Título</label>
-            <input type="text" name="title" id="title" class="form-control"
+            <label for="title">Título <span class="text-danger">*</span></label>
+            <input type="text" name="title" id="title"
+                   class="form-control @error('title') is-invalid @enderror"
                    value="{{ old('title', $news->title ?? '') }}" required>
+            @error('title')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
         <div class="form-row">
             <div class="form-group col-md-6">
                 <label for="slug">Slug</label>
-                <input type="text" name="slug" id="slug" class="form-control"
+                <input type="text" name="slug" id="slug"
+                       class="form-control @error('slug') is-invalid @enderror"
                        value="{{ old('slug', $news->slug ?? '') }}">
+                @error('slug')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
-        <div class="form-group col-md-6">
+            <div class="form-group col-md-6">
                 <label for="excerpt">Resumen corto</label>
-                <input type="text" name="excerpt" id="excerpt" class="form-control"
+                <input type="text" name="excerpt" id="excerpt"
+                       class="form-control @error('excerpt') is-invalid @enderror"
                        value="{{ old('excerpt', $news->excerpt ?? '') }}">
+                @error('excerpt')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
         </div>
 
         <div class="form-group">
             <label for="lead">Lead</label>
-            <textarea name="lead" id="lead" class="form-control" rows="3">{{ old('lead', $news->lead ?? '') }}</textarea>
+            <textarea name="lead" id="lead"
+                      class="form-control @error('lead') is-invalid @enderror"
+                      rows="3">{{ old('lead', $news->lead ?? '') }}</textarea>
+            @error('lead')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
         <div class="form-group">
-            <label for="content">Contenido</label>
-            <textarea class="textarea" name="content" id="content" required>{{ old('content', $news->content ?? '') }}</textarea>
+            <label for="content">Contenido <span class="text-danger">*</span></label>
+            <textarea class="textarea @error('content') is-invalid @enderror"
+                      name="content" id="content">{{ old('content', $news->content ?? '') }}</textarea>
+            @error('content')
+                <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle"></i> {{ $message }}</div>
+            @enderror
         </div>
     </div>
 
     <div class="col-md-4">
         {{-- Imagen destacada --}}
         <div class="form-group">
-            <label>Imagen destacada</label>
+            <label>Imagen destacada <span class="text-danger">*</span></label>
             <div class="custom-file">
-                <input type="file" class="custom-file-input" id="image_path" name="image_path" accept="image/*">
+                <input type="file" class="custom-file-input @error('image_path') is-invalid @enderror"
+                       id="image_path" name="image_path" accept="image/*">
                 <label class="custom-file-label" for="image_path">Elegir imagen</label>
             </div>
-
+            @error('image_path')
+                <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle"></i> {{ $message }}</div>
+            @enderror
             <div class="mt-2">
                 <label>Previsualización de la imagen</label>
                 <div>
@@ -53,9 +92,13 @@
             </div>
 
             <div class="form-group mt-2">
-                <label for="caption">Pie de foto</label>
-                <input type="text" name="caption" id="caption" class="form-control"
+                <label for="caption">Pie de foto <span class="text-danger">*</span></label>
+                <input type="text" name="caption" id="caption"
+                       class="form-control @error('caption') is-invalid @enderror"
                        value="{{ old('caption', $news->caption ?? '') }}">
+                @error('caption')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
             <div class="form-check mt-2">
@@ -141,34 +184,48 @@
 
         <div class="form-group">
             <label for="published_at">Publicado el</label>
-            <input type="datetime-local" name="published_at" id="published_at" class="form-control"
+            <input type="datetime-local" name="published_at" id="published_at"
+                   class="form-control @error('published_at') is-invalid @enderror"
                    value="{{ old('published_at', isset($news->published_at) ? $news->published_at->format('Y-m-d\TH:i') : '') }}">
+            @error('published_at')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
         <div class="form-group">
                             <label for="area">Área</label>
-                            <select name="area" id="area" class="form-control">
+                            <select name="area" id="area"
+                                    class="form-control @error('area') is-invalid @enderror">
                                 <option value="">Seleccionar...</option>
                                 <option value="Nacional" {{ old('area', $news->area ?? '') == 'Nacional' ? 'selected' : '' }}>Nacional</option>
                                 <option value="Local" {{ old('area', $news->area ?? '') == 'Local' ? 'selected' : '' }}>Local</option>
                                 <option value="Departamental" {{ old('area', $news->area ?? '') == 'Departamental' ? 'selected' : '' }}>Departamental</option>
                                 <option value="Internacional" {{ old('area', $news->area ?? '') == 'Internacional' ? 'selected' : '' }}>Internacional</option>
                             </select>
+                            @error('area')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="form-group">
-                            <label for="country_id">País</label>
-                            <select name="country_id" id="country_id" class="form-control select2"
+                            <label for="country_id">País <span class="text-danger">*</span></label>
+                            <select name="country_id" id="country_id"
+                                    class="form-control select2 @error('country_id') is-invalid @enderror"
                                     data-cities-url="{{ url('admin/paises/COUNTRY_ID/ciudades') }}">
                                 <option value="">Seleccionar país...</option>
                                 @foreach($countries as $country)
                                     <option value="{{ $country->id }}" {{ old('country_id', $country_id ?? '') == $country->id ? 'selected' : '' }}>{{ $country->name }}</option>
                                 @endforeach
                             </select>
+                            @error('country_id')
+                                <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle"></i> {{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="form-group">
-                            <label for="city_id">Ciudad</label>
-                            <select name="city_id" id="city_id" class="form-control select2" {{ !empty($cities) ? '' : 'disabled' }}>
+                            <label for="city_id">Ciudad <span class="text-danger">*</span></label>
+                            <select name="city_id" id="city_id"
+                                    class="form-control select2 @error('city_id') is-invalid @enderror"
+                                    {{ !empty($cities) ? '' : 'disabled' }}>
                                 <option value="">Seleccionar ciudad...</option>
                                  @if(isset($cities))
                                 @foreach($cities as $city)
@@ -176,25 +233,44 @@
                                 @endforeach
                                 @endif
                             </select>
+                            @error('city_id')
+                                <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle"></i> {{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="form-group">
-                            <label for="author_id">Autor(es)</label>
-                            <select name="author_id[]" id="author_id" class="form-control select2" multiple="multiple" required>
+                            <label for="author_id">Autor(es) <span class="text-danger">*</span></label>
+                            <select name="author_id[]" id="author_id"
+                                    class="form-control select2 @error('author_id') is-invalid @enderror"
+                                    multiple="multiple" required>
                                 @foreach ($authors as $author)
-                                    <option class="text-dark" value="{{ $author->id }}" {{ in_array($author->id, old('author_id', $news->author->pluck('id')->toArray() ?? [])) ? 'selected' : '' }}>{{ $author->name }}</option>
+                                    <option class="text-dark" value="{{ $author->id }}"
+                                        {{ in_array($author->id, old('author_id', $news->author->pluck('id')->toArray() ?? [])) ? 'selected' : '' }}>
+                                        {{ $author->name }}
+                                    </option>
                                 @endforeach
                             </select>
+                            @error('author_id')
+                                <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle"></i> {{ $message }}</div>
+                            @enderror
                             <small class="small-help">Puede seleccionar uno o varios autores.</small>
                         </div>
 
                         <div class="form-group">
-                            <label for="categories">Categorías</label>
-                            <select name="categories[]" id="categories" class="form-control select2" multiple="multiple" required>
+                            <label for="categories">Categorías <span class="text-danger">*</span></label>
+                            <select name="categories[]" id="categories"
+                                    class="form-control select2 @error('categories') is-invalid @enderror"
+                                    multiple="multiple" required>
                                 @foreach ($categories as $category)
-                                    <option value="{{ $category->id }}" {{ in_array($category->id, old('categories', $news->categories->pluck('id')->toArray() ?? [])) ? 'selected' : '' }}>{{ $category->name }}</option>
+                                    <option value="{{ $category->id }}"
+                                        {{ in_array($category->id, old('categories', $news->categories->pluck('id')->toArray() ?? [])) ? 'selected' : '' }}>
+                                        {{ $category->name }}
+                                    </option>
                                 @endforeach
                             </select>
+                            @error('categories')
+                                <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle"></i> {{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="form-group">

@@ -79,6 +79,13 @@ class TagController extends Controller
 
     public function destroy(Request $request, Tag $tag)
     {
+        if (auth()->user()->role !== 'admin') {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Solo los administradores pueden eliminar etiquetas.'], 403);
+            }
+            abort(403, 'Solo los administradores pueden eliminar etiquetas.');
+        }
+
         try {
             $tag->delete();
         } catch (QueryException $e) {

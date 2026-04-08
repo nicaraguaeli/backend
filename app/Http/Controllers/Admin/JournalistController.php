@@ -29,6 +29,9 @@ class JournalistController extends Controller
      */
     public function create()
     {
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Solo los administradores pueden crear autores.');
+        }
         return view('admin.journalists.create');
     }
 
@@ -40,6 +43,10 @@ class JournalistController extends Controller
      */
     public function store(Request $request)
     {
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Solo los administradores pueden crear autores.');
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:authors,email',
@@ -81,6 +88,9 @@ class JournalistController extends Controller
      */
     public function edit(Author $journalist)
     {
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Solo los administradores pueden editar autores.');
+        }
         return view('admin.journalists.edit', compact('journalist'));
     }
 
@@ -93,6 +103,10 @@ class JournalistController extends Controller
      */
     public function update(Request $request, Author $journalist)
     {
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Solo los administradores pueden editar autores.');
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:authors,email,' . $journalist->id,
@@ -141,6 +155,13 @@ class JournalistController extends Controller
      */
     public function destroy(Author $journalist)
     {
+        if (auth()->user()->role !== 'admin') {
+            if (request()->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Solo los administradores pueden eliminar autores.'], 403);
+            }
+            abort(403, 'Solo los administradores pueden eliminar autores.');
+        }
+
         // Detach from news
         $journalist->news()->detach();
 
