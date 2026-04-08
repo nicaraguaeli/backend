@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import ReactDOM from 'react-dom';
 import { Link as InertiaLink } from '@inertiajs/react';
 import { asset } from '@/url';
 import { route } from 'ziggy-js';
 import {
   Calendar, User, MapPin, Share2, ArrowLeft,
   Check, Volume2, CircleStop, Printer, ArrowRight,
-  BookOpen, Tag, Clock, TrendingUp, ChevronRight, Newspaper
+  BookOpen, Tag, Clock, TrendingUp, ChevronRight, Newspaper, ZoomIn, X
 } from 'lucide-react';
 
 import { ArticleData } from '../types';
@@ -169,6 +170,20 @@ export default function ArticleDetail({
   const [copied, setCopied] = useState(false);
   const [isReading, setIsReading] = useState(false);
   const [fontSize, setFontSize] = useState(18);
+  const [imageExpanded, setImageExpanded] = useState(false);
+
+  const closeImage = useCallback(() => setImageExpanded(false), []);
+
+  useEffect(() => {
+    if (!imageExpanded) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeImage(); };
+    window.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, [imageExpanded, closeImage]);
 
   // SEO & Social Sharing Metadata Injection
   useEffect(() => {
@@ -363,17 +378,53 @@ export default function ArticleDetail({
           </header>
 
           {/* Featured Image */}
-          <div className="mb-5 position-relative">
-            <img
-              src={article.image_path ? asset(`storage/${article.image_path}`) : ''}
-              alt={article.title}
-              className="img-fluid rounded shadow-sm w-100"
-              onError={(e) => (e.target as HTMLImageElement).src = 'https://via.placeholder.com/1200x800?text=Sin+Imagen'}
-            />
+          <div className="mb-5 position-relative article-hero-img-wrap">
+            <button
+              className="article-img-expand-btn"
+              onClick={() => setImageExpanded(true)}
+              aria-label="Ver imagen completa"
+              title="Ver imagen completa"
+            >
+              <img
+                src={article.image_path ? asset(`storage/${article.image_path}`) : ''}
+                alt={article.title}
+                className="img-fluid rounded shadow-sm w-100 article-hero-img"
+                onError={(e) => (e.target as HTMLImageElement).src = 'https://via.placeholder.com/1200x800?text=Sin+Imagen'}
+              />
+              <span className="article-img-zoom-icon">
+                <ZoomIn size={22} />
+              </span>
+            </button>
             {article.caption && (
               <figcaption className="figure-caption mt-2 text-end fst-italic">{article.caption}</figcaption>
             )}
           </div>
+
+          {/* Lightbox — rendered via portal to escape any parent stacking context */}
+          {imageExpanded && ReactDOM.createPortal(
+            <div
+              className="article-lightbox-overlay"
+              onClick={closeImage}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Imagen ampliada"
+            >
+              <button className="article-lightbox-close" onClick={closeImage} aria-label="Cerrar">
+                <X size={28} />
+              </button>
+              <img
+                src={article.image_path ? asset(`storage/${article.image_path}`) : ''}
+                alt={article.title}
+                className="article-lightbox-img"
+                onClick={(e) => e.stopPropagation()}
+                onError={(e) => (e.target as HTMLImageElement).src = 'https://via.placeholder.com/1200x800?text=Sin+Imagen'}
+              />
+              {article.caption && (
+                <p className="article-lightbox-caption" onClick={(e) => e.stopPropagation()}>{article.caption}</p>
+              )}
+            </div>,
+            document.body
+          )}
 
           {/* Article Body */}
           <div
@@ -536,6 +587,116 @@ export default function ArticleDetail({
           .sticky-top { position: static !important; }
           .article-mini-card { padding-top: 10px !important; padding-bottom: 10px !important; }
         }
+
+        /* ── Image expand / lightbox ── */
+        .article-hero-img-wrap { position: relative; }
+        .article-img-expand-btn {
+          display: block;
+          width: 100%;
+          padding: 0;
+          border: none;
+          background: transparent;
+          cursor: zoom-in;
+          position: relative;
+          border-radius: 8px;
+          overflow: hidden;
+        }
+        .article-hero-img {
+          display: block;
+          width: 100%;
+          transition: transform 0.35s ease, filter 0.35s ease;
+        }
+        .article-img-expand-btn:hover .article-hero-img {
+          transform: scale(1.02);
+          filter: brightness(0.88);
+        }
+        .article-img-zoom-icon {
+          position: absolute;
+          bottom: 12px;
+          right: 12px;
+          background: rgba(0,0,0,0.55);
+          backdrop-filter: blur(6px);
+          color: #fff;
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          transform: scale(0.8);
+          transition: opacity 0.25s ease, transform 0.25s ease;
+          pointer-events: none;
+        }
+        .article-img-expand-btn:hover .article-img-zoom-icon {
+          opacity: 1;
+          transform: scale(1);
+        }
+        /* Always show zoom icon on touch/mobile */
+        @media (hover: none) {
+          .article-img-zoom-icon { opacity: 0.8; transform: scale(1); }
+          .article-img-expand-btn:active .article-hero-img { filter: brightness(0.88); }
+        }
+
+        /* Lightbox overlay */
+        .article-lightbox-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 9999;
+          background: rgba(0,0,0,0.92);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 1rem;
+          animation: lightbox-in 0.2s ease;
+          cursor: zoom-out;
+        }
+        @keyframes lightbox-in {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        .article-lightbox-img {
+          max-width: 100%;
+          max-height: 85vh;
+          object-fit: contain;
+          border-radius: 10px;
+          box-shadow: 0 8px 48px rgba(0,0,0,0.7);
+          cursor: default;
+          animation: lightbox-scale 0.25s ease;
+        }
+        @keyframes lightbox-scale {
+          from { transform: scale(0.93); }
+          to   { transform: scale(1); }
+        }
+        .article-lightbox-caption {
+          margin-top: 0.75rem;
+          color: rgba(255,255,255,0.75);
+          font-size: 0.875rem;
+          font-style: italic;
+          text-align: center;
+          max-width: 700px;
+          cursor: default;
+        }
+        .article-lightbox-close {
+          position: fixed;
+          top: 1rem;
+          right: 1rem;
+          background: rgba(255,255,255,0.12);
+          backdrop-filter: blur(8px);
+          border: 1px solid rgba(255,255,255,0.2);
+          color: #fff;
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: background 0.2s;
+          z-index: 10000;
+        }
+        .article-lightbox-close:hover { background: rgba(255,255,255,0.25); }
       `}</style>
     </article>
   );
