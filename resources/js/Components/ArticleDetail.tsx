@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { Link as InertiaLink } from '@inertiajs/react';
 import { asset } from '@/url';
@@ -149,6 +149,191 @@ const SectionHeader = ({ icon: Icon, title, color = '#003087' }: { icon: any; ti
 );
 
 
+// ─── Image Lightbox with Zoom ────────────────────────────────────────────────
+interface LightboxProps {
+  src: string;
+  alt: string;
+  caption?: string;
+  onClose: () => void;
+}
+
+function ImageLightbox({ src, alt, caption, onClose }: LightboxProps) {
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragRef = useRef({ sx: 0, sy: 0, px: 0, py: 0 });
+  const lastTapRef = useRef(0);
+  const pinchRef = useRef(0);
+
+  // Lock body scroll
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [onClose]);
+
+  const resetZoom = useCallback(() => { setZoom(1); setPan({ x: 0, y: 0 }); }, []);
+
+  // Click on overlay: close if not zoomed, reset zoom if zoomed
+  const handleOverlayClick = () => { if (zoom <= 1) onClose(); else resetZoom(); };
+
+  // Double-click (desktop)
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (zoom > 1) resetZoom();
+    else setZoom(2.5);
+  };
+
+  // Double-tap (mobile)
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (e.changedTouches.length === 1) {
+      const now = Date.now();
+      if (now - lastTapRef.current < 300) {
+        e.preventDefault();
+        if (zoom > 1) resetZoom();
+        else setZoom(2.5);
+      }
+      lastTapRef.current = now;
+    }
+  };
+
+  // Scroll-wheel zoom (desktop)
+  const handleWheel = useCallback((e: WheelEvent) => {
+    e.preventDefault();
+    setZoom(prev => {
+      const next = Math.min(5, Math.max(1, prev + (e.deltaY < 0 ? 0.3 : -0.3)));
+      if (next <= 1) setPan({ x: 0, y: 0 });
+      return next;
+    });
+  }, []);
+
+  // Attach wheel as non-passive so we can preventDefault
+  const overlayRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = overlayRef.current;
+    if (!el) return;
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, [handleWheel]);
+
+  // Mouse drag (pan)
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (zoom <= 1) return;
+    e.preventDefault();
+    setIsDragging(true);
+    dragRef.current = { sx: e.clientX, sy: e.clientY, px: pan.x, py: pan.y };
+  };
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    setPan({
+      x: dragRef.current.px + (e.clientX - dragRef.current.sx),
+      y: dragRef.current.py + (e.clientY - dragRef.current.sy),
+    });
+  };
+  const handleMouseUp = () => setIsDragging(false);
+
+  // Pinch-to-zoom (mobile)
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      pinchRef.current = Math.hypot(dx, dy);
+    }
+  };
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.hypot(dx, dy);
+      if (pinchRef.current > 0) {
+        const ratio = dist / pinchRef.current;
+        setZoom(prev => {
+          const next = Math.min(5, Math.max(1, prev * ratio));
+          if (next <= 1) setPan({ x: 0, y: 0 });
+          return next;
+        });
+      }
+      pinchRef.current = dist;
+    }
+  };
+
+  const imgStyle: React.CSSProperties = {
+    maxWidth: '90vw',
+    maxHeight: '85vh',
+    objectFit: 'contain',
+    userSelect: 'none',
+    touchAction: 'none',
+    display: 'block',
+    transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+    transformOrigin: 'center center',
+    transition: isDragging ? 'none' : 'transform 0.22s ease',
+    cursor: zoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
+    borderRadius: zoom <= 1 ? 10 : 0,
+    boxShadow: zoom <= 1 ? '0 12px 60px rgba(0,0,0,0.8)' : 'none',
+  };
+
+  return ReactDOM.createPortal(
+    <div
+      ref={overlayRef}
+      className="article-lightbox-overlay"
+      onClick={handleOverlayClick}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Imagen ampliada"
+    >
+      {/* Close button */}
+      <button
+        className="article-lightbox-close"
+        onClick={(e) => { e.stopPropagation(); onClose(); }}
+        aria-label="Cerrar"
+      >
+        <X size={26} />
+      </button>
+
+      {/* Zoom level indicator — only when zoomed */}
+      {zoom > 1 && (
+        <div className="article-lightbox-zoom-badge">
+          {Math.round(zoom * 100)}%
+        </div>
+      )}
+
+      {/* Image */}
+      <img
+        src={src}
+        alt={alt}
+        style={imgStyle}
+        onClick={(e) => e.stopPropagation()}
+        onDoubleClick={handleDoubleClick}
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/1200x800?text=Sin+Imagen'; }}
+        draggable={false}
+      />
+
+      {/* Caption */}
+      {caption && zoom <= 1 && (
+        <p
+          className="article-lightbox-caption"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {caption}
+        </p>
+      )}
+    </div>,
+    document.body
+  );
+}
+
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function ArticleDetail({
   article,
@@ -173,17 +358,6 @@ export default function ArticleDetail({
   const [imageExpanded, setImageExpanded] = useState(false);
 
   const closeImage = useCallback(() => setImageExpanded(false), []);
-
-  useEffect(() => {
-    if (!imageExpanded) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeImage(); };
-    window.addEventListener('keydown', onKey);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = '';
-    };
-  }, [imageExpanded, closeImage]);
 
   // SEO & Social Sharing Metadata Injection
   useEffect(() => {
@@ -400,30 +574,14 @@ export default function ArticleDetail({
             )}
           </div>
 
-          {/* Lightbox — rendered via portal to escape any parent stacking context */}
-          {imageExpanded && ReactDOM.createPortal(
-            <div
-              className="article-lightbox-overlay"
-              onClick={closeImage}
-              role="dialog"
-              aria-modal="true"
-              aria-label="Imagen ampliada"
-            >
-              <button className="article-lightbox-close" onClick={closeImage} aria-label="Cerrar">
-                <X size={28} />
-              </button>
-              <img
-                src={article.image_path ? asset(`storage/${article.image_path}`) : ''}
-                alt={article.title}
-                className="article-lightbox-img"
-                onClick={(e) => e.stopPropagation()}
-                onError={(e) => (e.target as HTMLImageElement).src = 'https://via.placeholder.com/1200x800?text=Sin+Imagen'}
-              />
-              {article.caption && (
-                <p className="article-lightbox-caption" onClick={(e) => e.stopPropagation()}>{article.caption}</p>
-              )}
-            </div>,
-            document.body
+          {/* Lightbox with zoom — portal-rendered */}
+          {imageExpanded && (
+            <ImageLightbox
+              src={article.image_path ? asset(`storage/${article.image_path}`) : ''}
+              alt={article.title}
+              caption={article.caption || undefined}
+              onClose={closeImage}
+            />
           )}
 
           {/* Article Body */}
@@ -638,65 +796,78 @@ export default function ArticleDetail({
           .article-img-expand-btn:active .article-hero-img { filter: brightness(0.88); }
         }
 
-        /* Lightbox overlay */
+        /* ── Lightbox with Zoom ── */
         .article-lightbox-overlay {
           position: fixed;
           inset: 0;
           z-index: 9999;
-          background: rgba(0,0,0,0.92);
+          background: rgba(0,0,0,0.93);
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          padding: 1rem;
-          animation: lightbox-in 0.2s ease;
-          cursor: zoom-out;
+          overflow: hidden;
+          animation: lightbox-fadein 0.18s ease;
+          cursor: default;
+          user-select: none;
         }
-        @keyframes lightbox-in {
+        @keyframes lightbox-fadein {
           from { opacity: 0; }
           to   { opacity: 1; }
         }
-        .article-lightbox-img {
-          max-width: 100%;
-          max-height: 85vh;
-          object-fit: contain;
-          border-radius: 10px;
-          box-shadow: 0 8px 48px rgba(0,0,0,0.7);
-          cursor: default;
-          animation: lightbox-scale 0.25s ease;
-        }
-        @keyframes lightbox-scale {
-          from { transform: scale(0.93); }
-          to   { transform: scale(1); }
-        }
-        .article-lightbox-caption {
-          margin-top: 0.75rem;
-          color: rgba(255,255,255,0.75);
-          font-size: 0.875rem;
-          font-style: italic;
-          text-align: center;
-          max-width: 700px;
-          cursor: default;
-        }
         .article-lightbox-close {
           position: fixed;
-          top: 1rem;
-          right: 1rem;
-          background: rgba(255,255,255,0.12);
-          backdrop-filter: blur(8px);
-          border: 1px solid rgba(255,255,255,0.2);
+          top: 0.875rem;
+          right: 0.875rem;
+          background: rgba(255,255,255,0.13);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255,255,255,0.22);
           color: #fff;
-          width: 48px;
-          height: 48px;
+          width: 46px;
+          height: 46px;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          transition: background 0.2s;
-          z-index: 10000;
+          transition: background 0.2s, transform 0.15s;
+          z-index: 10001;
         }
-        .article-lightbox-close:hover { background: rgba(255,255,255,0.25); }
+        .article-lightbox-close:hover {
+          background: rgba(255,255,255,0.26);
+          transform: scale(1.1);
+        }
+        .article-lightbox-zoom-badge {
+          position: fixed;
+          bottom: 1.25rem;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(255,255,255,0.13);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255,255,255,0.2);
+          color: rgba(255,255,255,0.9);
+          font-size: 0.78rem;
+          font-weight: 600;
+          letter-spacing: 0.3px;
+          padding: 0.35rem 1rem;
+          border-radius: 50px;
+          pointer-events: none;
+          z-index: 10001;
+          white-space: nowrap;
+        }
+        .article-lightbox-caption {
+          position: fixed;
+          bottom: 3.5rem;
+          left: 50%;
+          transform: translateX(-50%);
+          color: rgba(255,255,255,0.75);
+          font-size: 0.85rem;
+          font-style: italic;
+          text-align: center;
+          max-width: min(600px, 90vw);
+          pointer-events: none;
+          z-index: 10001;
+        }
       `}</style>
     </article>
   );
