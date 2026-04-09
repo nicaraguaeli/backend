@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Play, Clock, ChevronRight, Search, ArrowLeft, Radio, Headphones, Share2, ChevronLeft, X } from 'lucide-react';
 import { url } from '@/url';
 import { fetchPodcasts, PodcastEpisode } from '../services/podcastService';
@@ -27,7 +27,7 @@ export default function PodcastView({
 
   // Pagination States
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const itemsPerPage = 8;
 
   // Load Data from API
   useEffect(() => {
@@ -123,6 +123,71 @@ export default function PodcastView({
       });
     }
   };
+
+  // ── Dynamic card colorization (Spotify-style) ──────────────────────────
+  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const getAverageColor = (img: HTMLImageElement): { r: number; g: number; b: number } | null => {
+    try {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return null;
+      const size = 24;
+      canvas.width = size;
+      canvas.height = size;
+      ctx.drawImage(img, 0, 0, size, size);
+      const data = ctx.getImageData(0, 0, size, size).data;
+      let r = 0, g = 0, b = 0, count = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        if (data[i + 3] < 128) continue;
+        const rr = data[i], gg = data[i + 1], bb = data[i + 2];
+        const brightness = (rr + gg + bb) / 3;
+        if (brightness > 225 || brightness < 15) continue; // skip near-white / near-black
+        r += rr; g += gg; b += bb; count++;
+      }
+      if (count === 0) return null;
+      return { r: Math.round(r / count), g: Math.round(g / count), b: Math.round(b / count) };
+    } catch {
+      return null;
+    }
+  };
+
+  const applyCardColor = useCallback((id: string | number, img: HTMLImageElement) => {
+    const card = cardRefs.current[String(id)];
+    if (!card) return;
+
+    let col = getAverageColor(img);
+
+    // Fallback: deterministic color from URL when canvas/CORS fails
+    if (!col) {
+      const hash = Array.from(img.src).reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) | 0, 0);
+      const hue = Math.abs(hash) % 360;
+      col = {
+        r: Math.round(80  + Math.sin(hue * 0.017) * 50),
+        g: Math.round(60  + Math.cos(hue * 0.017) * 40),
+        b: Math.round(120 + Math.sin(hue * 0.025) * 60),
+      };
+    }
+
+    const { r, g, b } = col;
+    const f = 0.28; // darkness factor — produces Spotify-style deep tones
+    const dr = Math.round(r * f);
+    const dg = Math.round(g * f);
+    const db = Math.round(b * f);
+
+    // Tint the card wrapper
+    card.style.background = `rgb(${dr}, ${dg}, ${db})`;
+    card.style.borderColor = `rgba(${r}, ${g}, ${b}, 0.28)`;
+
+    // Tint the body section (slightly different shade for depth)
+    const body = card.querySelector('.ar-body') as HTMLElement | null;
+    if (body) {
+      const df = 0.22;
+      body.style.background = `linear-gradient(180deg,
+        rgb(${Math.round(r*f)},${Math.round(g*f)},${Math.round(b*f)}) 0%,
+        rgb(${Math.round(r*df)},${Math.round(g*df)},${Math.round(b*df)}) 100%)`;
+    }
+  }, []);
 
   return (
     <div className="bg-gradient-page min-vh-100 animate-fade-in pb-5 position-relative">
@@ -310,7 +375,7 @@ export default function PodcastView({
                 </div>
               ) : (
                 <>
-                  <div className="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-4">
+                  <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4">
                     {displayedEpisodes.map((episode, index) => (
                       <div
                         key={episode.id}
@@ -324,6 +389,7 @@ export default function PodcastView({
                         <div
                           className="ar-card h-100 cursor-pointer"
                           onClick={() => handleCardClick(episode)}
+                          ref={(el) => { cardRefs.current[String(episode.id)] = el; }}
                         >
                           {/* ── IMAGE AREA ── */}
                           <div className="ar-img-wrap">
@@ -331,6 +397,8 @@ export default function PodcastView({
                               src={episode.image}
                               alt={episode.title}
                               className="ar-img"
+                              crossOrigin="anonymous"
+                              onLoad={(e) => applyCardColor(episode.id, e.currentTarget)}
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement;
                                 if (!target.dataset.errorHandled) {
@@ -634,144 +702,175 @@ export default function PodcastView({
         }
 
         /* ═══════════════════════════════════════
-           AUDIOREPORTAJE CARDS
+           AUDIOREPORTAJE CARDS — Streaming style
            ═══════════════════════════════════════ */
         .ar-card {
-          background: #ffffff;
-          border-radius: 18px;
+          background: #1e2245;
+          border-radius: 16px;
           overflow: hidden;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
-          transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1),
-                      box-shadow 0.32s ease;
+          box-shadow: 0 6px 24px rgba(0, 0, 0, 0.22);
+          border: 1px solid rgba(255,255,255,0.08);
+          transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                      box-shadow 0.3s ease,
+                      border-color 0.3s ease;
           display: flex;
           flex-direction: column;
         }
         .ar-card:hover {
-          transform: translateY(-8px) scale(1.01);
-          box-shadow: 0 20px 48px rgba(102, 126, 234, 0.18) !important;
+          transform: translateY(-8px);
+          box-shadow: 0 24px 52px rgba(102, 126, 234, 0.28);
+          border-color: rgba(102, 126, 234, 0.3);
         }
 
+        /* ── Image area ── */
         .ar-img-wrap {
           position: relative;
           overflow: hidden;
-          height: 210px;
+          aspect-ratio: 16 / 9;
           flex-shrink: 0;
         }
         .ar-img {
           width: 100%; height: 100%;
           object-fit: cover;
-          transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          transition: transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                      filter 0.4s ease;
           display: block;
         }
-        .ar-card:hover .ar-img { transform: scale(1.07); }
+        .ar-card:hover .ar-img {
+          transform: scale(1.08);
+          filter: brightness(0.8);
+        }
 
+        /* Cinematic gradient scrim */
         .ar-img-scrim {
           position: absolute;
           inset: 0;
-          background: linear-gradient(to top, rgba(10,10,30,0.75) 0%, rgba(10,10,30,0.15) 45%, transparent 70%);
+          background: linear-gradient(
+            to top,
+            rgba(8, 6, 20, 0.92) 0%,
+            rgba(8, 6, 20, 0.45) 38%,
+            rgba(8, 6, 20, 0.08) 65%,
+            transparent 100%
+          );
           pointer-events: none;
         }
 
+        /* Category badge — glassmorphism */
         .ar-cat-badge {
           position: absolute;
-          top: 12px; left: 12px;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          top: 11px; left: 11px;
+          background: rgba(255,255,255,0.12);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border: 1px solid rgba(255,255,255,0.22);
           color: #fff;
-          font-size: 0.62rem; font-weight: 700;
-          letter-spacing: 0.06em; text-transform: uppercase;
-          padding: 4px 10px; border-radius: 20px;
-          box-shadow: 0 2px 8px rgba(102, 126, 234, 0.35);
-          backdrop-filter: blur(4px);
+          font-size: 0.58rem; font-weight: 800;
+          letter-spacing: 0.08em; text-transform: uppercase;
+          padding: 4px 9px; border-radius: 5px;
         }
 
+        /* Duration — bottom-left, clean pill */
         .ar-duration-badge {
           position: absolute;
-          bottom: 10px; left: 12px;
+          bottom: 10px; left: 11px;
           display: inline-flex; align-items: center; gap: 4px;
-          background: rgba(0,0,0,0.55);
+          background: rgba(0,0,0,0.6);
           backdrop-filter: blur(8px);
-          color: #fff;
-          font-size: 0.72rem; font-weight: 600;
+          -webkit-backdrop-filter: blur(8px);
+          color: rgba(255,255,255,0.9);
+          font-size: 0.68rem; font-weight: 700;
           padding: 4px 9px; border-radius: 20px;
-          border: 1px solid rgba(255,255,255,0.15);
+          border: 1px solid rgba(255,255,255,0.12);
         }
 
+        /* ── Play button — always visible, bottom-right of image ── */
         .ar-play-btn {
           position: absolute;
-          top: 50%; left: 50%;
-          transform: translate(-50%, -50%) scale(0.7);
-          opacity: 0;
-          width: 54px; height: 54px;
+          bottom: 10px; right: 12px;
+          top: auto; left: auto;
+          transform: scale(0.85);
+          opacity: 1;
+          width: 42px; height: 42px;
           border-radius: 50%;
-          border: 2.5px solid rgba(255,255,255,0.9);
-          background: rgba(255,255,255,0.18);
-          backdrop-filter: blur(12px);
+          border: none;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           display: flex; align-items: center; justify-content: center;
           cursor: pointer;
-          transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
-          box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+          transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+                      box-shadow 0.25s ease;
+          box-shadow: 0 4px 18px rgba(102, 126, 234, 0.55);
           z-index: 4;
         }
         .ar-card:hover .ar-play-btn {
-          opacity: 1;
-          transform: translate(-50%, -50%) scale(1);
+          transform: scale(1);
+          box-shadow: 0 8px 28px rgba(102, 126, 234, 0.7);
         }
         .ar-play-btn:hover {
-          background: rgba(102, 126, 234, 0.85);
-          border-color: transparent;
+          background: linear-gradient(135deg, #7c91f9 0%, #9b6fcc 100%);
         }
 
+        /* ── Content body ── */
         .ar-body {
-          padding: 16px 18px 14px;
+          padding: 14px 16px 13px;
           display: flex; flex-direction: column; flex: 1;
+          background: #1a2040;
         }
+
+        /* Date — accent colored */
         .ar-date {
-          font-size: 0.7rem; color: #94a3b8; font-weight: 600;
-          letter-spacing: 0.04em; text-transform: uppercase;
+          font-size: 0.63rem; color: #818cf8; font-weight: 700;
+          letter-spacing: 0.06em; text-transform: uppercase;
           margin: 0 0 6px;
         }
+
+        /* Title — lighter for dark bg */
         .ar-title {
-          font-size: 0.98rem; font-weight: 700; line-height: 1.35;
-          color: #0f172a; margin: 0 0 8px;
+          font-size: 0.96rem; font-weight: 700; line-height: 1.35;
+          color: #f1f5f9; margin: 0 0 7px;
           display: -webkit-box;
           -webkit-line-clamp: 2; -webkit-box-orient: vertical;
           overflow: hidden;
           transition: color 0.2s ease;
-          font-family: Georgia, 'Times New Roman', serif;
+          font-family: Inter, 'Segoe UI', system-ui, sans-serif;
         }
-        .ar-card:hover .ar-title { color: #667eea; }
+        .ar-card:hover .ar-title { color: #a5b4fc; }
 
+        /* Excerpt */
         .ar-excerpt {
-          font-size: 0.82rem; color: #64748b; line-height: 1.5;
-          margin: 0 0 14px;
+          font-size: 0.8rem; color: rgba(148,163,184,0.85); line-height: 1.5;
+          margin: 0 0 13px;
           display: -webkit-box;
           -webkit-line-clamp: 2; -webkit-box-orient: vertical;
           overflow: hidden; flex: 1;
         }
 
+        /* Footer */
         .ar-footer {
           display: flex; align-items: center; justify-content: space-between;
-          border-top: 1px solid #f1f5f9;
-          padding-top: 11px; margin-top: auto;
+          border-top: 1px solid rgba(255,255,255,0.07);
+          padding-top: 10px; margin-top: auto;
         }
+
+        /* "Escuchar" CTA */
         .ar-read-more {
-          display: inline-flex; align-items: center; gap: 3px;
-          font-size: 0.78rem; font-weight: 700; color: #667eea;
+          display: inline-flex; align-items: center; gap: 4px;
+          font-size: 0.75rem; font-weight: 700; color: #818cf8;
           letter-spacing: 0.02em;
           transition: gap 0.2s ease, color 0.2s ease;
         }
-        .ar-card:hover .ar-read-more { gap: 6px; color: #764ba2; }
+        .ar-card:hover .ar-read-more { gap: 7px; color: #a5b4fc; }
 
+        /* Share button */
         .ar-share-btn {
-          width: 30px; height: 30px; border-radius: 50%;
-          border: 1.5px solid #e2e8f0; background: transparent;
+          width: 28px; height: 28px; border-radius: 50%;
+          border: 1px solid rgba(255,255,255,0.12); background: transparent;
           display: flex; align-items: center; justify-content: center;
-          color: #94a3b8; cursor: pointer;
+          color: rgba(148,163,184,0.7); cursor: pointer;
           transition: all 0.2s ease;
         }
         .ar-share-btn:hover {
-          border-color: #667eea; color: #667eea;
-          background: rgba(102, 126, 234, 0.06);
+          border-color: #818cf8; color: #818cf8;
+          background: rgba(129, 140, 248, 0.1);
           transform: scale(1.1);
         }
 

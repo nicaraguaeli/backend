@@ -68,6 +68,28 @@ export default function MainLayout({ children }: MainLayoutProps) {
         return () => window.removeEventListener('abc:stop-audio', stopGlobalAudio);
     }, []);
 
+    // Listen for 'abc:play-podcast' event — any page can trigger the bottom player
+    useEffect(() => {
+        const handlePlayEvent = (e: Event) => {
+            const episode = (e as CustomEvent<any>).detail;
+            if (episode) {
+                setAudioState({
+                    type: 'podcast',
+                    isPlaying: true,
+                    data: {
+                        id: episode.id,
+                        title: episode.title || episode.titulo,
+                        subtitle: episode.author || episode.autor || 'ABC Stereo',
+                        imageUrl: episode.imageUrl || episode.image || episode.imagen,
+                        audioUrl: episode.audioUrl || episode.url || episode.audio,
+                    }
+                });
+            }
+        };
+        window.addEventListener('abc:play-podcast', handlePlayEvent);
+        return () => window.removeEventListener('abc:play-podcast', handlePlayEvent);
+    }, []);
+
     // Podcast info & playback states for the sheet and global player
     const [viewingPodcast, setViewingPodcast] = useState<any | null>(null);
     const [isPodcastInfoOpen, setIsPodcastInfoOpen] = useState(false);

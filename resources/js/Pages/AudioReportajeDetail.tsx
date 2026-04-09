@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Head, Link } from '@inertiajs/react';
-import { Play, Pause, Volume2, VolumeX, Share2, Facebook, Twitter, Link2, ArrowLeft, Clock, User, Calendar } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Head } from '@inertiajs/react';
+import { Play, Share2, Facebook, Twitter, Link2, ArrowLeft, User, Calendar } from 'lucide-react';
 import { withMainLayout } from '@/Layouts/MainLayout';
 import { asset, url } from '@/url';
 
@@ -22,105 +22,47 @@ interface Props {
 }
 
 function AudioReportajeDetail({ audioReport }: Props) {
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [currentTime, setCurrentTime] = useState(0);
-    const [duration, setDuration] = useState(0);
-    const [volume, setVolume] = useState(1);
-    const [isMuted, setIsMuted] = useState(false);
     const [showShareMenu, setShowShareMenu] = useState(false);
-    const audioRef = useRef<HTMLAudioElement>(null);
+    const [isTriggered, setIsTriggered] = useState(false);
 
-    // Format time helper
-    const formatTime = (time: number) => {
-        if (isNaN(time)) return '0:00';
-        const minutes = Math.floor(time / 60);
-        const seconds = Math.floor(time % 60);
-        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    };
-
-    // Format date helper
+    // Helpers
     const formatDate = (dateString: string) => {
         try {
             const safeDateString = dateString.replace(' ', 'T');
             const date = new Date(safeDateString);
-            if (isNaN(date.getTime())) {
-                return dateString;
-            }
-            return date.toLocaleDateString('es-ES', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-        } catch (e) {
-            return dateString;
-        }
+            if (isNaN(date.getTime())) return dateString;
+            return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+        } catch { return dateString; }
     };
 
-    // Audio event handlers
+    const handlePlay = () => {
+        // Build a full absolute audio URL
+        const base = (window as any).APP_URL || window.location.origin;
+        const rawUrl = audioReport.url || '';
+        const audioUrl = rawUrl.startsWith('http') ? rawUrl : `${base}/${rawUrl.replace(/^\//, '')}`;
+        const imageUrl = audioReport.imagen?.startsWith('http')
+            ? audioReport.imagen
+            : `${base}/${(audioReport.imagen || '').replace(/^\//, '')}`;
+
+        window.dispatchEvent(new CustomEvent('abc:play-podcast', {
+            detail: {
+                id: String(audioReport.id),
+                title: audioReport.titulo,
+                autor: audioReport.autor,
+                imageUrl,
+                audioUrl,
+            }
+        }));
+        setIsTriggered(true);
+    };
+
+    // Auto-play on mount — delay ensures MainLayout's listener is registered
+    // (needed for direct-URL / full-page-load navigations)
     useEffect(() => {
-        const audio = audioRef.current;
-        if (!audio) return;
-
-        const updateTime = () => setCurrentTime(audio.currentTime);
-        const updateDuration = () => setDuration(audio.duration);
-        const handleEnded = () => setIsPlaying(false);
-
-        audio.addEventListener('timeupdate', updateTime);
-        audio.addEventListener('loadedmetadata', updateDuration);
-        audio.addEventListener('ended', handleEnded);
-
-        return () => {
-            audio.removeEventListener('timeupdate', updateTime);
-            audio.removeEventListener('loadedmetadata', updateDuration);
-            audio.removeEventListener('ended', handleEnded);
-        };
+        const timer = setTimeout(() => handlePlay(), 200);
+        return () => clearTimeout(timer);
     }, []);
 
-    const togglePlay = () => {
-        const audio = audioRef.current;
-        if (!audio) return;
-
-        if (isPlaying) {
-            audio.pause();
-        } else {
-            audio.play();
-        }
-        setIsPlaying(!isPlaying);
-    };
-
-    const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const audio = audioRef.current;
-        if (!audio) return;
-
-        const newTime = parseFloat(e.target.value);
-        audio.currentTime = newTime;
-        setCurrentTime(newTime);
-    };
-
-    const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const audio = audioRef.current;
-        if (!audio) return;
-
-        const newVolume = parseFloat(e.target.value);
-        audio.volume = newVolume;
-        setVolume(newVolume);
-        setIsMuted(newVolume === 0);
-    };
-
-    const toggleMute = () => {
-        const audio = audioRef.current;
-        if (!audio) return;
-
-        if (isMuted) {
-            audio.volume = volume || 0.5;
-            setIsMuted(false);
-        } else {
-            audio.volume = 0;
-            setIsMuted(true);
-        }
-    };
-
-    // Share functions
     const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
 
     const copyToClipboard = () => {
@@ -213,108 +155,62 @@ function AudioReportajeDetail({ audioReport }: Props) {
                                     </div>
                                 </div>
 
-                                {/* Audio Player */}
+                                {/* Global Player Trigger */}
                                 <div className="card bg-dark bg-opacity-50 border-0 backdrop-blur rounded-4 p-4">
-                                    <audio ref={audioRef} src={asset(audioReport.url)} preload="metadata" />
-
-                                    {/* Play/Pause Button */}
-                                    <div className="d-flex align-items-center gap-3 mb-3">
+                                    <div className="d-flex align-items-center gap-4">
+                                        {/* Big play button */}
                                         <button
-                                            onClick={togglePlay}
-                                            className="btn btn-primary rounded-circle d-flex align-items-center justify-content-center"
-                                            style={{ width: '60px', height: '60px' }}
+                                            onClick={handlePlay}
+                                            className="btn btn-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                                            style={{ width: '64px', height: '64px', background: 'linear-gradient(135deg,#667eea,#764ba2)', border: 'none', boxShadow: '0 6px 24px rgba(102,126,234,0.5)' }}
+                                            aria-label="Reproducir audioreportaje"
                                         >
-                                            {isPlaying ? <Pause size={28} fill="white" /> : <Play size={28} fill="white" />}
+                                            <Play size={28} fill="white" className="text-white" style={{ marginLeft: '3px' }} />
                                         </button>
 
-                                        <div className="flex-grow-1">
-                                            <div className="d-flex justify-content-between text-white small mb-1">
-                                                <span>{formatTime(currentTime)}</span>
-                                                <span>{formatTime(duration)}</span>
-                                            </div>
-                                            <input
-                                                type="range"
-                                                className="form-range"
-                                                min="0"
-                                                max={duration || 0}
-                                                value={currentTime}
-                                                onChange={handleSeek}
-                                                style={{ cursor: 'pointer' }}
-                                            />
-                                        </div>
-                                    </div>
+                                        <div className="text-white flex-grow-1">
+                                            {isTriggered ? (
+                                                <>
+                                                    <div className="d-flex align-items-center gap-2 mb-1">
+                                                        <span className="badge bg-danger" style={{ fontSize: '0.6rem', animation: 'pulse-dot 1.5s ease infinite' }}>▶ REPRODUCIENDO</span>
+                                                    </div>
 
-                                    {/* Volume & Share Controls */}
-                                    <div className="d-flex align-items-center justify-content-between">
-                                        <div className="d-flex align-items-center gap-2" style={{ width: '150px' }}>
-                                            <button
-                                                onClick={toggleMute}
-                                                className="btn btn-sm btn-link text-white p-0"
-                                            >
-                                                {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-                                            </button>
-                                            <input
-                                                type="range"
-                                                className="form-range form-range-sm"
-                                                min="0"
-                                                max="1"
-                                                step="0.01"
-                                                value={isMuted ? 0 : volume}
-                                                onChange={handleVolumeChange}
-                                                style={{ cursor: 'pointer' }}
-                                            />
-                                        </div>
-
-                                        {/* Share Button */}
-                                        <div className="position-relative">
-                                            <button
-                                                onClick={() => setShowShareMenu(!showShareMenu)}
-                                                className="btn btn-light btn-sm rounded-pill d-flex align-items-center gap-2"
-                                            >
-                                                <Share2 size={16} />
-                                                Compartir
-                                            </button>
-
-                                            {/* Share Menu */}
-                                            {showShareMenu && (
-                                                <div
-                                                    className="position-absolute end-0 mt-2 bg-white rounded-3 shadow-lg p-2"
-                                                    style={{ minWidth: '200px', zIndex: 1000 }}
-                                                >
-                                                    <button
-                                                        onClick={copyToClipboard}
-                                                        className="btn btn-sm btn-light w-100 text-start d-flex align-items-center gap-2 mb-1"
-                                                    >
-                                                        <Link2 size={16} />
-                                                        Copiar enlace
-                                                    </button>
-                                                    <button
-                                                        onClick={shareOnFacebook}
-                                                        className="btn btn-sm btn-light w-100 text-start d-flex align-items-center gap-2 mb-1"
-                                                    >
-                                                        <Facebook size={16} />
-                                                        Facebook
-                                                    </button>
-                                                    <button
-                                                        onClick={shareOnTwitter}
-                                                        className="btn btn-sm btn-light w-100 text-start d-flex align-items-center gap-2 mb-1"
-                                                    >
-                                                        <Twitter size={16} />
-                                                        Twitter
-                                                    </button>
-                                                    <button
-                                                        onClick={shareOnWhatsApp}
-                                                        className="btn btn-sm btn-light w-100 text-start d-flex align-items-center gap-2"
-                                                    >
-                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-                                                        </svg>
-                                                        WhatsApp
-                                                    </button>
-                                                </div>
+                                                    <div className="text-white-50 small mt-1">Puedes seguir leyendo mientras escuchas</div>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div className="fw-bold" style={{ fontSize: '0.95rem' }}>Escuchar audioreportaje</div>
+                                                    <div className="text-white-50 small mt-1">Se reproducirá en el player global inferior</div>
+                                                </>
                                             )}
                                         </div>
                                     </div>
+                                </div>
+
+                                {/* Share Button */}
+                                <div className="position-relative mt-3">
+                                    <button
+                                        onClick={() => setShowShareMenu(!showShareMenu)}
+                                        className="btn btn-light btn-sm rounded-pill d-flex align-items-center gap-2"
+                                    >
+                                        <Share2 size={16} />
+                                        Compartir
+                                    </button>
+
+                                    {showShareMenu && (
+                                        <div
+                                            className="position-absolute start-0 mt-2 bg-white rounded-3 shadow-lg p-2"
+                                            style={{ minWidth: '200px', zIndex: 1000 }}
+                                        >
+                                            <button onClick={copyToClipboard} className="btn btn-sm btn-light w-100 text-start d-flex align-items-center gap-2 mb-1"><Link2 size={16} /> Copiar enlace</button>
+                                            <button onClick={shareOnFacebook} className="btn btn-sm btn-light w-100 text-start d-flex align-items-center gap-2 mb-1"><Facebook size={16} /> Facebook</button>
+                                            <button onClick={shareOnTwitter} className="btn btn-sm btn-light w-100 text-start d-flex align-items-center gap-2 mb-1"><Twitter size={16} /> Twitter</button>
+                                            <button onClick={shareOnWhatsApp} className="btn btn-sm btn-light w-100 text-start d-flex align-items-center gap-2">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg>
+                                                WhatsApp
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
