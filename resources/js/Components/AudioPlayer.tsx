@@ -88,7 +88,7 @@ export default function AudioPlayer({ audioState, onTogglePlay, onToggleInfo }: 
   const displayImage = isPodcast ? (audioState.data?.imageUrl || asset('storage/logotipo.png')) : asset('storage/logotipo.png');
   const displayTitle = isPodcast ? audioState.data?.title : currentProgram;
   const displaySubtitle = isPodcast ? audioState.data?.subtitle : "ABC Stereo 99.7 FM";
-  const statusLabel = isPodcast ? 'PODCAST' : (error ? 'OFF' : 'ON AIR');
+  const statusLabel = isPodcast ? 'AUDIOREPORTAJE' : (error ? 'OFF' : 'ON AIR');
   const statusColor = isPodcast ? 'bg-abc-blue' : (error ? 'bg-secondary' : 'bg-danger');
 
   return (
