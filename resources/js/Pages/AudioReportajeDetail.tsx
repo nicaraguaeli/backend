@@ -63,6 +63,59 @@ function AudioReportajeDetail({ audioReport }: Props) {
         return () => clearTimeout(timer);
     }, []);
 
+    // SEO & Social sharing — same pattern as ArticleDetail.tsx
+    useEffect(() => {
+        const previousTitle = document.title;
+        const base = (window as any).APP_URL || window.location.origin;
+        const imageUrl = audioReport.imagen?.startsWith('http')
+            ? audioReport.imagen
+            : `${base}/${(audioReport.imagen || '').replace(/^\//, '')}`;
+        const description = audioReport.entrada
+            ? audioReport.entrada.replace(/<[^>]*>/g, '').slice(0, 160)
+            : `Audioreportaje de ABC Stereo: ${audioReport.titulo}`;
+
+        document.title = `${audioReport.titulo} | ABC Stereo Audioreportajes`;
+
+        const setMetaTag = (selector: string, attribute: string, content: string) => {
+            let el = document.querySelector(selector);
+            if (!el) {
+                el = document.createElement('meta');
+                const [attrName, attrValue] = selector.replace('meta[', '').replace(']', '').split('=');
+                el.setAttribute(attrName, attrValue.replace(/"/g, ''));
+                document.head.appendChild(el);
+            }
+            el.setAttribute(attribute, content);
+        };
+
+        // Open Graph
+        setMetaTag('meta[property="og:title"]',       'content', audioReport.titulo);
+        setMetaTag('meta[property="og:description"]', 'content', description);
+        setMetaTag('meta[property="og:image"]',       'content', imageUrl);
+        setMetaTag('meta[property="og:url"]',         'content', window.location.href);
+        setMetaTag('meta[property="og:type"]',        'content', 'article');
+        setMetaTag('meta[property="og:site_name"]',   'content', 'ABC Stereo 99.7 FM');
+        setMetaTag('meta[property="og:locale"]',      'content', 'es_NI');
+
+        // Twitter / X
+        setMetaTag('meta[name="twitter:card"]',        'content', 'summary_large_image');
+        setMetaTag('meta[name="twitter:title"]',       'content', audioReport.titulo);
+        setMetaTag('meta[name="twitter:description"]', 'content', description);
+        setMetaTag('meta[name="twitter:image"]',       'content', imageUrl);
+
+        // Meta description standard
+        setMetaTag('meta[name="description"]', 'content', description);
+
+        // Restore defaults on unmount
+        return () => {
+            document.title = previousTitle;
+            setMetaTag('meta[property="og:title"]',       'content', 'Radio ABC Stereo - La voz del norte');
+            setMetaTag('meta[property="og:description"]', 'content', 'Noticias, deportes, farándula y la mejor programación musical.');
+            setMetaTag('meta[property="og:image"]',       'content', asset('storage/logotipo.png'));
+            setMetaTag('meta[property="og:url"]',         'content', window.location.href);
+            setMetaTag('meta[property="og:type"]',        'content', 'website');
+        };
+    }, [audioReport]);
+
     const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
 
     const copyToClipboard = () => {
