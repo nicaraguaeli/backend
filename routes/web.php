@@ -40,8 +40,21 @@ Route::get('/', function () {
         ->where('is_published', true)
         ->where('is_featured', true)
         ->orderBy('published_at', 'desc')
-        ->take(5)
+        ->take(4)
         ->get();
+
+    $isFallbackFeatured = false;
+    if ($featuredNews->isEmpty()) {
+        $featuredNews = \App\Models\News::with(['categories', 'author'])
+            ->where('is_published', true)
+            ->whereHas('categories', function($q) {
+                $q->where('slug', 'reportajes-abc');
+            })
+            ->orderBy('published_at', 'desc')
+            ->take(4)
+            ->get();
+        $isFallbackFeatured = true;
+    }
 
     // 4. More News (Main Content)
     $moreNewsQuery = \App\Models\News::with(['categories', 'author'])
@@ -132,6 +145,7 @@ Route::get('/', function () {
         'latestNews'         => $latestNews ? $serializeAuthor($latestNews) : null,
         'mostReadNews'       => $serializeCollection($mostReadNews),
         'featuredNews'       => $serializeCollection($featuredNews),
+        'isFallbackFeatured' => $isFallbackFeatured,
         'moreNews'           => $serializeCollection($moreNews),
         'featuredCategories' => $featuredCategories,
         'nacionalesNews'     => $serializeCollection($nacionalesNews),

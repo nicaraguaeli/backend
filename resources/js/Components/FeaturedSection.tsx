@@ -7,14 +7,22 @@ import { Clock, ArrowRight, Star, TrendingUp, Sparkles } from 'lucide-react';
 interface FeaturedSectionProps {
   posts: ArticleData[];
   onPostClick: (slug: string) => void;
+  isFallback?: boolean;
 }
 
-export default function FeaturedSection({ posts, onPostClick }: FeaturedSectionProps) {
+export default function FeaturedSection({ posts, onPostClick, isFallback = false }: FeaturedSectionProps) {
   // Layout: 1 large main post + 3 secondary posts below.
   if (!posts || posts.length < 4) return null;
 
   const mainPost = posts[0];
   const secondaryPosts = posts.slice(1, 4);
+
+  const getCategoryName = (post: ArticleData) => {
+    if (!post.categories || post.categories.length === 0) return 'Noticias';
+    // Dar prioridad a la categoría Reportajes ABC si el post pertenece a varias
+    const reportajesCategory = post.categories.find(c => c.slug === 'reportajes-abc');
+    return reportajesCategory ? reportajesCategory.name : post.categories[0].name;
+  };
 
   return (
     <section className="featured-section-enhanced py-5 position-relative overflow-hidden">
@@ -40,7 +48,7 @@ export default function FeaturedSection({ posts, onPostClick }: FeaturedSectionP
             </span>
           </div>
           <h2 className="display-4 fw-bold text-white font-serif mb-2 header-title">
-            Reportajes Destacados
+            {isFallback ? 'Reportajes ABC' : 'Reportajes Destacados'}
           </h2>
           <div className="header-underline"></div>
         </div>
@@ -64,16 +72,19 @@ export default function FeaturedSection({ posts, onPostClick }: FeaturedSectionP
 
                 <div className="featured-content">
                   <div className="d-flex align-items-center gap-3 mb-3">
-                    {/* Badge rojo solo visible en desktop */}
-                    <span className="premium-badge d-none d-md-inline-flex">
-                      <Star size={16} className="me-2 fill-current" />
-                      Destacado
-                    </span>
-                    {mainPost.categories?.[0]?.name && (
-                      <span className="category-badge">
-                        {mainPost.categories[0].name}
+                    {/* Badge rojo solo visible en desktop si NO es fallback */}
+                    {!isFallback && (
+                      <span className="premium-badge d-none d-md-inline-flex">
+                        <Star size={16} className="me-2 fill-current" />
+                        Destacado
                       </span>
                     )}
+                    {(mainPost.categories?.length ?? 0) > 0 && (
+                      <span className="category-badge">
+                        {getCategoryName(mainPost)}
+                      </span>
+                    )}
+
                   </div>
 
                   <h3 className="featured-title">
@@ -120,7 +131,7 @@ export default function FeaturedSection({ posts, onPostClick }: FeaturedSectionP
                   />
                   <div className="secondary-overlay"></div>
                   <span className="secondary-category-badge">
-                    {post.categories?.[0]?.name || 'Noticias'}
+                    {getCategoryName(post)}
                   </span>
                 </div>
 
@@ -134,7 +145,7 @@ export default function FeaturedSection({ posts, onPostClick }: FeaturedSectionP
                       onError={(e) => (e.target as HTMLImageElement).src = 'https://placehold.co/400x250?text=ABC'}
                     />
                     <span className="secondary-category-badge-mobile">
-                      {post.categories?.[0]?.name || 'Noticias'}
+                      {getCategoryName(post)}
                     </span>
                   </div>
                   <div className="secondary-body-mobile">

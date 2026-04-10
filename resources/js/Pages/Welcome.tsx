@@ -37,9 +37,10 @@ interface WelcomeProps {
     nacionalesNews?: ArticleData[];
     internationalNews?: ArticleData[];
     banners?: Banner[];
+    isFallbackFeatured?: boolean;
 }
 
-const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = [], featuredCategories = [], nacionalesNews = [], internationalNews = [], banners = [] }: WelcomeProps) => {
+const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = [], featuredCategories = [], nacionalesNews = [], internationalNews = [], banners = [], isFallbackFeatured = false }: WelcomeProps) => {
 
     const [videos, setVideos] = useState<Video[]>([]);
     const [videosLoading, setVideosLoading] = useState(true);
@@ -150,6 +151,7 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
             <FeaturedSection
                 posts={featuredNews || []}
                 onPostClick={(slug) => router.visit(route('news.show', { slug }))}
+                isFallback={isFallbackFeatured}
             />
             <FeaturedCategories
                 categories={featuredCategories}
