@@ -29,8 +29,11 @@ class YoutubeController extends Controller
             ]);
 
             if (!$response->ok()) {
+                // Logueamos y retornamos el detalle exacto de google para debugear
+                \Illuminate\Support\Facades\Log::error('YouTube API Error: ' . $response->body());
                 return response()->json([
-                    'error' => 'Error fetching YouTube data'
+                    'error' => 'Error fetching YouTube data',
+                    'google_api_message' => $response->json()
                 ], 500);
             }
 
