@@ -138,12 +138,22 @@ const GridCard = ({ post, accentColor }: { post: ArticleData; accentColor?: stri
 };
 
 // ─── Section Header ───────────────────────────────────────────────────────────
-const SectionHeader = ({ icon: Icon, title, color = '#003087' }: { icon: any; title: string; color?: string }) => (
+const SectionHeader = ({ icon: Icon, title, color = '#003087', linkHref }: { icon: any; title: string; color?: string; linkHref?: string }) => (
   <div className="d-flex align-items-center gap-3 mb-4">
     <div className="d-flex align-items-center justify-content-center rounded-circle" style={{ width: 38, height: 38, background: color, flexShrink: 0 }}>
       <Icon size={18} color="#fff" />
     </div>
-    <h2 className="h5 fw-bold mb-0 font-serif" style={{ color: '#1a1a2e', letterSpacing: '-0.2px' }}>{title}</h2>
+    {linkHref ? (
+      <InertiaLink
+        href={linkHref}
+        className="text-decoration-none h5 fw-bold mb-0 font-serif section-header-link"
+        style={{ color: '#1a1a2e', letterSpacing: '-0.2px' }}
+      >
+        {title}
+      </InertiaLink>
+    ) : (
+      <h2 className="h5 fw-bold mb-0 font-serif" style={{ color: '#1a1a2e', letterSpacing: '-0.2px' }}>{title}</h2>
+    )}
     <div style={{ flex: 1, height: 2, background: `linear-gradient(90deg, ${color}55, transparent)` }} />
   </div>
 );
@@ -635,13 +645,29 @@ export default function ArticleDetail({
           {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
           {/* WIDGET 2: Por el mismo autor */}
           {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-          {authorNews.length > 0 && (
+          {authorNews.length > 0 && article.author && (
             <section className="mt-5 pt-4 border-top" aria-label={`Más de ${authorName}`}>
-              <SectionHeader icon={User} title={`Más de ${authorName}`} color="#8B1A1A" />
+              <SectionHeader
+                icon={User}
+                title={`Más de ${authorName}`}
+                color="#8B1A1A"
+                linkHref={route('author.news', { id: article.author.id })}
+              />
               <div className="author-news-strip">
                 {authorNews.map(post => (
                   <MiniCard key={post.id} post={post} />
                 ))}
+              </div>
+              {/* Ver todas las notas del autor */}
+              <div className="mt-3 text-end">
+                <InertiaLink
+                  href={route('author.news', { id: article.author.id })}
+                  className="d-inline-flex align-items-center gap-2 fw-bold text-decoration-none"
+                  style={{ color: '#8B1A1A', fontSize: '0.88rem' }}
+                >
+                  Ver todas las notas de {authorName}
+                  <ArrowRight size={15} />
+                </InertiaLink>
               </div>
             </section>
           )}
@@ -739,6 +765,9 @@ export default function ArticleDetail({
         /* Author news mini strip */
         .author-news-strip { background: #f8f9fa; border-radius: 12px; padding: 8px 16px; border: 1px solid #e9ecef; }
         .author-news-strip .article-mini-card { border-bottom-color: #e2e8f0 !important; }
+
+        /* Section header link hover */
+        .section-header-link:hover { color: #8B1A1A !important; text-decoration: underline !important; }
 
         /* Responsive adjustments */
         @media (max-width: 767.98px) {

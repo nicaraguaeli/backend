@@ -254,4 +254,38 @@ class NewsController extends Controller
 
         return response()->json($results);
     }
+
+    /**
+     * Página paginada de noticias de un autor específico.
+     * GET /autor/{id}
+     */
+    public function authorNews(Request $request, $id)
+    {
+        $author = \App\Models\Author::findOrFail($id);
+
+        $news = News::with(['categories', 'author'])
+            ->where('is_published', true)
+            ->whereHas('author', fn($q) => $q->where('authors.id', $author->id))
+            ->orderBy('published_at', 'desc')
+            ->paginate(12)
+            ->withQueryString();
+
+        // Serialize author on each news item
+        $news->getCollection()->transform(function ($item) {
+            return array_merge($item->toArray(), [
+                'author' => $item->serialized_author,
+            ]);
+        });
+
+        return \Inertia\Inertia::render('AuthorNews', [
+            'author' => [
+                'id'     => $author->id,
+                'name'   => $author->name,
+                'bio'    => $author->bio,
+                'avatar' => $author->avatar,
+                'type'   => $author->type,
+            ],
+            'news' => $news,
+        ]);
+    }
 }

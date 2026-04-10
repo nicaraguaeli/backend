@@ -64,7 +64,8 @@ export default function FeaturedSection({ posts, onPostClick }: FeaturedSectionP
 
                 <div className="featured-content">
                   <div className="d-flex align-items-center gap-3 mb-3">
-                    <span className="premium-badge">
+                    {/* Badge rojo solo visible en desktop */}
+                    <span className="premium-badge d-none d-md-inline-flex">
                       <Star size={16} className="me-2 fill-current" />
                       Destacado
                     </span>
@@ -79,7 +80,8 @@ export default function FeaturedSection({ posts, onPostClick }: FeaturedSectionP
                     {mainPost.title}
                   </h3>
 
-                  <p className="featured-excerpt d-none d-md-block">
+                  {/* Excerpt: visible siempre, limitado a 2 líneas en mobile */}
+                  <p className="featured-excerpt">
                     {mainPost.excerpt}
                   </p>
 
@@ -102,13 +104,14 @@ export default function FeaturedSection({ posts, onPostClick }: FeaturedSectionP
 
           {/* Secondary Articles */}
           {secondaryPosts.map((post, index) => (
-            <div key={post.id} className="col-lg-4 col-md-6">
+            <div key={post.id} className="col-lg-4 col-md-6 col-12">
               <div
                 className="secondary-card cursor-pointer"
                 onClick={() => onPostClick(post.slug)}
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="secondary-image-wrapper">
+                {/* Desktop / tablet: imagen arriba, texto abajo */}
+                <div className="secondary-image-wrapper d-none d-md-block">
                   <img
                     src={post.image_path ? asset(`storage/${post.image_path}`) : 'https://placehold.co/400x250?text=ABC'}
                     alt={post.title}
@@ -121,7 +124,32 @@ export default function FeaturedSection({ posts, onPostClick }: FeaturedSectionP
                   </span>
                 </div>
 
-                <div className="secondary-body">
+                {/* Mobile: layout horizontal imagen+texto */}
+                <div className="secondary-card-mobile d-flex d-md-none">
+                  <div className="secondary-image-mobile">
+                    <img
+                      src={post.image_path ? asset(`storage/${post.image_path}`) : 'https://placehold.co/400x250?text=ABC'}
+                      alt={post.title}
+                      className="secondary-image"
+                      onError={(e) => (e.target as HTMLImageElement).src = 'https://placehold.co/400x250?text=ABC'}
+                    />
+                    <span className="secondary-category-badge-mobile">
+                      {post.categories?.[0]?.name || 'Noticias'}
+                    </span>
+                  </div>
+                  <div className="secondary-body-mobile">
+                    <h5 className="secondary-title-mobile">
+                      {post.title}
+                    </h5>
+                    <span className="read-more-link">
+                      <span>Leer más</span>
+                      <ArrowRight size={14} className="arrow-icon" />
+                    </span>
+                  </div>
+                </div>
+
+                {/* Body: solo en desktop/tablet */}
+                <div className="secondary-body d-none d-md-flex">
                   <h5 className="secondary-title">
                     {post.title}
                   </h5>
@@ -259,7 +287,7 @@ export default function FeaturedSection({ posts, onPostClick }: FeaturedSectionP
 
         .featured-image-wrapper {
           position: relative;
-          min-height: 550px;
+          min-height: 620px;
           overflow: hidden;
         }
 
@@ -267,6 +295,7 @@ export default function FeaturedSection({ posts, onPostClick }: FeaturedSectionP
           width: 100%;
           height: 100%;
           object-fit: cover;
+          object-position: center top;
           position: absolute;
           top: 0;
           left: 0;
@@ -277,6 +306,7 @@ export default function FeaturedSection({ posts, onPostClick }: FeaturedSectionP
           transform: scale(1.05);
         }
 
+        /* Overlay: zona inferior oscura para leer el texto, zona superior muy ligera para apreciar la imagen */
         .featured-overlay {
           position: absolute;
           top: 0;
@@ -285,9 +315,10 @@ export default function FeaturedSection({ posts, onPostClick }: FeaturedSectionP
           height: 100%;
           background: linear-gradient(
             to top,
-            rgba(15, 23, 42, 0.98) 0%,
-            rgba(15, 23, 42, 0.85) 30%,
-            rgba(15, 23, 42, 0.4) 60%,
+            rgba(8, 12, 25, 0.98) 0%,
+            rgba(8, 12, 25, 0.88) 28%,
+            rgba(8, 12, 25, 0.35) 50%,
+            rgba(8, 12, 25, 0.08) 70%,
             transparent 100%
           );
           z-index: 1;
@@ -318,8 +349,16 @@ export default function FeaturedSection({ posts, onPostClick }: FeaturedSectionP
           bottom: 0;
           left: 0;
           width: 100%;
-          padding: 3rem;
+          padding: 2.75rem 3.5rem;
           z-index: 2;
+          /* Limitar el contenido a la mitad izquierda en desktop para dejar ver la imagen */
+          max-width: 65%;
+        }
+
+        @media (max-width: 992px) {
+          .featured-content {
+            max-width: 85%;
+          }
         }
 
         @media (max-width: 768px) {
@@ -365,23 +404,31 @@ export default function FeaturedSection({ posts, onPostClick }: FeaturedSectionP
         }
 
         .featured-title {
-          font-size: clamp(2rem, 5vw, 3.5rem);
+          font-size: clamp(1.5rem, 3.5vw, 3.6rem);
           font-weight: 800;
           color: white;
-          line-height: 1.2;
-          margin-bottom: 1.5rem;
-          max-width: 90%;
-          text-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+          line-height: 1.15;
+          margin-bottom: 1rem;
+          max-width: 100%;
+          text-shadow: 0 4px 24px rgba(0, 0, 0, 0.85);
           font-family: 'Georgia', serif;
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
 
         .featured-excerpt {
-          font-size: 1.15rem;
+          font-size: 1.05rem;
           color: rgba(255, 255, 255, 0.85);
           line-height: 1.7;
-          margin-bottom: 2rem;
-          max-width: 75%;
-          text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+          margin-bottom: 1.5rem;
+          max-width: 100%;
+          text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
 
         .featured-meta {
@@ -550,11 +597,88 @@ export default function FeaturedSection({ posts, onPostClick }: FeaturedSectionP
 
         @media (max-width: 768px) {
           .featured-image-wrapper {
-            min-height: 400px;
+            min-height: 380px;
+          }
+          .featured-title {
+            font-size: clamp(1.3rem, 5vw, 2rem);
+            -webkit-line-clamp: 3;
+            margin-bottom: 0.6rem;
+          }
+          .featured-excerpt {
+            font-size: 0.88rem;
+            -webkit-line-clamp: 2;
+            max-width: 100%;
+            margin-bottom: 1rem;
+          }
+          .featured-content {
+            padding: 1.5rem;
+          }
+          .featured-meta {
+            padding-top: 0.8rem;
           }
           .secondary-image-wrapper {
             height: 180px;
           }
+        }
+
+        /* Mobile: tarjetas secundarias horizontales */
+        .secondary-card-mobile {
+          flex-direction: row;
+          align-items: stretch;
+          min-height: 110px;
+        }
+
+        .secondary-image-mobile {
+          position: relative;
+          width: 130px;
+          min-width: 130px;
+          flex-shrink: 0;
+          overflow: hidden;
+          border-radius: 0;
+        }
+
+        .secondary-image-mobile .secondary-image {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+
+        .secondary-category-badge-mobile {
+          position: absolute;
+          bottom: 6px;
+          left: 6px;
+          background: rgba(255, 255, 255, 0.9);
+          color: #0f172a;
+          padding: 2px 8px;
+          border-radius: 50px;
+          font-size: 0.65rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          z-index: 2;
+        }
+
+        .secondary-body-mobile {
+          flex: 1;
+          padding: 0.85rem 1rem;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          gap: 0.4rem;
+        }
+
+        .secondary-title-mobile {
+          font-size: 0.9rem;
+          font-weight: 700;
+          color: white;
+          line-height: 1.4;
+          margin: 0;
+          font-family: 'Georgia', serif;
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
       `}</style>
     </section>

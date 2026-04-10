@@ -187,8 +187,8 @@ $(editor).summernote('pasteHTML', figureHtml);
                 width: '100%',
                 placeholder: 'Seleccionar',
                 allowClear: true,
-                maximumSelectionLength: 2
-
+                maximumSelectionLength: 2,
+                matcher: startsMatcher
             });
 
             // Select2 for tags (tag creation)
@@ -232,14 +232,29 @@ $(editor).summernote('pasteHTML', figureHtml);
                 $(this).next('.custom-file-label').addClass('selected').html(fileName);
             });
 
+            // Matcher: filtrar solo desde el inicio del texto (no contiene, sino empieza con)
+            function startsMatcher(params, data) {
+                if (!params.term || params.term.trim() === '') return data;
+                var term = params.term.trim().toLowerCase()
+                    // normalizar tildes
+                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                var text = (data.text || '').toLowerCase()
+                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                // solo mostrar si empieza con el término
+                if (text.indexOf(term) === 0) return data;
+                return null;
+            }
+
             // Asegúrate que Select2 esté inicializado en #country_id y #city_id
             $('#country_id').select2({
                 width: '100%',
-                placeholder: 'Seleccionar país'
+                placeholder: 'Seleccionar país',
+                matcher: startsMatcher
             });
             $('#city_id').select2({
                 width: '100%',
-                placeholder: 'Seleccionar ciudad'
+                placeholder: 'Seleccionar ciudad',
+                matcher: startsMatcher
             });
 
             // Cargar ciudades cuando cambie el país

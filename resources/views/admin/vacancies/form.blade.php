@@ -75,11 +75,11 @@
                 id="expires_at"
                 class="form-control @error('expires_at') is-invalid @enderror"
                 value="{{ old('expires_at', isset($vacancy) && $vacancy->expires_at ? \Carbon\Carbon::parse($vacancy->expires_at)->format('Y-m-d') : '') }}"
-                min="{{ now()->format('Y-m-d') }}"
             >
             @error('expires_at')
                 <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
             @enderror
+            <small class="text-muted">Puede ingresar una fecha futura o pasada para reutilizar un empleo vencido.</small>
         </div>
 
         <div class="form-group">

@@ -21,11 +21,6 @@
                         <input type="search" name="q" value="{{ request('q') }}"
                                class="form-control" placeholder="Buscar cargo o empresa..." aria-label="Buscar">
                     </div>
-                    <select name="status" class="form-control mr-2" aria-label="Estado">
-                        <option value="">Todos los estados</option>
-                        <option value="active"   {{ request('status') === 'active'   ? 'selected' : '' }}>✅ Activas</option>
-                        <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>🚫 Inactivas</option>
-                    </select>
                     <button class="btn btn-outline-secondary mr-1" type="submit">Buscar</button>
                     <a href="{{ route('admin.vacancies.index') }}" class="btn btn-link">Limpiar</a>
                 </form>
@@ -49,7 +44,6 @@
                                 <th>Ubicación</th>
                                 <th>Tipo</th>
                                 <th>Vence</th>
-                                <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
@@ -63,18 +57,31 @@
                                     <td>{{ $vacancy->employment_type ?? '-' }}</td>
                                     <td>
                                         @if($vacancy->expires_at)
-                                            <span class="{{ $vacancy->expires_at->isPast() ? 'text-danger' : 'text-muted' }}">
+                                            @php
+                                                $today = \Carbon\Carbon::now()->startOfDay();
+                                                $expireDate = \Carbon\Carbon::parse($vacancy->expires_at)->startOfDay();
+                                                // diffInDays con false permite que el resultado sea negativo si es en el pasado
+                                                $daysDiff = $today->diffInDays($expireDate, false);
+                                            @endphp
+                                            <span class="{{ $daysDiff < 0 ? 'text-danger' : 'text-success' }} font-weight-bold">
                                                 {{ $vacancy->expires_at->format('d/m/Y') }}
                                             </span>
+                                            <br>
+                                            <small class="{{ $daysDiff < 0 ? 'text-danger' : 'text-success' }}">
+                                                @if($daysDiff == 0)
+                                                    (hoy)
+                                                @elseif($daysDiff == 1)
+                                                    (mañana)
+                                                @elseif($daysDiff == -1)
+                                                    (ayer)
+                                                @elseif($daysDiff > 1)
+                                                    (en {{ $daysDiff }} días)
+                                                @else
+                                                    (hace {{ abs($daysDiff) }} días)
+                                                @endif
+                                            </small>
                                         @else
                                             -
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if($vacancy->is_active)
-                                            <span class="badge badge-success">Activo</span>
-                                        @else
-                                            <span class="badge badge-secondary">Inactivo</span>
                                         @endif
                                     </td>
                                     <td>

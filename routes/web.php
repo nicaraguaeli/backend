@@ -201,6 +201,9 @@ Route::get('/nota/{slug}', [BlogNewsController::class, 'show'])->name('news.show
 // Ruta de Búsqueda (React - página de resultados paginados)
 Route::get('/search', [BlogNewsController::class, 'search'])->name('search');
 
+// Ruta para Noticias por Autor (React - paginadas)
+Route::get('/autor/{id}', [BlogNewsController::class, 'authorNews'])->name('author.news');
+
 
 // Rutas API para el Blog (React consumirá esto)
 Route::get('api/news', [BlogNewsController::class, 'index'])->name('api.news.index');

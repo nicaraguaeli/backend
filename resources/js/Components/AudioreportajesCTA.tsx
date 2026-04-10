@@ -65,7 +65,7 @@ export default function AudioreportajesCTA({ onNavigate }: AudioreportajesCTAPro
               <span className="arc2-eyebrow-icon">
                 <Radio size={14} />
               </span>
-              <span>Radio ABC Stereo · Periodismo de Profundidad</span>
+              <span>PodcastABC: Historias, reportajes y temas de interés</span>
             </div>
 
             {/* Headline */}
@@ -79,16 +79,14 @@ export default function AudioreportajesCTA({ onNavigate }: AudioreportajesCTAPro
 
             {/* Description */}
             <p className="arc2-desc">
-              Historias que van más allá del titular. Reportajes en audio con rigor
-              periodístico, profundidad analítica y la calidad que nos distingue
-              en Nicaragua y el mundo.
+              Vive la magia de la radio con nuestros reportajes especiales, historias que inspiran, contenidos de actualidad y nuestro original radiodrama: "Una historia, una canción".
             </p>
 
             {/* Feature list */}
             <ul className="arc2-features">
               {[
                 { icon: <Mic size={15} />, label: 'Producción de estudio profesional' },
-                { icon: <Headphones size={15} />, label: 'Disponible bajo demanda, 24/7' },
+                { icon: <Headphones size={15} />, label: 'Siempre disponible y al alcance' },
                 { icon: <Play size={15} />, label: 'Nuevos episodios cada semana' },
               ].map(f => (
                 <li key={f.label} className="arc2-feature-item">
@@ -135,7 +133,7 @@ export default function AudioreportajesCTA({ onNavigate }: AudioreportajesCTAPro
             {/* Live indicator */}
             <div className="arc2-live">
               <span className="arc2-live-dot" />
-              <span className="arc2-live-text">EN VIVO AHORA</span>
+              <span className="arc2-live-text">NUESTRAS PRODUCCIONES</span>
             </div>
 
             {/* Waveform */}

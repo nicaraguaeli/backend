@@ -15,8 +15,10 @@ class VacancyController extends Controller
 {
 
     protected $types = [
-        'con_experiencia' => 'Con Experiencia',
-        'sin_experiencia' => 'Sin Experiencia',
+        'con_experiencia'       => 'Con experiencia',
+        'sin_experiencia'       => 'Sin experiencia',
+        'con_sin_experiencia'   => 'Con y sin experiencia',
+        'disponibilidad_inmediata' => 'Disponibilidad inmediata',
     ];
     
     
@@ -31,11 +33,6 @@ class VacancyController extends Controller
                 $qb->where('title', 'like', "%{$q}%")
                    ->orWhere('company', 'like', "%{$q}%");
             });
-        }
-
-        // Filtro por estado
-        if ($request->filled('status')) {
-            $query->where('is_active', $request->input('status') === 'active');
         }
 
         $perPage = (int) $request->get('per_page', 15);
@@ -68,7 +65,7 @@ class VacancyController extends Controller
             'city'            => 'nullable|string',
             'employment_type' => 'nullable|string|max:100',
             'description'     => 'nullable|string',
-            'expires_at'      => 'required|date|after:today',
+            'expires_at'      => 'required|date',
             'image_path'      => 'nullable|image|max:4096',
         ]);
 
@@ -108,11 +105,11 @@ class VacancyController extends Controller
             'employment_type' => 'nullable|string|max:100',
             'description'     => 'nullable|string',
             'expires_at'      => 'required|date',
-            'is_active'       => 'nullable|boolean',
             'image_path'      => 'nullable|image|max:4096',
         ]);
 
-        $data['is_active'] = $request->has('is_active') ? (bool) $request->input('is_active') : false;
+        // Si se actualizó la fecha y ahora es futura o igual a hoy, activar automáticamente
+        $data['is_active'] = \Carbon\Carbon::parse($data['expires_at'])->endOfDay()->isFuture();
 
         // Subida opcional de imagen (reemplaza la anterior)
         if ($request->hasFile('image_path')) {
