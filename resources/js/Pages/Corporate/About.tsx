@@ -119,21 +119,7 @@ function About({ title }: AboutProps) {
                                     ))}
                                 </div>
 
-                                <div className="mt-4">
-                                    <h5 className="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
-                                        <PlayCircle className="text-abc-red" size={20} /> Video Institucional
-                                    </h5>
-                                    <div className="ratio ratio-16x9 rounded-3 overflow-hidden shadow-sm border">
-                                        <iframe
-                                            src="https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2Fradioabcesteli%2Fvideos%2F1364415490257668%2F&show_text=false&width=560&t=0"
-                                            style={{ border: 'none', overflow: 'hidden' }}
-                                            scrolling="no"
-                                            frameBorder="0"
-                                            allowFullScreen={true}
-                                            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                                        ></iframe>
-                                    </div>
-                                </div>
+
                             </div>
                         </div>
                         <div className="col-lg-6">

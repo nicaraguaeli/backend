@@ -238,7 +238,7 @@ $(editor).summernote('pasteHTML', figureHtml);
                 var term = params.term.trim().toLowerCase()
                     // normalizar tildes
                     .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-                var text = (data.text || '').toLowerCase()
+                var text = (data.text || '').trim().toLowerCase()
                     .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
                 // solo mostrar si empieza con el término
                 if (text.indexOf(term) === 0) return data;
