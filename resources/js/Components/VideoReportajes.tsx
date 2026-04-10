@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { Play, Search, Filter, Calendar, Eye, Clock, ArrowLeft, Grid, List, ChevronRight, X, Video as VideoIcon } from 'lucide-react';
 import ShareButton from './ShareButton';
-
+import { fetchYoutubeVideos } from '../services/youtubeService';
 interface VideoReportaje {
   id: number;
   slug?: string;
@@ -20,120 +20,13 @@ interface VideoReportajesProps {
   onBack: () => void;
 }
 
-// Datos temporales
-const TEMP_VIDEOS: VideoReportaje[] = [
-  {
-    id: 1,
-    slug: "crisis-politica-nicaragua-analisis-completo",
-    title: "Especial: Crisis Política en Nicaragua - Análisis Completo",
-    description: "Un análisis profundo sobre la situación política actual del país y sus implicaciones para el futuro.",
-    thumbnail: "https://images.unsplash.com/photo-1588681664899-f142ff2dc9b1?w=800&h=450&fit=crop",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    category: "Política",
-    date: "3 Feb 2026",
-    duration: "15:30",
-    views: "45.2K",
-    featured: true
-  },
-  {
-    id: 2,
-    slug: "economia-nacional-inflacion-perspectivas-2026",
-    title: "Economía Nacional: Inflación y Perspectivas 2026",
-    description: "Expertos analizan el comportamiento de la economía nacional y las proyecciones para este año.",
-    thumbnail: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=450&fit=crop",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    category: "Economía",
-    date: "2 Feb 2026",
-    duration: "12:45",
-    views: "32.1K"
-  },
-  {
-    id: 3,
-    slug: "investigacion-corrupcion-obras-publicas",
-    title: "Investigación Especial: Corrupción en Obras Públicas",
-    description: "Revelamos irregularidades en la construcción de infraestructura pública en varias ciudades.",
-    thumbnail: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&h=450&fit=crop",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    category: "Investigación",
-    date: "1 Feb 2026",
-    duration: "22:15",
-    views: "78.5K",
-    featured: true
-  },
-  {
-    id: 4,
-    slug: "deportes-resumen-jornada-futbolistica",
-    title: "Deportes: Resumen de la Jornada Futbolística",
-    description: "Lo mejor del fútbol nacional e internacional en un solo reportaje.",
-    thumbnail: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&h=450&fit=crop",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    category: "Deportes",
-    date: "31 Ene 2026",
-    duration: "18:20",
-    views: "56.3K"
-  },
-  {
-    id: 5,
-    slug: "salud-nuevos-tratamientos-enfermedades-cronicas",
-    title: "Salud: Nuevos Tratamientos para Enfermedades Crónicas",
-    description: "Avances médicos que están cambiando la vida de miles de pacientes en el país.",
-    thumbnail: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&h=450&fit=crop",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    category: "Salud",
-    date: "30 Ene 2026",
-    duration: "14:50",
-    views: "41.7K"
-  },
-  {
-    id: 6,
-    slug: "cultura-festival-arte-contemporaneo",
-    title: "Cultura: Festival Internacional de Arte Contemporáneo",
-    description: "Cobertura completa del evento cultural más importante del año.",
-    thumbnail: "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=800&h=450&fit=crop",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    category: "Cultura",
-    date: "29 Ene 2026",
-    duration: "16:35",
-    views: "28.9K"
-  },
-  {
-    id: 7,
-    slug: "tecnologia-inteligencia-artificial-nicaragua",
-    title: "Tecnología: Inteligencia Artificial en Nicaragua",
-    description: "Cómo la IA está transformando diferentes sectores de la economía nacional.",
-    thumbnail: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=450&fit=crop",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    category: "Tecnología",
-    date: "28 Ene 2026",
-    duration: "13:25",
-    views: "52.4K"
-  },
-  {
-    id: 8,
-    slug: "medio-ambiente-crisis-lago-nicaragua",
-    title: "Medio Ambiente: Crisis del Lago de Nicaragua",
-    description: "Reportaje sobre la contaminación y las medidas urgentes que se necesitan.",
-    thumbnail: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&h=450&fit=crop",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    category: "Medio Ambiente",
-    date: "27 Ene 2026",
-    duration: "19:40",
-    views: "64.2K",
-    featured: true
-  },
-  {
-    id: 9,
-    slug: "educacion-reforma-sistema-educativo",
-    title: "Educación: Reforma del Sistema Educativo Nacional",
-    description: "Análisis de los cambios propuestos y su impacto en estudiantes y maestros.",
-    thumbnail: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&h=450&fit=crop",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    category: "Educación",
-    date: "26 Ene 2026",
-    duration: "17:15",
-    views: "38.6K"
-  }
-];
+interface ChannelInfo {
+  title: string;
+  subscribers: string;
+  views: string;
+  videos: string;
+  thumbnail: string;
+}
 
 export default function VideoReportajes({ onBack }: VideoReportajesProps) {
   const [activeCategory, setActiveCategory] = useState('Todos');
@@ -145,31 +38,89 @@ export default function VideoReportajes({ onBack }: VideoReportajesProps) {
   const [headerTop, setHeaderTop] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [channelInfo, setChannelInfo] = useState<ChannelInfo | null>(null);
+  const [videos, setVideos] = useState<VideoReportaje[]>([]);
+  const [isLoadingVideos, setIsLoadingVideos] = useState(true);
   const observerTarget = useRef<HTMLDivElement>(null);
+
+  // Fetch Videos
+  useEffect(() => {
+    const loadVideos = async () => {
+      setIsLoadingVideos(true);
+      try {
+        const data = await fetchYoutubeVideos('', 50);
+        const mapped = data.map((v: any, index: number) => ({
+          id: v.id,
+          slug: v.id,
+          title: v.title,
+          description: v.description,
+          thumbnail: v.thumbnail,
+          videoUrl: v.videoUrl,
+          category: 'Reportajes',
+          date: new Date(v.date).toLocaleDateString(),
+          duration: '',
+          views: '',
+          featured: index === 0
+        }));
+        setVideos(mapped);
+      } catch (error) {
+        console.error('Error loading videos:', error);
+      } finally {
+        setIsLoadingVideos(false);
+      }
+    };
+    loadVideos();
+  }, []);
+
+  // Fetch YouTube Channel Info
+  useEffect(() => {
+    const fetchChannelInfo = async () => {
+      try {
+        const apiKey = import.meta.env.VITE_YOUTUBE_API_KEY || 'tAIzaSyA4toPjybYLOGNdMlbFpURBByEy6DWdCUY';
+        const channelId = 'UC4jgoYzXPyiQ-JejLctLtlA';
+        const res = await fetch(`https://youtube.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${channelId}&key=${apiKey}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.items && data.items.length > 0) {
+          const item = data.items[0];
+          setChannelInfo({
+            title: item.snippet.title,
+            subscribers: item.statistics.subscriberCount,
+            views: item.statistics.viewCount,
+            videos: item.statistics.videoCount,
+            thumbnail: item.snippet.thumbnails?.default?.url || ''
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching channel info:', err);
+      }
+    };
+    fetchChannelInfo();
+  }, []);
 
   // Generate dynamic categories
   const categories = useMemo(() => {
     const categoryCounts: Record<string, number> = {};
-    TEMP_VIDEOS.forEach(video => {
+    videos.forEach(video => {
       categoryCounts[video.category] = (categoryCounts[video.category] || 0) + 1;
     });
 
     const uniqueCategories = Object.keys(categoryCounts).sort();
     return [
-      { name: 'Todos', count: TEMP_VIDEOS.length },
+      { name: 'Todos', count: videos.length },
       ...uniqueCategories.map(cat => ({ name: cat, count: categoryCounts[cat] }))
     ];
-  }, []);
+  }, [videos]);
 
   // Filter videos
   const filteredVideos = useMemo(() => {
-    return TEMP_VIDEOS.filter(video => {
+    return videos.filter(video => {
       const matchesSearch = video.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         video.description.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = activeCategory === 'Todos' || video.category === activeCategory;
       return matchesSearch && matchesCategory;
     });
-  }, [activeCategory, searchTerm]);
+  }, [activeCategory, searchTerm, videos]);
 
   // Paginated videos
   const displayedVideos = filteredVideos.slice(0, displayedCount);
@@ -317,9 +268,22 @@ export default function VideoReportajes({ onBack }: VideoReportajesProps) {
                 <h1 className="h5 fw-bold font-serif text-white m-0 tracking-wide text-shadow">VIDEO REPORTAJES</h1>
                 <VideoIcon size={18} className="text-warning animate-pulse" />
               </div>
-              {!isScrolled && (
-                <p className="text-white-75 small mb-0">Mira nuestros trabajos audiovisuales: noticias, reportajes especiales y más.
-                </p>
+              {!isScrolled && !channelInfo && (
+                <p className="text-white-75 small mb-0">Mira nuestros trabajos audiovisuales: noticias, reportajes especiales y más.</p>
+              )}
+              {!isScrolled && channelInfo && (
+                <div className="d-flex align-items-center justify-content-center gap-3 mt-3 bg-black bg-opacity-25 rounded-pill p-2 px-4 shadow-sm border border-white border-opacity-10 d-inline-flex mx-auto">
+                  <img src={channelInfo.thumbnail} className="rounded-circle shadow" style={{ width: 44, height: 44 }} alt={channelInfo.title} />
+                  <div className="text-start">
+                    <div className="fw-bold text-white fs-6 lh-1">{channelInfo.title}</div>
+                    <div className="text-white-50 small mt-1" style={{ fontSize: '0.75rem' }}>
+                      {Number(channelInfo.subscribers).toLocaleString('es')} subs • {Number(channelInfo.videos).toLocaleString('es')} videos • {Number(channelInfo.views).toLocaleString('es')} vistas
+                    </div>
+                  </div>
+                  <a href={`https://www.youtube.com/channel/UC4jgoYzXPyiQ-JejLctLtlA?sub_confirmation=1`} target="_blank" rel="noreferrer" className="btn btn-sm btn-danger rounded-pill fw-bold ms-3 px-3 shadow-sm hover-scale text-uppercase d-flex align-items-center gap-1" style={{ fontSize: '0.7rem' }}>
+                    <Play size={10} fill="currentColor" /> Suscribirse
+                  </a>
+                </div>
               )}
             </div>
 
@@ -412,7 +376,12 @@ export default function VideoReportajes({ onBack }: VideoReportajesProps) {
         </div>
 
         {/* Video Grid/List */}
-        {filteredVideos.length === 0 ? (
+        {isLoadingVideos ? (
+          <div className="text-center py-5">
+            <div className="spinner-border text-abc-red mb-3" role="status"></div>
+            <p className="text-muted">Cargando videos...</p>
+          </div>
+        ) : filteredVideos.length === 0 ? (
           <div className="text-center py-5">
             <div className="text-muted mb-2" style={{ fontSize: '3rem' }}>🔍</div>
             <h4 className="text-secondary">No se encontraron videos</h4>

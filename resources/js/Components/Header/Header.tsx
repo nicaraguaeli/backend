@@ -91,6 +91,13 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
           target: 'podcastview',
         });
 
+        // Add fixed 'ABC TV' link
+        dynamicNavItems.push({
+          label: 'ABC TV',
+          href: '#',
+          target: 'videos',
+        });
+
         setNavItems(dynamicNavItems);
       } catch (err) {
         console.error('Error loading menu categories:', err);
@@ -245,7 +252,7 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
               <li className="nav-item"><Link href={route('corporate.about')} className="nav-link text-light px-2 py-0 hover-white" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>QUIÉNES SOMOS</Link></li>
               <li className="nav-item"><Link href={route('corporate.advertise')} className="nav-link text-light px-2 py-0 hover-white" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>ANUNCIATE</Link></li>
               <li className="nav-item"><Link href={route('corporate.contact')} className="nav-link text-light px-2 py-0 hover-white" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>CONTÁCTANOS</Link></li>
-              {/* <li className="nav-item"><a href="#" onClick={navigateToVideos} className="nav-link text-abc-gold px-2 py-0 hover-white fw-bold" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>ABCTV</a></li> */}
+              <li className="nav-item"><a href="#" onClick={navigateToVideos} className="nav-link text-abc-gold px-2 py-0 hover-white fw-bold" style={{ fontSize: '11px', letterSpacing: '0.5px', color: '#f1c40f' }}>ABCTV</a></li>
               <li className="nav-item"><Link href={route('corporate.programming')} className="nav-link text-light px-2 py-0 hover-white" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>PROGRAMACIÓN</Link></li>
               <li className="nav-item"><a href="#" onClick={navigateToJobs} className="nav-link text-light px-2 py-0 hover-white cursor-pointer" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>EMPLEOS</a></li>
             </ul>

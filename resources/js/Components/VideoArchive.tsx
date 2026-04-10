@@ -151,7 +151,7 @@ export default function VideoArchive({ onBack }: VideoArchiveProps) {
                     <div className="col-md-6 col-lg-4">
                         <div className="card h-100 border-0 shadow-sm">
                             <div className="card-header bg-white border-0 pt-3">
-                                <h5 className="fw-bold text-abc-blue mb-0">Podcast Video</h5>
+                                <h5 className="fw-bold text-abc-blue mb-0">video reportajes</h5>
                             </div>
                             <div className="card-body p-0">
                                 <div className="d-flex flex-column align-items-center justify-content-center h-100 text-muted p-4 text-center">

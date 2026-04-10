@@ -9,8 +9,9 @@ use App\Http\Controllers\Admin\NewsController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\TagController;
 use App\Http\Controllers\Blog\NewsController as BlogNewsController;
+use App\Http\Controllers\Api\YoutubeController;
 
-// Ruta pública para el blog (React)
+Route::get('/youtube', [YoutubeController::class, 'index']);
 Route::get('/', function () {
     // 1. Latest News (Hero)
     // Prefer a published news item explicitly marked as hero; otherwise fallback to the latest published news
@@ -47,7 +48,7 @@ Route::get('/', function () {
     if ($featuredNews->isEmpty()) {
         $featuredNews = \App\Models\News::with(['categories', 'author'])
             ->where('is_published', true)
-            ->whereHas('categories', function($q) {
+            ->whereHas('categories', function ($q) {
                 $q->where('slug', 'reportajes-abc');
             })
             ->orderBy('published_at', 'desc')
@@ -65,7 +66,7 @@ Route::get('/', function () {
     if ($latestNews) {
         $moreNewsQuery->where('id', '!=', $latestNews->id);
     }
-    
+
     // Exclude featured news from "More News" to avoid duplication
     if ($featuredNews->isNotEmpty()) {
         $moreNewsQuery->whereNotIn('id', $featuredNews->pluck('id'));
@@ -96,43 +97,7 @@ Route::get('/', function () {
     // 7. Banners
     $banners = \App\Models\Banner::where('is_active', true)->get();
 
-    // 8. Videos (Mock Data)
-    $videos = [
-        [
-            'id' => 1,
-            'title' => 'Últimas Noticias del Día - Resumen Informativo',
-            'description' => 'Mantente informado con las noticias más importantes del día. Cobertura completa de los eventos nacionales e internacionales.',
-            'thumbnail' => 'https://via.placeholder.com/640x360/0066CC/FFFFFF?text=Noticias+del+D%C3%ADa',
-            'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-            'views' => 15420,
-            'duration' => '12:34',
-            'published_at' => now()->subDays(1)->toDateTimeString(),
-            'category' => 'Noticias'
-        ],
-        
-        [
-            'id' => 3,
-            'title' => 'Resumen Deportivo: Lo Mejor de la Semana',
-            'description' => 'Todos los goles, jugadas y momentos destacados del deporte nacional e internacional.',
-            'thumbnail' => 'https://via.placeholder.com/640x360/00CC66/FFFFFF?text=Deportes',
-            'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-            'views' => 23150,
-            'duration' => '15:20',
-            'published_at' => now()->subDays(3)->toDateTimeString(),
-            'category' => 'Deportes'
-        ],
-        [
-            'id' => 4,
-            'title' => 'Reportaje Especial: Cultura y Tradiciones',
-            'description' => 'Un viaje por las tradiciones y costumbres que nos definen como nación.',
-            'thumbnail' => 'https://via.placeholder.com/640x360/CC6600/FFFFFF?text=Cultura',
-            'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-            'views' => 5670,
-            'duration' => '22:10',
-            'published_at' => now()->subDays(5)->toDateTimeString(),
-            'category' => 'Reportajes'
-        ]
-    ];
+
 
     // Serializar autor (many-to-many → objeto plano {id, name, type}) para todos los items
     // Esto hace que React pueda acceder a post.author.name en lugar de recibir una colección vacía
@@ -142,16 +107,16 @@ Route::get('/', function () {
     $serializeCollection = fn($col) => $col->map($serializeAuthor)->values();
 
     return Inertia::render('Welcome', [
-        'latestNews'         => $latestNews ? $serializeAuthor($latestNews) : null,
-        'mostReadNews'       => $serializeCollection($mostReadNews),
-        'featuredNews'       => $serializeCollection($featuredNews),
+        'latestNews' => $latestNews ? $serializeAuthor($latestNews) : null,
+        'mostReadNews' => $serializeCollection($mostReadNews),
+        'featuredNews' => $serializeCollection($featuredNews),
         'isFallbackFeatured' => $isFallbackFeatured,
-        'moreNews'           => $serializeCollection($moreNews),
+        'moreNews' => $serializeCollection($moreNews),
         'featuredCategories' => $featuredCategories,
-        'nacionalesNews'     => $serializeCollection($nacionalesNews),
-        'internationalNews'  => $serializeCollection($internationalNews),
-        'banners'            => $banners,
-        'videos'             => $videos,
+        'nacionalesNews' => $serializeCollection($nacionalesNews),
+        'internationalNews' => $serializeCollection($internationalNews),
+        'banners' => $banners,
+
     ]);
 })->name('home');
 
@@ -193,14 +158,14 @@ Route::get('/programacion', [App\Http\Controllers\CorporateController::class, 'p
 // Ruta para Categorías (React)
 Route::get('/category/{slug}', function ($slug) {
     $category = \App\Models\Category::where('slug', $slug)->firstOrFail();
-    
+
     // Si es una categoría destacada, usar el layout especial
     if ($category->is_featured) {
         return Inertia::render('FeaturedCategory', [
             'category' => $category
         ]);
     }
-    
+
     // Categorías normales usan el layout estándar
     return Inertia::render('Category', [
         'category' => $slug,
@@ -268,12 +233,12 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], fu
     Route::resource('noticias', NewsController::class)
         ->parameters(['noticias' => 'news'])
         ->names([
-            'index'   => 'news.index',
-            'create'  => 'news.create',
-            'store'   => 'news.store',
-            'show'    => 'news.show',
-            'edit'    => 'news.edit',
-            'update'  => 'news.update',
+            'index' => 'news.index',
+            'create' => 'news.create',
+            'store' => 'news.store',
+            'show' => 'news.show',
+            'edit' => 'news.edit',
+            'update' => 'news.update',
             'destroy' => 'news.destroy',
         ]);
     Route::patch('noticias/{news}/estado', [NewsController::class, 'updateStatus'])->name('news.update.status');
@@ -286,12 +251,12 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], fu
     Route::resource('categorias', CategoryController::class)
         ->parameters(['categorias' => 'category'])
         ->names([
-            'index'   => 'categories.index',
-            'create'  => 'categories.create',
-            'store'   => 'categories.store',
-            'show'    => 'categories.show',
-            'edit'    => 'categories.edit',
-            'update'  => 'categories.update',
+            'index' => 'categories.index',
+            'create' => 'categories.create',
+            'store' => 'categories.store',
+            'show' => 'categories.show',
+            'edit' => 'categories.edit',
+            'update' => 'categories.update',
             'destroy' => 'categories.destroy',
         ]);
     Route::post('categorias/reordenar', [CategoryController::class, 'reorder'])->name('categories.reorder');
@@ -300,12 +265,12 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], fu
     Route::resource('etiquetas', TagController::class)
         ->parameters(['etiquetas' => 'tag'])
         ->names([
-            'index'   => 'tags.index',
-            'create'  => 'tags.create',
-            'store'   => 'tags.store',
-            'show'    => 'tags.show',
-            'edit'    => 'tags.edit',
-            'update'  => 'tags.update',
+            'index' => 'tags.index',
+            'create' => 'tags.create',
+            'store' => 'tags.store',
+            'show' => 'tags.show',
+            'edit' => 'tags.edit',
+            'update' => 'tags.update',
             'destroy' => 'tags.destroy',
         ]);
 
@@ -313,12 +278,12 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], fu
     Route::resource('autores', App\Http\Controllers\Admin\JournalistController::class)
         ->parameters(['autores' => 'journalist'])
         ->names([
-            'index'   => 'journalists.index',
-            'create'  => 'journalists.create',
-            'store'   => 'journalists.store',
-            'show'    => 'journalists.show',
-            'edit'    => 'journalists.edit',
-            'update'  => 'journalists.update',
+            'index' => 'journalists.index',
+            'create' => 'journalists.create',
+            'store' => 'journalists.store',
+            'show' => 'journalists.show',
+            'edit' => 'journalists.edit',
+            'update' => 'journalists.update',
             'destroy' => 'journalists.destroy',
         ]);
     Route::patch('autores/{journalist}/estado', [App\Http\Controllers\Admin\JournalistController::class, 'updateStatus'])->name('journalists.update.status');
@@ -327,12 +292,12 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], fu
     Route::resource('usuarios', App\Http\Controllers\Admin\UserController::class)
         ->parameters(['usuarios' => 'user'])
         ->names([
-            'index'   => 'users.index',
-            'create'  => 'users.create',
-            'store'   => 'users.store',
-            'show'    => 'users.show',
-            'edit'    => 'users.edit',
-            'update'  => 'users.update',
+            'index' => 'users.index',
+            'create' => 'users.create',
+            'store' => 'users.store',
+            'show' => 'users.show',
+            'edit' => 'users.edit',
+            'update' => 'users.update',
             'destroy' => 'users.destroy',
         ]);
     Route::patch('usuarios/{user}/estado', [App\Http\Controllers\Admin\UserController::class, 'updateStatus'])->name('users.update.status');
@@ -344,12 +309,12 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], fu
     Route::resource('empleos-admin', App\Http\Controllers\Admin\VacancyController::class)
         ->parameters(['empleos-admin' => 'vacancy'])
         ->names([
-            'index'   => 'vacancies.index',
-            'create'  => 'vacancies.create',
-            'store'   => 'vacancies.store',
-            'show'    => 'vacancies.show',
-            'edit'    => 'vacancies.edit',
-            'update'  => 'vacancies.update',
+            'index' => 'vacancies.index',
+            'create' => 'vacancies.create',
+            'store' => 'vacancies.store',
+            'show' => 'vacancies.show',
+            'edit' => 'vacancies.edit',
+            'update' => 'vacancies.update',
             'destroy' => 'vacancies.destroy',
         ]);
 
@@ -357,12 +322,12 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], fu
     Route::resource('audioreportajes-admin', App\Http\Controllers\Admin\AudioReportController::class)
         ->parameters(['audioreportajes-admin' => 'audio_report'])
         ->names([
-            'index'   => 'audio_reports.index',
-            'create'  => 'audio_reports.create',
-            'store'   => 'audio_reports.store',
-            'show'    => 'audio_reports.show',
-            'edit'    => 'audio_reports.edit',
-            'update'  => 'audio_reports.update',
+            'index' => 'audio_reports.index',
+            'create' => 'audio_reports.create',
+            'store' => 'audio_reports.store',
+            'show' => 'audio_reports.show',
+            'edit' => 'audio_reports.edit',
+            'update' => 'audio_reports.update',
             'destroy' => 'audio_reports.destroy',
         ]);
 
@@ -370,12 +335,12 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], fu
     Route::resource('publicidad', App\Http\Controllers\Admin\BannerController::class)
         ->parameters(['publicidad' => 'banner'])
         ->names([
-            'index'   => 'banners.index',
-            'create'  => 'banners.create',
-            'store'   => 'banners.store',
-            'show'    => 'banners.show',
-            'edit'    => 'banners.edit',
-            'update'  => 'banners.update',
+            'index' => 'banners.index',
+            'create' => 'banners.create',
+            'store' => 'banners.store',
+            'show' => 'banners.show',
+            'edit' => 'banners.edit',
+            'update' => 'banners.update',
             'destroy' => 'banners.destroy',
         ]);
 

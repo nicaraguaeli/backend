@@ -13,7 +13,10 @@ return [
     | a conventional file to locate the various service credentials.
     |
     */
-
+    'youtube' => [
+        'key' => env('YOUTUBE_API_KEY'),
+        'channel_id' => env('YOUTUBE_CHANNEL_ID'),
+    ],
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],
