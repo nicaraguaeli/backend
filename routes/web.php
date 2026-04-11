@@ -133,7 +133,30 @@ Route::post('admin/summernote/upload', function (Illuminate\Http\Request $reques
         'caption' => 'nullable|string|max:255',
     ]);
 
-    $path = $request->file('image')->store('news/images', 'public');
+    $file = $request->file('image');
+    $path = $file->store('news/images', 'public');
+
+    if ($request->boolean('add_watermark')) {
+        $manager = \Intervention\Image\ImageManager::gd();
+        $image = $manager->read(\Illuminate\Support\Facades\Storage::disk('public')->get($path));
+        
+        $watermarkOption = \App\Models\Option::where('key', 'watermark_image_path')->first();
+        if ($watermarkOption && \Illuminate\Support\Facades\Storage::disk('public')->exists($watermarkOption->value)) {
+            $watermarkBinary = \Illuminate\Support\Facades\Storage::disk('public')->get($watermarkOption->value);
+            $watermark = $manager->read($watermarkBinary);
+            
+            // Escalar watermark al 20% del ancho de la imagen para que coincida con la destacada
+            $watermarkWidth = (int) ($image->width() * 0.2);
+            $watermark->scale(width: $watermarkWidth);
+            
+            // Colocar en el centro
+            $image->place($watermark, 'center', 10, 10, 50);
+            
+            // Save the image back
+            $encodedImage = $image->toJpeg(90);
+            \Illuminate\Support\Facades\Storage::disk('public')->put($path, (string) $encodedImage);
+        }
+    }
 
     return response()->json([
         'url' => asset('storage/' . $path),

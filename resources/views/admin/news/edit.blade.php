@@ -143,10 +143,13 @@
 function uploadImageWithCaption(file, editor) {
 
     const caption = prompt('Pie de foto (opcional):');
+    // Leer si el checkbox de marca de agua de contenido está marcado
+    const applyWatermark = document.getElementById('add_watermark_summernote') && document.getElementById('add_watermark_summernote').checked ? '1' : '0';
 
     let data = new FormData();
     data.append('image', file);
     data.append('caption', caption ?? '');
+    data.append('add_watermark', applyWatermark);
 
     fetch('/admin/summernote/upload', {
         method: 'POST',
@@ -159,14 +162,14 @@ function uploadImageWithCaption(file, editor) {
     .then(response => {
 
         const figureHtml = `
-    
-        <img src="${response.url}" alt="${response.caption ?? ''}">
+    <figure class="article-figure text-center m-0 mb-4">
+        <img src="${response.url}" alt="${response.caption ?? ''}" class="img-fluid rounded">
         ${response.caption 
-            ? `<figcaption class="figure-caption mt-2 text-end fst-italic">
+            ? `<figcaption class="figure-caption mt-2 text-end fst-italic text-muted" style="font-size: 0.875rem;">
                  ${response.caption}
                </figcaption>` 
             : ''}
-    
+    </figure>
 `;
 
 $(editor).summernote('pasteHTML', figureHtml);

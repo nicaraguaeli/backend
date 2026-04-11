@@ -735,6 +735,18 @@ export default function ArticleDetail({
         }
         .article-content ul, .article-content ol { margin-bottom: 1.5rem; }
         .article-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 1rem 0; }
+        .article-content figcaption,
+        .article-content figure figcaption {
+          font-size: 0.875rem !important;
+          color: #6c757d !important;
+          font-style: italic;
+          line-height: 1.4;
+          margin-top: -0.5rem;
+          margin-bottom: 1.5rem;
+          text-align: right;
+        }
+        .article-content figure { margin: 1.5rem 0; }
+        .article-content figure img { margin: 0; }
         .article-content blockquote {
           border-left: 4px solid var(--abc-red);
           padding-left: 1rem;

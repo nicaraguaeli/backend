@@ -29,7 +29,7 @@
 
         <div class="form-row">
             <div class="form-group col-md-6">
-                <label for="slug">Slug</label>
+                <label for="slug">Enlace (Slug)</label>
                 <input type="text" name="slug" id="slug"
                        class="form-control @error('slug') is-invalid @enderror"
                        value="{{ old('slug', $news->slug ?? '') }}">
@@ -49,7 +49,7 @@
         </div>
 
         <div class="form-group">
-            <label for="lead">Lead</label>
+            <label for="lead">Entradilla (Lead)</label>
             <textarea name="lead" id="lead"
                       class="form-control @error('lead') is-invalid @enderror"
                       rows="3">{{ old('lead', $news->lead ?? '') }}</textarea>
@@ -60,6 +60,10 @@
 
         <div class="form-group">
             <label for="content">Contenido <span class="text-danger">*</span></label>
+            <div class="alert alert-info small py-2 mb-2" role="alert">
+                <i class="fas fa-info-circle mr-1"></i>
+                <strong>¡Nueva función!</strong> Para aplicar una marca de agua a las imágenes de esta sección, marca la opción <strong>"Agregar marca al contenido"</strong> en la barra lateral derecha <em>antes</em> de subir la imagen al editor.</br> Tambien se a ajustado el pie de foto de foto de la imagen para su mejor vizualizacion.
+            </div>
             <textarea class="textarea @error('content') is-invalid @enderror"
                       name="content" id="content">{{ old('content', $news->content ?? '') }}</textarea>
             @error('content')
@@ -101,13 +105,19 @@
                 @enderror
             </div>
 
-            <div class="form-check mt-2">
-
-
+<div class="form-check mt-2">
     <input class="form-check-input" type="checkbox"
            name="add_watermark" id="add_watermark" value="1">
     <label class="form-check-label" for="add_watermark">
-        Agregar marca de agua
+        Agregar marca a la destacada
+    </label>
+</div>
+
+<div class="form-check mt-1">
+    <input class="form-check-input" type="checkbox"
+           id="add_watermark_summernote" value="1">
+    <label class="form-check-label" for="add_watermark_summernote">
+        Agregar marca al contenido
     </label>
 </div>
 
@@ -274,7 +284,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="tags">Tags</label>
+                            <label for="tags">Etiquetas</label>
                             <select id="tags" name="tags[]" class="form-control select2-tags" multiple="multiple">
                                 @if(isset($news))
                                     @foreach($tags as $tag)
@@ -282,7 +292,7 @@
                                     @endforeach
                                 @endif
                             </select>
-                            <small class="small-help">Escriba y presione Enter para crear tags.</small>
+                            <small class="small-help">Escriba y presione Enter para crear etiquetas.</small>
                         </div>
 
                         {{-- Botón para ver relacionadas --}}
@@ -440,19 +450,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Watermark logic
     const addWatermarkCheckbox = document.getElementById('add_watermark');
+    const addWatermarkSummernoteCheckbox = document.getElementById('add_watermark_summernote');
     const watermarkManager = document.getElementById('watermarkManager');
     const watermarkInput = document.getElementById('watermarkInput');
     const uploadBtn = document.getElementById('uploadWatermarkBtn');
     const watermarkPreviewContainer = document.getElementById('watermarkPreviewContainer');
     const watermarkStatus = document.getElementById('watermarkStatus');
 
-    addWatermarkCheckbox.addEventListener('change', function() {
-        if (this.checked) {
+    function toggleWatermarkManager() {
+        if ((addWatermarkCheckbox && addWatermarkCheckbox.checked) || 
+            (addWatermarkSummernoteCheckbox && addWatermarkSummernoteCheckbox.checked)) {
             watermarkManager.style.display = 'block';
         } else {
             watermarkManager.style.display = 'none';
         }
-    });
+    }
+
+    if (addWatermarkCheckbox) {
+        addWatermarkCheckbox.addEventListener('change', toggleWatermarkManager);
+    }
+    if (addWatermarkSummernoteCheckbox) {
+        addWatermarkSummernoteCheckbox.addEventListener('change', toggleWatermarkManager);
+    }
 
     uploadBtn.addEventListener('click', function () {
     if (!watermarkInput.files.length) {

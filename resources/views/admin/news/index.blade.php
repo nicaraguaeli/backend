@@ -1,6 +1,6 @@
 @extends('adminlte::page')
 
-@section('title', 'News')
+@section('title', 'Noticias')
 
 @section('content_header')
     <h1>Noticias</h1>
@@ -161,10 +161,10 @@
                                 &nbsp;
                             </th>
                             <th class="d-none d-md-table-cell" style="width: 10px; padding-left: 1.25rem;">#</th>
-                            <th>Titulo</th>
-                            <th class="d-none d-lg-table-cell">Autor</th>
-                            <th class="d-none d-sm-table-cell">Categoria</th>
-                            <th class="d-none d-md-table-cell">Visto</th>
+                            <th>Título</th>
+                            <th class="d-none d-lg-table-cell">Autor(es)</th>
+                            <th class="d-none d-sm-table-cell">Categoría</th>
+                            <th class="d-none d-md-table-cell">Vistas</th>
                             <th class="text-center">Destacar</th>
                             <th class="text-center">Portada</th>
                             <th class="text-center">Publicar</th>
@@ -182,7 +182,7 @@
                                     <strong><a href="{{ route('admin.news.edit', $new) }}">{{ $new->title }}</a></strong>
                                     <div class="row-actions">
                                         <a href="{{ route('admin.news.edit', $new) }}">Editar</a> |
-                                        <a href="#" class="quick-edit-btn" data-id="{{ $new->id }}" data-toggle="tooltip" title="Edicion rápida">Edicion Rapida</a>
+                                        <a href="#" class="quick-edit-btn" data-id="{{ $new->id }}" data-toggle="tooltip" title="Edición rápida">Edición Rápida</a>
                                         @if(auth()->user()->role === 'admin')
                                             |
                                             <form action="{{ route('admin.news.destroy', $new) }}" method="POST" style="display: inline;" class="delete-form" data-id="{{ $new->id }}">
@@ -266,17 +266,17 @@
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="title-{{ $new->id }}">Titulo</label>
+                                                    <label for="title-{{ $new->id }}">Título</label>
                                                     <input type="text" name="title" id="title-{{ $new->id }}" class="form-control" value="{{ $new->title }}">
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="slug-{{ $new->id }}">Slug</label>
+                                                    <label for="slug-{{ $new->id }}">Enlace (Slug)</label>
                                                     <input type="text" name="slug" id="slug-{{ $new->id }}" class="form-control" value="{{ $new->slug }}">
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="categories-{{ $new->id }}">Categorias</label>
+                                                    <label for="categories-{{ $new->id }}">Categorías</label>
                                                     <select name="categories[]" id="categories-{{ $new->id }}" class="form-control select2-quick-categories" multiple>
                                                         @foreach ($categories as $category)
                                                             <option value="{{ $category->id }}" {{ in_array($category->id, $new->categories->pluck('id')->toArray()) ? 'selected' : '' }}>
@@ -287,7 +287,7 @@
                                                 </div>
 
                                                 <div class="form-group">
-                                                    <label for="tags-{{ $new->id }}">Tags</label>
+                                                    <label for="tags-{{ $new->id }}">Etiquetas</label>
                                                     <select name="tags[]" id="tags-{{ $new->id }}" class="form-control select2-quick-tags" multiple>
                                                         @foreach ($tags ?? \App\Models\Tag::orderBy('name')->get() as $tag)
                                                             <option value="{{ $tag->id }}" {{ in_array($tag->id, $new->tags->pluck('id')->toArray()) ? 'selected' : '' }}>
@@ -323,7 +323,7 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 id="quickEditModalLabel" class="modal-title">Edicion rapida</h5>
+                    <h5 id="quickEditModalLabel" class="modal-title">Edición rápida</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
                         <span aria-hidden="true">&times;</span>
                     </button>
