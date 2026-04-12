@@ -1,51 +1,50 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Console\Commands;
 
-use Illuminate\Http\Request;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
-use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Log;
 
-class YoutubeController extends Controller
+class FetchYouTubeData extends Command
 {
-    public function index(Request $request)
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'youtube:fetch-data {--maxResults=50}';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Fetch data from YouTube API and save to a JSON file to avoid quota limits';
+
+    /**
+     * Execute the console command.
+     */
+    public function handle()
     {
-        $query = $request->query('q', '');
-        $maxResults = $request->query('maxResults', 50);
+        $maxResults = $this->option('maxResults');
 
-        // Si no hay parámetro de búsqueda, leemos primero el archivo json guardado por el cronjob
-        if (empty($query) && $maxResults <= 50) {
-            if (Storage::disk('local')->exists('youtube_videos.json')) {
-                $videos = json_decode(Storage::disk('local')->get('youtube_videos.json'), true);
-                if (is_array($videos)) {
-                    return response()->json(array_slice($videos, 0, $maxResults));
-                }
-            }
-        }
-
-        $cacheKey = "youtube_videos_" . md5($query . $maxResults);
-
-        return Cache::remember($cacheKey, 300, function () use ($query, $maxResults) {
-
+        try {
             $response = Http::get('https://www.googleapis.com/youtube/v3/search', [
                 'part' => 'snippet',
                 'channelId' => config('services.youtube.channel_id'),
                 'maxResults' => $maxResults,
                 'order' => 'date',
                 'type' => 'video',
-                'q' => $query,
+                'q' => '',
                 'key' => config('services.youtube.key'),
             ]);
 
             if (!$response->ok()) {
-                // Logueamos y retornamos el detalle exacto de google para debugear
-                \Illuminate\Support\Facades\Log::error('YouTube API Error: ' . $response->body());
-                return response()->json([
-                    'error' => 'Error fetching YouTube data',
-                    'google_api_message' => $response->json()
-                ], 500);
+                $this->error('Failed to fetch data from YouTube API: ' . $response->body());
+                Log::error('YouTube API Cron Error: ' . $response->body());
+                return Command::FAILURE;
             }
 
             $data = $response->json();
@@ -69,7 +68,14 @@ class YoutubeController extends Controller
                 ->filter()
                 ->values();
 
-            return response()->json($videos);
-        });
+            Storage::disk('local')->put('youtube_videos.json', $videos->toJson());
+
+            $this->info('YouTube data fetched and saved successfully.');
+            return Command::SUCCESS;
+        } catch (\Exception $e) {
+            $this->error('An error occurred: ' . $e->getMessage());
+            Log::error('YouTube API Cron Exception: ' . $e->getMessage());
+            return Command::FAILURE;
+        }
     }
 }

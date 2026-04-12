@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 
 // Boletín semanal: cada lunes a las 8:00 AM
 Schedule::command('newsletter:send-weekly')->weeklyOn(1, '8:00');
+
+// Youtube Fetch: cada hora
+Schedule::command('youtube:fetch-data')->hourly();
