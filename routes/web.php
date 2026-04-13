@@ -196,6 +196,39 @@ Route::get('/category/{slug}', function ($slug) {
     ]);
 })->name('category.show');
 
+// Ruta de agrupador de sección (React)
+Route::get('/seccion/{slug}', function ($slug) {
+    $parentCategory = \App\Models\Category::where('slug', $slug)->firstOrFail();
+    
+    $subcategories = \App\Models\Category::where('parent_id', $parentCategory->id)
+        ->where('is_active', true)
+        ->with(['news' => function ($query) {
+            $query->where('is_published', true)
+                  ->with(['author'])
+                  ->orderBy('published_at', 'desc')
+                  ->take(4);
+        }])
+        ->orderBy('menu_order', 'asc')
+        ->orderBy('name', 'asc')
+        ->get();
+
+    $serializeAuthor = fn($news) => array_merge($news->toArray(), [
+        'author' => $news->serialized_author,
+    ]);
+
+    $subcategoriesData = $subcategories->map(function ($cat) use ($serializeAuthor) {
+        $catData = $cat->toArray();
+        $catData['recent_news'] = $cat->news->map($serializeAuthor)->values();
+        unset($catData['news']);
+        return $catData;
+    });
+
+    return Inertia::render('SectionIndex', [
+        'parentCategory' => $parentCategory,
+        'subcategories' => $subcategoriesData
+    ]);
+})->name('section.show');
+
 // Ruta para Detalle de Noticia (React)
 Route::get('/nota/{slug}', [BlogNewsController::class, 'show'])->name('news.show');
 

@@ -90,6 +90,11 @@
                         </select>
                     </div>
                     <div class="form-group">
+                        <label for="custom_url">URL de Enlace (Opcional)</label>
+                        <input type="text" class="form-control" id="custom_url" name="custom_url" placeholder="Ej: /categorias/noticias-abc o https://...">
+                        <small class="form-text text-muted">Si ingresas una URL, el ítem en el menú redirigirá a este enlace.</small>
+                    </div>
+                    <div class="form-group">
                         <label for="image_path">Imagen</label>
                         <div class="input-group">
                             <div class="custom-file">
@@ -274,6 +279,7 @@ document.addEventListener('DOMContentLoaded', function () {
         submitBtn.textContent = 'Guardar';
         categoryIdInput.value = '';
         parentIdInput.value = '';
+        document.getElementById('custom_url').value = '';
         imagePreview.style.display = 'none';
         imagePreview.src = '#';
         document.querySelector('.custom-file-label').textContent = 'Elegir imagen...';
@@ -303,6 +309,7 @@ document.addEventListener('DOMContentLoaded', function () {
         nameInput.value = category.name;
         slugInput.value = category.slug;
         parentIdInput.value = category.parent_id || '';
+        document.getElementById('custom_url').value = category.custom_url || '';
 
         if (category.image_url) {
             imagePreview.src = category.image_url;

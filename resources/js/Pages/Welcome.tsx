@@ -103,7 +103,7 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
 
                         <div className="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
                             <h2 className="h2 mb-0 fw-bold text-abc-blue font-serif ps-3 border-start border-4 border-secondary">
-                                Noticias ABC
+                                <a href="/seccion/noticias-abc" className='text-decoration-none text-abc-blue'> Noticias ABC</a>
                             </h2>
                         </div>
 

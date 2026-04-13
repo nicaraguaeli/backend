@@ -7,6 +7,16 @@
 @stop
 
 @section('content')
+    <div class="alert alert-info alert-dismissible fade show elevation-2" role="alert" style="border-left: 5px solid #17a2b8;">
+        <h5 class="fw-bold mb-1"><i class="fas fa-check-circle me-2"></i> ¡Navegación Personalizada Activa!</h5>
+        <p class="mb-0">
+            Se ha habilitado la plantilla agrupador de Noticias. Ahora cuando los usuarios den clic en la categoría padre <strong>"Noticias ABC"</strong>, serán redirigidos a una página diseñada especialmente que muestra las 4 noticias más recientes de cada una de sus subcategorías.
+        </p>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
     <!-- Stream Status Monitor (estado inicial: verificando, JS lo actualiza al cargar) -->
     <div class="row mb-3">
         <div class="col-12">

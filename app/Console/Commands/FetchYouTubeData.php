@@ -31,13 +31,13 @@ class FetchYouTubeData extends Command
         $maxResults = $this->option('maxResults');
 
         try {
-            $response = Http::get('https://www.googleapis.com/youtube/v3/search', [
+            $channelId = config('services.youtube.channel_id');
+            $uploadsPlaylistId = 'UU' . substr($channelId, 2);
+
+            $response = Http::get('https://www.googleapis.com/youtube/v3/playlistItems', [
                 'part' => 'snippet',
-                'channelId' => config('services.youtube.channel_id'),
+                'playlistId' => $uploadsPlaylistId,
                 'maxResults' => $maxResults,
-                'order' => 'date',
-                'type' => 'video',
-                'q' => '',
                 'key' => config('services.youtube.key'),
             ]);
 
@@ -51,17 +51,18 @@ class FetchYouTubeData extends Command
 
             $videos = collect($data['items'] ?? [])
                 ->map(function ($item) {
-                    if (!isset($item['id']['videoId']))
+                    $videoId = $item['snippet']['resourceId']['videoId'] ?? null;
+                    if (!$videoId)
                         return null;
 
                     return [
-                        'id' => $item['id']['videoId'],
+                        'id' => $videoId,
                         'title' => $item['snippet']['title'],
                         'description' => $item['snippet']['description'],
                         'thumbnail' => $item['snippet']['thumbnails']['high']['url']
                             ?? $item['snippet']['thumbnails']['default']['url']
                             ?? '',
-                        'videoUrl' => 'https://www.youtube.com/embed/' . $item['id']['videoId'],
+                        'videoUrl' => 'https://www.youtube.com/embed/' . $videoId,
                         'date' => $item['snippet']['publishedAt'],
                     ];
                 })

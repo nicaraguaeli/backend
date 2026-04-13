@@ -36,6 +36,7 @@ class CategoryController extends Controller
             'theme_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
             'theme_color_secondary' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
             'parent_id' => 'nullable|exists:categories,id',
+            'custom_url' => 'nullable|string|max:255',
         ]);
 
         $data = [
@@ -44,6 +45,7 @@ class CategoryController extends Controller
             'theme_color' => $request->input('theme_color'),
             'theme_color_secondary' => $request->input('theme_color_secondary'),
             'parent_id' => $request->input('parent_id'),
+            'custom_url' => $request->input('custom_url'),
         ];
 
         try {
@@ -103,6 +105,7 @@ class CategoryController extends Controller
                 'theme_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
                 'theme_color_secondary' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
                 'parent_id' => 'nullable|exists:categories,id|not_in:' . $category->id,
+                'custom_url' => 'nullable|string|max:255',
             ]);
 
             $data = [
@@ -111,6 +114,7 @@ class CategoryController extends Controller
                 'theme_color' => $request->input('theme_color'),
                 'theme_color_secondary' => $request->input('theme_color_secondary'),
                 'parent_id' => $request->input('parent_id'),
+                'custom_url' => $request->input('custom_url'),
             ];
 
             if ($request->hasFile('image_path')) {

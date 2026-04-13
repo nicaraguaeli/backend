@@ -71,13 +71,13 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
 
           const navItem: NavItem = {
             label: cat.name,
-            href: route('category.show', { slug: cat.slug }),
+            href: cat.custom_url ? cat.custom_url : route('category.show', { slug: cat.slug }),
           };
 
           if (visibleChildren.length > 0) {
             navItem.subItems = visibleChildren.map(child => ({
               label: child.name,
-              href: route('category.show', { slug: child.slug }),
+              href: child.custom_url ? child.custom_url : route('category.show', { slug: child.slug }),
             }));
           }
 
@@ -123,7 +123,11 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
     e.preventDefault();
 
     // If navigating to a URL route, first close any special view (podcast/video)
-    if (href && href.startsWith(route('home'))) {
+    if (href && (href.startsWith(route('home')) || href.startsWith('/') || href.startsWith('http'))) {
+      if (href.startsWith('http') && !href.startsWith(route('home'))) {
+         window.location.href = href;
+         return;
+      }
       if (onNavigate) onNavigate('home'); // reset podcastview / videoreportajes
       router.visit(href);
       setIsMobileMenuOpen(false);

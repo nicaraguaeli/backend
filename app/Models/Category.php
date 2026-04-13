@@ -10,7 +10,7 @@ class Category extends Model
 
     // Solo columnas reales
     protected $fillable = [
-        'name', 'slug', 'is_active', 'is_featured', 'show_in_menu', 'menu_order', 'image_path', 'theme_color', 'theme_color_secondary', 'parent_id'
+        'name', 'slug', 'is_active', 'is_featured', 'show_in_menu', 'menu_order', 'image_path', 'theme_color', 'theme_color_secondary', 'parent_id', 'custom_url'
     ];
 
     protected $appends = ['image_url'];
