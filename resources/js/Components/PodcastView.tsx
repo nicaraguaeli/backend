@@ -82,6 +82,16 @@ export default function PodcastView({
     ];
   }, [episodes]);
 
+  const groupedEpisodes = useMemo(() => {
+    const groups: Record<string, PodcastEpisode[]> = {};
+    episodes.forEach(ep => {
+      const g = ep.category || 'Otros';
+      if (!groups[g]) groups[g] = [];
+      groups[g].push(ep);
+    });
+    return groups;
+  }, [episodes]);
+
   const filteredEpisodes = episodes.filter(ep => {
     const matchesSearch = ep.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = activeCategory === 'Todos' || ep.category === activeCategory;
@@ -163,31 +173,84 @@ export default function PodcastView({
       const hash = Array.from(img.src).reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) | 0, 0);
       const hue = Math.abs(hash) % 360;
       col = {
-        r: Math.round(80  + Math.sin(hue * 0.017) * 50),
-        g: Math.round(60  + Math.cos(hue * 0.017) * 40),
+        r: Math.round(80 + Math.sin(hue * 0.017) * 50),
+        g: Math.round(60 + Math.cos(hue * 0.017) * 40),
         b: Math.round(120 + Math.sin(hue * 0.025) * 60),
       };
     }
 
     const { r, g, b } = col;
-    const f = 0.28; // darkness factor — produces Spotify-style deep tones
+    const f = 0.45; // Livened up from 0.28 to provide a more vibrant color environment
     const dr = Math.round(r * f);
     const dg = Math.round(g * f);
     const db = Math.round(b * f);
 
     // Tint the card wrapper
     card.style.background = `rgb(${dr}, ${dg}, ${db})`;
-    card.style.borderColor = `rgba(${r}, ${g}, ${b}, 0.28)`;
+    card.style.borderColor = `rgba(${r}, ${g}, ${b}, 0.12)`;
+    card.style.boxShadow = `0 4px 15px rgba(${r}, ${g}, ${b}, 0.12)`;
 
     // Tint the body section (slightly different shade for depth)
     const body = card.querySelector('.ar-body') as HTMLElement | null;
     if (body) {
-      const df = 0.22;
+      const df = 0.32;
       body.style.background = `linear-gradient(180deg,
-        rgb(${Math.round(r*f)},${Math.round(g*f)},${Math.round(b*f)}) 0%,
-        rgb(${Math.round(r*df)},${Math.round(g*df)},${Math.round(b*df)}) 100%)`;
+        rgb(${Math.round(r * f)},${Math.round(g * f)},${Math.round(b * f)}) 0%,
+        rgb(${Math.round(r * df)},${Math.round(g * df)},${Math.round(b * df)}) 100%)`;
     }
   }, []);
+
+  const renderEpisodeCard = (episode: PodcastEpisode) => (
+    <div
+      className="ar-card h-100 cursor-pointer"
+      onClick={() => handleCardClick(episode)}
+      ref={(el) => { cardRefs.current[String(episode.id)] = el; }}
+    >
+      {/* ── IMAGE AREA ── */}
+
+      {/* ── IMAGE AREA ── */}
+      <div className="ar-img-wrap">
+        <img
+          src={episode.image}
+          alt={episode.title}
+          className="ar-img"
+          crossOrigin="anonymous"
+          onLoad={(e) => applyCardColor(episode.id, e.currentTarget)}
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            if (!target.dataset.errorHandled) {
+              target.dataset.errorHandled = 'true';
+              target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="450"%3E%3Crect fill="%231e1e2e" width="800" height="450"/%3E%3C/svg%3E';
+            }
+          }}
+        />
+        <div className="ar-img-scrim" />
+      </div>
+
+      {/* ── CONTENT AREA ── */}
+      <div className="ar-body">
+        <p className="ar-date">{episode.date}</p>
+        <h5 className="ar-title">{episode.title}</h5>
+        <p className="ar-excerpt">{episode.excerpt}</p>
+        <div className="ar-footer">
+          <button
+            className="btn btn-sm rounded-pill px-4 py-1 fw-bold border-0 hover-scale d-flex align-items-center gap-1 shadow-sm"
+            onClick={(e) => { e.stopPropagation(); handlePlayFromList(e, episode); }}
+            style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}
+          >
+            <Play size={14} fill="currentColor" /> Play
+          </button>
+          <button
+            className="ar-share-btn"
+            onClick={(e) => { e.stopPropagation(); handleShare(e, episode); }}
+            title="Compartir"
+          >
+            <Share2 size={14} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="bg-gradient-page min-vh-100 animate-fade-in pb-5 position-relative">
@@ -311,7 +374,7 @@ export default function PodcastView({
               <div className="mb-5 px-2">
                 <div className="d-flex align-items-center gap-2 mb-3">
                   <div className="badge-glow"></div>
-                  <h3 className="h5 fw-bold text-dark mb-0">✨ Destacado</h3>
+                  <h3 className="h5 fw-bold text-dark mb-0">✨ </h3>
                 </div>
                 <div
                   className="card border-0 rounded-4 shadow-xl overflow-hidden position-relative text-white cursor-pointer featured-card"
@@ -326,16 +389,13 @@ export default function PodcastView({
                       const target = e.target as HTMLImageElement;
                       if (!target.dataset.errorHandled) {
                         target.dataset.errorHandled = 'true';
-                        target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Crect fill="%23e0e0e0" width="800" height="600"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="32" dy="10.5" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3EAudio%3C/text%3E%3C/svg%3E';
+                        target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Crect fill="%23e0e0e0" width="800" height="600"/%3E%3C/svg%3E';
                       }
                     }}
                   />
                   <div className="featured-overlay"></div>
                   <div className="card-body position-relative z-1 d-flex flex-column justify-content-end p-4 h-100">
-                    <span className="badge badge-featured align-self-start mb-3">
-                      <span className="pulse-dot"></span>
-                      NUEVO AUDIOREPORTAJE
-                    </span>
+                    {/* Badge removed as requested */}
                     <h3 className="fw-bold font-serif display-6 mb-2 lh-sm text-shadow-strong">{episodes[0].title}</h3>
                     <p className="text-white-75 line-clamp-2 mb-4">{episodes[0].excerpt}</p>
                     <div className="d-flex align-items-center gap-3">
@@ -375,75 +435,57 @@ export default function PodcastView({
                 </div>
               ) : (
                 <>
-                  <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4">
-                    {displayedEpisodes.map((episode, index) => (
-                      <div
-                        key={episode.id}
-                        className="col"
-                        style={{
-                          animationDelay: `${(index % 6) * 0.08}s`,
-                          opacity: 0,
-                          animation: 'fadeInUp 0.55s ease forwards'
-                        }}
-                      >
-                        <div
-                          className="ar-card h-100 cursor-pointer"
-                          onClick={() => handleCardClick(episode)}
-                          ref={(el) => { cardRefs.current[String(episode.id)] = el; }}
-                        >
-                          {/* ── IMAGE AREA ── */}
-                          <div className="ar-img-wrap">
-                            <img
-                              src={episode.image}
-                              alt={episode.title}
-                              className="ar-img"
-                              crossOrigin="anonymous"
-                              onLoad={(e) => applyCardColor(episode.id, e.currentTarget)}
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                if (!target.dataset.errorHandled) {
-                                  target.dataset.errorHandled = 'true';
-                                  target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="450"%3E%3Crect fill="%231e1e2e" width="800" height="450"/%3E%3Ctext fill="%23555" font-family="sans-serif" font-size="28" font-weight="bold" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle"%3E🎙 Audioreportaje%3C/text%3E%3C/svg%3E';
-                                }
-                              }}
-                            />
-                            <div className="ar-img-scrim" />
-                            <span className="ar-cat-badge">{episode.category}</span>
-                            <span className="ar-duration-badge">
-                              <Clock size={11} />
-                              {episode.duration}
-                            </span>
-                            <button
-                              className="ar-play-btn"
-                              onClick={(e) => handlePlayFromList(e, episode)}
-                              aria-label={`Reproducir ${episode.title}`}
-                            >
-                              <Play size={22} fill="white" className="text-white" />
-                            </button>
+                  {activeCategory === 'Todos' && !searchTerm ? (
+                    // ── CATEGORIZED ROW VIEW (HORIZONTAL ON MOBILE) ──
+                    <div className="d-flex flex-column gap-5">
+                      {Object.entries(groupedEpisodes).map(([cat, eps]) => (
+                        <div key={cat}>
+                          <div className="d-flex align-items-center justify-content-between mb-3 px-2">
+                             <h4 className="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                                <div className="badge-glow" style={{height: '18px'}}></div>
+                                {cat}
+                             </h4>
+                             <button onClick={() => { setActiveCategory(cat); window.scrollTo({ top: 300, behavior: 'smooth' }); }} className="btn btn-sm btn-link text-decoration-none fw-bold text-abc-blue">Ver más</button>
                           </div>
-
-                          {/* ── CONTENT AREA ── */}
-                          <div className="ar-body">
-                            <p className="ar-date">{episode.date}</p>
-                            <h5 className="ar-title">{episode.title}</h5>
-                            <p className="ar-excerpt">{episode.excerpt}</p>
-                            <div className="ar-footer">
-                              <span className="ar-read-more">
-                                Escuchar <ChevronRight size={15} />
-                              </span>
-                              <button
-                                className="ar-share-btn"
-                                onClick={(e) => handleShare(e, episode)}
-                                title="Compartir"
+                          {/* Horizontal Row that wraps on desktop/tablet */}
+                          <div
+                             className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4 episode-row"
+                          >
+                            {eps.slice(0, 8).map((episode, index) => (
+                              <div
+                                key={episode.id}
+                                className="col episode-col"
+                                style={{
+                                  animationDelay: `${(index % 6) * 0.08}s`,
+                                  opacity: 0,
+                                  animation: 'fadeInUp 0.55s ease forwards'
+                                }}
                               >
-                                <Share2 size={14} />
-                              </button>
-                            </div>
+                                {renderEpisodeCard(episode)}
+                              </div>
+                            ))}
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    // ── STANDARD VIEW ──
+                    <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4 episode-row">
+                      {displayedEpisodes.map((episode, index) => (
+                        <div
+                          key={episode.id}
+                          className="col episode-col"
+                          style={{
+                            animationDelay: `${(index % 6) * 0.08}s`,
+                            opacity: 0,
+                            animation: 'fadeInUp 0.55s ease forwards'
+                          }}
+                        >
+                          {renderEpisodeCard(episode)}
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Pagination */}
                   {totalPages > 1 && (
@@ -708,8 +750,8 @@ export default function PodcastView({
           background: #1e2245;
           border-radius: 16px;
           overflow: hidden;
-          box-shadow: 0 6px 24px rgba(0, 0, 0, 0.22);
-          border: 1px solid rgba(255,255,255,0.08);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Sombra sutil inicial */
+          border: 1px solid rgba(255,255,255,0.05); /* Borde sutil inicial */
           transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
                       box-shadow 0.3s ease,
                       border-color 0.3s ease;
@@ -717,16 +759,16 @@ export default function PodcastView({
           flex-direction: column;
         }
         .ar-card:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 24px 52px rgba(102, 126, 234, 0.28);
-          border-color: rgba(102, 126, 234, 0.3);
+          transform: translateY(-6px);
+          box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12) !important; /* Levitar con sombra suave, usando important para sobreescribir inline JS */
+          border-color: rgba(255, 255, 255, 0.15) !important;
         }
 
         /* ── Image area ── */
         .ar-img-wrap {
           position: relative;
           overflow: hidden;
-          aspect-ratio: 16 / 9;
+          aspect-ratio: 4 / 3;
           flex-shrink: 0;
         }
         .ar-img {
@@ -738,7 +780,7 @@ export default function PodcastView({
         }
         .ar-card:hover .ar-img {
           transform: scale(1.08);
-          filter: brightness(0.8);
+          filter: brightness(0.95);
         }
 
         /* Cinematic gradient scrim */
@@ -747,10 +789,9 @@ export default function PodcastView({
           inset: 0;
           background: linear-gradient(
             to top,
-            rgba(8, 6, 20, 0.92) 0%,
-            rgba(8, 6, 20, 0.45) 38%,
-            rgba(8, 6, 20, 0.08) 65%,
-            transparent 100%
+            rgba(0, 0, 0, 0.4) 0%,
+            rgba(0, 0, 0, 0.1) 30%,
+            transparent 60%
           );
           pointer-events: none;
         }
@@ -938,6 +979,28 @@ export default function PodcastView({
           .featured-card { min-height: 320px !important; }
           /* Always show search bar on mobile */
           .podcast-search-wrap { max-width: 100%; }
+        }
+
+        @media (max-width: 575px) {
+          .episode-row {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            padding-bottom: 20px; 
+            margin-right: -10px;
+            margin-left: -10px;
+          }
+          .episode-col {
+            flex: 0 0 66vw;
+            max-width: 66vw;
+            scroll-snap-align: start;
+            padding-right: 8px;
+            padding-left: 8px;
+          }
+          .episode-row::-webkit-scrollbar {
+            display: none;
+          }
         }
       `}</style>
     </div>

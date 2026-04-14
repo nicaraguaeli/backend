@@ -109,8 +109,7 @@ export default function TopEpisodes({ episodes, onPlay }: TopEpisodesProps) {
                         onError={(e) => (e.currentTarget.src = 'https://via.placeholder.com/200?text=Audio')}
                         onLoad={(e) => applyBgFromImage(String(ep.id), e.currentTarget as HTMLImageElement)}
                       />
-                      {/* Rank badge top-left */}
-                      <span className="te-rank-badge" style={{ background: accent }}>{rank}</span>
+                      {/* Rank badge removed */}
                     </div>
                     {/* Play button BELOW the image, not overlapping */}
                     <button
