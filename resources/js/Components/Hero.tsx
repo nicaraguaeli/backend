@@ -53,8 +53,21 @@ export default function Hero({ post, onReadMore }: HeroProps) {
             )}
 
             {/* Title */}
-            <h1 className="display-3 fw-bold mb-3 font-serif text-white">
-              {post.title}
+            <h1 className="display-3 fw-bold mb-3 font-serif">
+              <a 
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (onReadMore) onReadMore();
+                }}
+                className="text-white text-decoration-none"
+                style={{ cursor: 'pointer', transition: 'opacity 0.2s' }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.85'}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                title="Leer Noticia Completa"
+              >
+                {post.title}
+              </a>
             </h1>
 
             {/* Metadata (Author, Date, Location) */}
