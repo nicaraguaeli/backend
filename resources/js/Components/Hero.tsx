@@ -82,7 +82,7 @@ export default function Hero({ post, onReadMore }: HeroProps) {
             <div className="d-flex flex-column flex-sm-row gap-3">
               <button
                 onClick={onReadMore}
-                className="btn btn-abc-red text-white fw-bold px-4 py-3 text-uppercase shadow-lg border-0 rounded-2 d-flex align-items-center justify-content-center gap-2"
+                className="btn btn-abc-blue text-white fw-bold px-4 py-3 text-uppercase shadow-lg border-0 rounded-2 d-flex align-items-center justify-content-center gap-2"
               >
                 Leer Noticia Completa <ArrowRight size={18} />
               </button>
