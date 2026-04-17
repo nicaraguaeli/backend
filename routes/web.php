@@ -189,10 +189,23 @@ Route::get('/category/{slug}', function ($slug) {
         ]);
     }
 
-    // Categorías normales usan el layout estándar
+    // Obtener los posts de la categoría desde el backend
+    $posts = \App\Models\News::with(['author', 'categories'])
+        ->where('is_published', true)
+        ->whereHas('categories', function ($q) use ($category) {
+            $q->where('categories.id', $category->id);
+        })
+        ->orderBy('published_at', 'desc')
+        ->get();
+
+    $serializeAuthor = fn($news) => array_merge($news->toArray(), [
+        'author' => $news->serialized_author,
+    ]);
+
     return Inertia::render('Category', [
-        'category' => $slug,
-        'categoryName' => $category->name
+        'category'     => $slug,
+        'categoryName' => $category->name,
+        'posts'        => $posts->map($serializeAuthor)->values(),
     ]);
 })->name('category.show');
 

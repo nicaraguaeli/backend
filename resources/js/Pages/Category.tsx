@@ -1,21 +1,24 @@
 import React from 'react';
 import { Head, router } from '@inertiajs/react';
-import MainLayout, { withMainLayout } from '@/Layouts/MainLayout';
+import { withMainLayout } from '@/Layouts/MainLayout';
 import CategoryView from '@/Components/CategoryView';
+import { ArticleData } from '../types';
 import { route } from 'ziggy-js';
 
 interface Props {
     category: string;
     categoryName?: string;
+    posts: ArticleData[];
 }
 
-const CategoryPage = ({ category, categoryName }: Props) => {
+const CategoryPage = ({ category, categoryName, posts }: Props) => {
     return (
         <>
             <Head title={categoryName || category} />
             <CategoryView
                 category={category}
                 categoryName={categoryName}
+                posts={posts}
                 onBack={() => router.visit(route('home'))}
                 onPostClick={(slug) => router.visit(route('news.show', { slug }))}
             />
@@ -24,6 +27,5 @@ const CategoryPage = ({ category, categoryName }: Props) => {
 };
 
 CategoryPage.layout = withMainLayout;
-
 
 export default CategoryPage;

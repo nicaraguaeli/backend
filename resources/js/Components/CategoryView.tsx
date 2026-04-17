@@ -1,72 +1,45 @@
-import React, { useState, useEffect } from 'react';
-import { BlogPost } from '../types';
-import { Clock, ArrowRight, ChevronLeft, ChevronRight, Home, TrendingUp, Calendar, User } from 'lucide-react';
-import { fetchNewsByCategory } from '../services/newsService';
+import React, { useState } from 'react';
+import { Link } from '@inertiajs/react';
+import { ArticleData } from '../types';
+import { ChevronLeft, ChevronRight, Home, TrendingUp, Calendar, User, ArrowRight } from 'lucide-react';
+import { asset } from '@/url';
+import { route } from 'ziggy-js';
+import PostGrid from './PostGrid';
 
 interface CategoryViewProps {
   category: string;
   categoryName?: string;
+  posts: ArticleData[];
   onPostClick: (slug: string) => void;
   onBack: () => void;
 }
 
-export default function CategoryView({ category, categoryName, onPostClick, onBack }: CategoryViewProps) {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+export default function CategoryView({ category, categoryName, posts, onPostClick, onBack }: CategoryViewProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(true);
   const itemsPerPage = 7; // 1 Destacada + 6 en Grid
 
   const displayName = categoryName || category;
 
-  useEffect(() => {
-    const loadCategoryNews = async () => {
-      setLoading(true);
-      const data = await fetchNewsByCategory(category);
-      setPosts(data);
-      setCurrentPage(1);
-      setLoading(false);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    loadCategoryNews();
-  }, [category]);
-
-  // Lógica de Paginación
-  const indexOfLastPost = currentPage * itemsPerPage;
+  // Paginación
+  const indexOfLastPost  = currentPage * itemsPerPage;
   const indexOfFirstPost = indexOfLastPost - itemsPerPage;
-  const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
-  const totalPages = Math.ceil(posts.length / itemsPerPage);
+  const currentPosts     = posts.slice(indexOfFirstPost, indexOfLastPost);
+  const totalPages       = Math.ceil(posts.length / itemsPerPage);
 
   const paginate = (pageNumber: number) => {
     setCurrentPage(pageNumber);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString('es-ES', {
+      day: 'numeric', month: 'long', year: 'numeric',
     });
-  };
 
-  const featuredPost = currentPosts[0];
-  const gridPosts = currentPosts.slice(1);
+  const featuredPost = currentPosts[0] ?? null;
+  const gridPosts    = currentPosts.slice(1);
 
-  if (loading) {
-    return (
-      <div className="container py-5">
-        <div className="text-center py-5">
-          <div className="spinner-border text-abc-red" role="status" style={{ width: '3rem', height: '3rem' }}>
-            <span className="visually-hidden">Cargando...</span>
-          </div>
-          <p className="mt-3 text-muted fw-bold">Cargando noticias...</p>
-        </div>
-      </div>
-    );
-  }
-
+  // ─── Estado vacío ────────────────────────────────────────────────────────
   if (posts.length === 0) {
     return (
       <div className="container py-5">
@@ -88,6 +61,7 @@ export default function CategoryView({ category, categoryName, onPostClick, onBa
 
   return (
     <div className="animate-fade-in pb-5">
+
       {/* Breadcrumb Header */}
       <div className="bg-light border-bottom py-3 mb-4 sticky-top" style={{ top: '70px', zIndex: 900 }}>
         <div className="container">
@@ -107,6 +81,7 @@ export default function CategoryView({ category, categoryName, onPostClick, onBa
       </div>
 
       <div className="container">
+
         {/* Category Header */}
         <div className="mb-5">
           <div className="d-flex align-items-center gap-3 mb-3">
@@ -125,64 +100,111 @@ export default function CategoryView({ category, categoryName, onPostClick, onBa
           </div>
         </div>
 
-        {/* Featured Post */}
+        {/* ── Primera Noticia ───────────────────────────────────────────── */}
         {featuredPost && (
           <div className="mb-5">
-            <div className="row g-0 bg-white shadow-lg rounded-3 overflow-hidden hover-card border border-2 border-abc-blue">
-              <div className="col-lg-7">
-                <div className="position-relative" style={{ height: '100%', minHeight: '400px' }}>
-                  <img
-                    src={featuredPost.imageUrl || 'https://placehold.co/800x600?text=Sin+Imagen'}
-                    alt={featuredPost.title}
-                    className="w-100 h-100 object-fit-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = 'https://placehold.co/800x600?text=Sin+Imagen';
-                    }}
-                  />
-                  <span className="position-absolute top-0 start-0 m-3 badge bg-abc-red text-white px-3 py-2 shadow">
-                    DESTACADA
+            <article
+              className="row g-0 bg-white shadow-lg overflow-hidden"
+              style={{ borderRadius: '3px', border: '1px solid #e8e8e8' }}
+            >
+              {/* Imagen — ocupa todo el alto del card */}
+              <div className="col-lg-7" style={{ minHeight: '480px', position: 'relative' }}>
+                <img
+                  src={featuredPost.image_path ? asset(`storage/${featuredPost.image_path}`) : 'https://placehold.co/800x600?text=ABC'}
+                  alt={featuredPost.title}
+                  loading="lazy"
+                  onError={(e) => {
+                    const t = e.target as HTMLImageElement;
+                    t.src = 'https://placehold.co/800x600?text=ABC';
+                  }}
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    display: 'block',
+                  }}
+                />
+                {/* Gradiente oscuro inferior */}
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.05) 55%, transparent 100%)',
+                  pointerEvents: 'none',
+                }} />
+                {/* Categoría sobre imagen */}
+                {featuredPost.categories && featuredPost.categories.length > 0 && (
+                  <span style={{
+                    position: 'absolute', bottom: 14, left: 0,
+                    background: 'var(--abc-red, #c0392b)', color: '#fff',
+                    fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase',
+                    letterSpacing: '0.5px', padding: '4px 12px',
+                    borderRadius: '0 3px 3px 0', boxShadow: '2px 1px 6px rgba(0,0,0,0.25)',
+                  }}>
+                    {featuredPost.categories[0].name}
                   </span>
-                  <span className="position-absolute bottom-0 start-0 m-3 badge bg-abc-blue text-white px-3 py-2 shadow">
-                    {featuredPost.category}
-                  </span>
-                </div>
+                )}
               </div>
-              <div className="col-lg-5 d-flex flex-column justify-content-center p-4 p-lg-5">
-                <div className="d-flex align-items-center gap-3 mb-3 text-muted small">
-                  <div className="d-flex align-items-center gap-1">
-                    <Calendar size={14} />
-                    <span>{formatDate(featuredPost.date)}</span>
-                  </div>
 
+              {/* Panel de contenido */}
+              <div className="col-lg-5 d-flex flex-column justify-content-between p-4 p-lg-5">
+
+                {/* Fecha */}
+                <div className="d-flex align-items-center gap-1 mb-3 text-muted" style={{ fontSize: '0.78rem' }}>
+                  <Calendar size={13} />
+                  <span>{formatDate(featuredPost.published_at)}</span>
                 </div>
 
-                <h2 className="display-6 fw-bold font-serif text-abc-blue mb-3 lh-sm">
+                {/* Título */}
+                <h2 className="fw-bold font-serif text-dark lh-sm mb-3" style={{ fontSize: 'clamp(1.2rem, 3.5vw, 1.7rem)' }}>
                   {featuredPost.title}
                 </h2>
 
-                <p className="text-secondary mb-4 fs-6 lh-base">
+                {/* Excerpt */}
+                <p className="text-secondary lh-base mb-4" style={{
+                  fontSize: '0.92rem',
+                  display: '-webkit-box', WebkitLineClamp: 4,
+                  WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                }}>
                   {featuredPost.excerpt}
                 </p>
 
-                <div className="d-flex align-items-center justify-content-between border-top pt-3">
-                  <div className="d-flex align-items-center gap-2 text-muted small">
-                    <User size={16} />
-                    <span className="fw-bold">{featuredPost.author}</span>
-                  </div>
-                  <button
-                    onClick={() => onPostClick(featuredPost.slug)}
-                    className="btn btn-abc-red text-white fw-bold px-4 py-2 rounded-pill d-flex align-items-center gap-2 shadow"
+                {/* Autor + CTA */}
+                <div className="mt-auto pt-3 d-flex align-items-center justify-content-between" style={{ borderTop: '1px solid #eee' }}>
+                  {featuredPost.author && (
+                    <div className="d-flex align-items-center gap-2">
+                      <div style={{
+                        width: '30px', height: '30px', borderRadius: '50%',
+                        background: 'var(--abc-blue, #1a3c6b)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                      }}>
+                        <User size={14} color="#fff" />
+                      </div>
+                      <div>
+                        <span style={{ fontSize: '0.65rem', color: '#999', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', lineHeight: 1 }}>
+                          Autor
+                        </span>
+                        <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#333' }}>
+                          {featuredPost.author.name}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  <Link
+                    href={route('news.show', { slug: featuredPost.slug })}
+                    className="btn btn-abc-red text-white fw-bold px-4 py-2 d-inline-flex align-items-center gap-2 shadow-sm"
+                    style={{ borderRadius: '3px', fontSize: '0.82rem', letterSpacing: '0.3px' }}
                   >
-                    Leer Noticia <ArrowRight size={18} />
-                  </button>
+                    Leer Noticia <ArrowRight size={15} />
+                  </Link>
                 </div>
               </div>
-            </div>
+            </article>
           </div>
         )}
 
-        {/* Grid Posts */}
+
+        {/* ── Grid Posts → PostGrid ─────────────────────────────────────── */}
         {gridPosts.length > 0 && (
           <>
             <div className="d-flex align-items-center gap-2 mb-4">
@@ -190,76 +212,13 @@ export default function CategoryView({ category, categoryName, onPostClick, onBa
               <h3 className="h5 fw-bold text-abc-blue mb-0 font-serif">Más Noticias</h3>
             </div>
 
-            <div className="row g-4 mb-5">
-              {gridPosts.map((post) => (
-                <div key={post.id} className="col-md-6 col-lg-4">
-                  <article className="card h-100 border-0 shadow hover-card bg-white">
-                    <div className="card-img-top-wrapper position-relative">
-                      <img
-                        src={post.imageUrl || 'https://placehold.co/600x400?text=Sin+Imagen'}
-                        className="card-img-top"
-                        alt={post.title}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = 'https://placehold.co/600x400?text=Sin+Imagen';
-                        }}
-                      />
-                      <span className="category-badge bg-abc-blue">{post.category}</span>
-                      <span className="position-absolute bottom-0 end-0 m-2 badge bg-dark bg-opacity-75 text-white shadow-sm d-flex align-items-center gap-1" style={{ fontSize: '0.7rem' }}>
-                        <Clock size={12} />
-                        {formatDate(post.date)}
-                      </span>
-                    </div>
-
-                    <div className="card-body d-flex flex-column p-4">
-                      <div className="d-flex align-items-center gap-2 mb-3 text-muted small">
-
-                        <span className="text-abc-blue fw-bold">• {post.author}</span>
-                      </div>
-
-                      <h3 className="card-title fw-bold font-serif mb-3 text-abc-blue h5 lh-sm">
-                        <a
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            onPostClick(post.slug);
-                          }}
-                          className="text-decoration-none text-abc-blue stretched-link"
-                        >
-                          {post.title}
-                        </a>
-                      </h3>
-
-                      <p className="card-text text-secondary small flex-grow-1 lh-base" style={{
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden'
-                      }}>
-                        {post.excerpt}
-                      </p>
-
-                      <div className="mt-3 position-relative" style={{ zIndex: 2 }}>
-                        <a
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            onPostClick(post.slug);
-                          }}
-                          className="text-decoration-none text-abc-red fw-bold text-uppercase d-inline-flex align-items-center gap-1 small"
-                        >
-                          Leer Más <ArrowRight size={14} />
-                        </a>
-                      </div>
-                    </div>
-                  </article>
-                </div>
-              ))}
+            <div className="mb-5">
+              <PostGrid posts={gridPosts} columns={3} />
             </div>
           </>
         )}
 
-        {/* Pagination */}
+        {/* ── Paginación ───────────────────────────────────────────────── */}
         {totalPages > 1 && (
           <nav aria-label="Paginación de noticias">
             <ul className="pagination justify-content-center gap-2">
@@ -269,18 +228,18 @@ export default function CategoryView({ category, categoryName, onPostClick, onBa
                   onClick={() => paginate(currentPage - 1)}
                   disabled={currentPage === 1}
                 >
-                  <ChevronLeft size={18} className="me-1" />
-                  Anterior
+                  <ChevronLeft size={18} className="me-1" /> Anterior
                 </button>
               </li>
 
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
                 <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
                   <button
-                    className={`page-link rounded-circle border-2 ${currentPage === number
+                    className={`page-link rounded-circle border-2 ${
+                      currentPage === number
                         ? 'bg-abc-red text-white border-abc-red shadow'
                         : 'bg-white text-abc-blue border-abc-blue'
-                      }`}
+                    }`}
                     onClick={() => paginate(number)}
                     style={{ width: '40px', height: '40px', fontWeight: 'bold' }}
                   >
@@ -295,13 +254,13 @@ export default function CategoryView({ category, categoryName, onPostClick, onBa
                   onClick={() => paginate(currentPage + 1)}
                   disabled={currentPage === totalPages}
                 >
-                  Siguiente
-                  <ChevronRight size={18} className="ms-1" />
+                  Siguiente <ChevronRight size={18} className="ms-1" />
                 </button>
               </li>
             </ul>
           </nav>
         )}
+
       </div>
     </div>
   );
