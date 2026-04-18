@@ -104,9 +104,7 @@ export default function FeaturedCategories({ categories = [], onCategoryClick, o
                           {/* Content Vertical - Centered */}
                           <div className="card-content position-relative h-100 d-flex flex-column justify-content-center align-items-center p-4 z-2 text-white text-center">
                             <div className={`icon-container ${isLarge ? 'mb-4' : 'mb-3'}`}>
-                              <div className={`${isLarge ? 'p-4' : 'p-3'} rounded-circle border border-white border-opacity-25 backdrop-blur shadow-sm bg-white bg-opacity-10`}>
-                                <cat.icon size={isLarge ? 32 : 24} style={{ color: '#fff' }} />
-                              </div>
+
                             </div>
                             <div className="text-container">
                               <h3 className={`${isLarge ? 'h3' : 'h5'} fw-bold font-serif mb-2 lh-1 text-shadow`}>{cat.title}</h3>
