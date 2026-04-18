@@ -69,7 +69,7 @@ export default function FeaturedCategories({ categories = [], onCategoryClick, o
         <div className="row g-4">
           {/* Left Column: Categories Grid (8 cols) */}
           <div className="col-lg-8">
-            <div className="row g-4">
+            <div className="row g-2 g-md-4">
               {displayCategories.length > 0 ? (
                 displayCategories.map((cat, index) => {
                   const isLarge = index < 2;
