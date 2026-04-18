@@ -35,37 +35,28 @@ export default function InternationalNews({ items }: InternationalNewsProps) {
                 <span className="badge bg-abc-gold text-abc-blue rounded-pill px-2 py-1" style={{ fontSize: '10px' }}>Global</span>
             </div>
 
-            {/* List */}
-            <div className="list-group list-group-flush">
+            {/* List — vertical desktop, horizontal scroll mobile */}
+            <div className="intl-list-wrap">
                 {items.slice(0, 5).map((news) => (
                     <Link
                         key={news.id}
                         href={route('news.show', { slug: news.slug })}
-                        className="list-group-item list-group-item-action border-0 border-bottom p-3 news-item-hover"
+                        className="intl-news-item text-decoration-none"
                     >
-                        <div className="d-flex gap-3">
-                            {/* Thumbnail */}
-                            <div className="flex-shrink-0 position-relative">
-                                <img
-                                    src={news.image_path ? asset(`storage/${news.image_path}`) : 'https://via.placeholder.com/100?text=News'}
-                                    alt={news.title}
-                                    className="rounded object-fit-cover"
-                                    style={{ width: '70px', height: '70px' }}
-                                    onError={(e) => (e.target as HTMLImageElement).src = 'https://via.placeholder.com/100?text=ABC'}
-                                />
-                            </div>
-
-                            {/* Content */}
-                            <div className="flex-grow-1">
-                                <h6 className="news-title fw-bold text-dark mb-1 lh-sm" style={{ fontSize: '0.9rem' }}>
-                                    {news.title}
-                                </h6>
-                                <div className="d-flex align-items-center gap-2 text-muted small mt-1">
-                                    <Clock size={12} />
-                                    <span style={{ fontSize: '0.75rem' }}>
-                                        {news.published_at ? getRelativeTime(news.published_at) : 'Reciente'}
-                                    </span>
-                                </div>
+                        <div className="intl-thumb">
+                            <img
+                                src={news.image_path ? asset(`storage/${news.image_path}`) : 'https://via.placeholder.com/100?text=News'}
+                                alt={news.title}
+                                onError={(e) => (e.target as HTMLImageElement).src = 'https://via.placeholder.com/100?text=ABC'}
+                            />
+                        </div>
+                        <div className="intl-body">
+                            <h6 className="news-title fw-bold text-dark mb-1 lh-sm">
+                                {news.title}
+                            </h6>
+                            <div className="d-flex align-items-center gap-1 text-muted">
+                                <Clock size={11} />
+                                <span>{news.published_at ? getRelativeTime(news.published_at) : 'Reciente'}</span>
                             </div>
                         </div>
                     </Link>
@@ -81,14 +72,73 @@ export default function InternationalNews({ items }: InternationalNewsProps) {
 
             <style>{`
         .ls-1 { letter-spacing: 0.5px; }
-        .news-item-hover:hover {
-          background-color: #f8f9fa;
+        .hover-opacity:hover { opacity: 0.8; }
+
+        /* ── Desktop: listado vertical ── */
+        .intl-list-wrap {
+          display: flex;
+          flex-direction: column;
         }
-        .news-item-hover:hover .news-title {
-          color: var(--abc-green) !important;
+        .intl-news-item {
+          display: flex;
+          gap: 12px;
+          padding: 12px 14px;
+          border-bottom: 1px solid #f0f0f0;
+          transition: background .18s ease;
         }
-        .hover-opacity:hover {
-          opacity: 0.8;
+        .intl-news-item:last-child { border-bottom: none; }
+        .intl-news-item:hover { background: #f8f9fa; }
+        .intl-news-item:hover .news-title { color: var(--abc-green) !important; }
+        .intl-thumb {
+          flex-shrink: 0;
+          width: 70px;
+          height: 70px;
+          border-radius: 4px;
+          overflow: hidden;
+        }
+        .intl-thumb img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+        .intl-body {
+          flex: 1;
+          min-width: 0;
+        }
+        .intl-body .news-title { font-size: 0.88rem; }
+        .intl-body .text-muted { font-size: 0.72rem; }
+
+        /* ── Mobile: fila horizontal con scroll ── */
+        @media (max-width: 767.98px) {
+          .intl-list-wrap {
+            flex-direction: row !important;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            gap: 10px;
+            padding: 12px;
+          }
+          .intl-list-wrap::-webkit-scrollbar { display: none; }
+          .intl-news-item {
+            flex: 0 0 200px;
+            flex-direction: column !important;
+            gap: 8px;
+            padding: 10px;
+            border-bottom: none !important;
+            border-radius: 6px;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            scroll-snap-align: start;
+          }
+          .intl-thumb {
+            width: 100%;
+            height: 110px;
+            border-radius: 4px;
+          }
+          .intl-body .news-title { font-size: 0.82rem; -webkit-line-clamp: 3; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
         }
       `}</style>
         </div>

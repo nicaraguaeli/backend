@@ -83,7 +83,7 @@ export default function FeaturedCategories({ categories = [], onCategoryClick, o
                     : cat.color;
 
                   return (
-                    <div key={cat.id} className={isLarge ? "col-md-6" : "col-md-4"}>
+                    <div key={cat.id} className={isLarge ? "col-6 col-md-6" : "col-6 col-md-4"}>
                       <a href="#" onClick={(e) => handleClick(e, cat.target)} className="text-decoration-none h-100 d-block">
                         <div
                           className="vertical-card position-relative rounded-1 overflow-hidden h-100 border border-secondary border-opacity-25"
@@ -166,6 +166,17 @@ export default function FeaturedCategories({ categories = [], onCategoryClick, o
         .vertical-card .icon-container, .vertical-card .text-container { transition: transform 0.4s ease; }
         .vertical-card .btn-wrapper { transition: all 0.4s ease; transform: translateY(20px); }
         .vertical-card:hover .btn-wrapper { opacity: 1; transform: translateY(0); }
+
+        /* Mobile: 2 por fila con altura reducida */
+        @media (max-width: 767.98px) {
+          .vertical-card { min-height: 180px !important; }
+          .card-content { padding: 1rem !important; }
+          .icon-container { margin-bottom: 0.5rem !important; }
+          .icon-container > div { padding: 0.5rem !important; }
+          .text-container h3 { font-size: 0.85rem !important; margin-bottom: 0 !important; }
+          .text-container p { display: none; }
+          .btn-wrapper { display: none; }
+        }
 
       `}</style>
     </section>
