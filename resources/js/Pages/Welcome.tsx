@@ -193,7 +193,7 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
             )}
 
 
-            <JobsCallToAction />
+
 
             <NacionalesSection news={nacionalesNews} />
 
@@ -207,6 +207,7 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
                 </div>
             )}
             */}
+            <JobsCallToAction />
             <NewsTicker
                 news={[
                     ...(latestNews ? [latestNews] : []),

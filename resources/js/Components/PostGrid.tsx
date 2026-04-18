@@ -9,26 +9,27 @@ interface PostGridProps {
   posts: ArticleData[];
   columns?: number;
   compact?: boolean;
+  horizontalScrollMobile?: boolean;
 }
 
 const getCategoryBadgeStyle = (cat: string) => {
   if (!cat) return 'bg-abc-blue text-white';
   const normalizedCat = cat.toLowerCase();
 
-  if (normalizedCat.includes('sucesos'))       return 'bg-abc-red text-white';
-  if (normalizedCat.includes('judiciales'))    return 'bg-secondary text-white';
-  if (normalizedCat.includes('sociales'))      return 'bg-info text-dark';
+  if (normalizedCat.includes('sucesos')) return 'bg-abc-red text-white';
+  if (normalizedCat.includes('judiciales')) return 'bg-secondary text-white';
+  if (normalizedCat.includes('sociales')) return 'bg-info text-dark';
   if (normalizedCat.includes('entretenimiento')) return 'bg-info text-dark';
-  if (normalizedCat.includes('arte'))          return 'bg-abc-indigo text-white';
-  if (normalizedCat.includes('cultura'))       return 'bg-abc-indigo text-white';
-  if (normalizedCat.includes('empresarial'))   return 'bg-abc-blue text-white';
-  if (normalizedCat.includes('economía'))      return 'bg-abc-blue text-white';
-  if (normalizedCat.includes('emprendim'))     return 'bg-abc-orange text-white';
-  if (normalizedCat.includes('deport'))        return 'bg-success text-white';
-  if (normalizedCat.includes('salud'))         return 'bg-abc-green text-white';
-  if (normalizedCat.includes('historia'))      return 'bg-primary text-white';
-  if (normalizedCat.includes('entre nos'))     return 'bg-warning text-dark';
-  if (normalizedCat.includes('nacional'))      return 'bg-dark text-white';
+  if (normalizedCat.includes('arte')) return 'bg-abc-indigo text-white';
+  if (normalizedCat.includes('cultura')) return 'bg-abc-indigo text-white';
+  if (normalizedCat.includes('empresarial')) return 'bg-abc-blue text-white';
+  if (normalizedCat.includes('economía')) return 'bg-abc-blue text-white';
+  if (normalizedCat.includes('emprendim')) return 'bg-abc-orange text-white';
+  if (normalizedCat.includes('deport')) return 'bg-success text-white';
+  if (normalizedCat.includes('salud')) return 'bg-abc-green text-white';
+  if (normalizedCat.includes('historia')) return 'bg-primary text-white';
+  if (normalizedCat.includes('entre nos')) return 'bg-warning text-dark';
+  if (normalizedCat.includes('nacional')) return 'bg-dark text-white';
   if (normalizedCat.includes('internacional')) return 'bg-dark text-white';
 
   return 'bg-abc-blue text-white';
@@ -38,21 +39,21 @@ const getCategoryBadgeStyle = (cat: string) => {
 const getCategoryAccentColor = (cat: string): string => {
   if (!cat) return '#1a73e8';
   const n = cat.toLowerCase();
-  if (n.includes('sucesos'))       return '#d32f2f';
-  if (n.includes('judiciales'))    return '#555';
+  if (n.includes('sucesos')) return '#d32f2f';
+  if (n.includes('judiciales')) return '#555';
   if (n.includes('sociales') || n.includes('entretenimiento')) return '#0288d1';
-  if (n.includes('arte') || n.includes('cultura'))             return '#5c35cc';
-  if (n.includes('empresarial') || n.includes('economía'))     return '#1a73e8';
-  if (n.includes('emprendim'))     return '#e65100';
-  if (n.includes('deport'))        return '#2e7d32';
-  if (n.includes('salud'))         return '#00897b';
-  if (n.includes('historia'))      return '#1565c0';
-  if (n.includes('entre nos'))     return '#f9a825';
+  if (n.includes('arte') || n.includes('cultura')) return '#5c35cc';
+  if (n.includes('empresarial') || n.includes('economía')) return '#1a73e8';
+  if (n.includes('emprendim')) return '#e65100';
+  if (n.includes('deport')) return '#2e7d32';
+  if (n.includes('salud')) return '#00897b';
+  if (n.includes('historia')) return '#1565c0';
+  if (n.includes('entre nos')) return '#f9a825';
   if (n.includes('nacional') || n.includes('internacional')) return '#212121';
   return '#1a73e8';
 };
 
-export default function PostGrid({ posts, columns, compact = false }: PostGridProps) {
+export default function PostGrid({ posts, columns, compact = false, horizontalScrollMobile = false }: PostGridProps) {
   if (!posts || posts.length === 0) {
     return (
       <div className="text-center text-muted py-5" style={{ fontSize: '0.92rem', letterSpacing: '0.3px' }}>
@@ -62,6 +63,7 @@ export default function PostGrid({ posts, columns, compact = false }: PostGridPr
   }
 
   const gridClass = `row-cols-1 row-cols-md-${columns || 2}`;
+  const scrollClass = horizontalScrollMobile ? 'pg-horizontal-scroll' : '';
 
   return (
     <>
@@ -347,15 +349,43 @@ export default function PostGrid({ posts, columns, compact = false }: PostGridPr
             border-top: 1px solid #f0f0f0;
           }
         }
+
+        /* ─── Horizontal Scroll en móvil ─────────────── */
+        @media (max-width: 767.98px) {
+          .pg-horizontal-scroll {
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none; 
+            -ms-overflow-style: none;
+            padding-bottom: 0.5rem;
+          }
+          .pg-horizontal-scroll::-webkit-scrollbar {
+            display: none; 
+          }
+          .pg-horizontal-scroll > .col {
+            flex: 0 0 82%;
+            max-width: 82%;
+            scroll-snap-align: start;
+          }
+          .pg-horizontal-scroll .pg-compact-inner {
+             flex-direction: column !important;
+          }
+          .pg-horizontal-scroll .pg-img-compact {
+             width: 100% !important;
+             aspect-ratio: 16 / 9;
+          }
+        }
       `}</style>
 
-      <div className={`row ${gridClass} g-3 g-md-4`}>
+      <div className={`row ${gridClass} g-3 g-md-4 ${scrollClass}`}>
         {posts.map((post) => {
           const categoryName = post.categories && post.categories.length > 0
             ? post.categories[0].name
             : 'General';
-          const authorName  = post.author?.name || 'Redacción';
-          const imageUrl    = post.image_path
+          const authorName = post.author?.name || 'Redacción';
+          const imageUrl = post.image_path
             ? asset(`storage/${post.image_path}`)
             : asset('img/placeholder.jpg');
           const accentColor = getCategoryAccentColor(categoryName);
@@ -472,14 +502,14 @@ export default function PostGrid({ posts, columns, compact = false }: PostGridPr
                     {post.excerpt}
                   </p>
 
-                  <div className="pt-1 position-relative" style={{ zIndex: 2 }}>
+                  {/* <div className="pt-1 position-relative" style={{ zIndex: 2 }}>
                     <Link
                       href={route('news.show', { slug: post.slug })}
                       className="pg-read-link text-abc-red"
                     >
                       Leer Noticia <ArrowRight size={13} />
                     </Link>
-                  </div>
+                  </div> */}
                 </div>
               </article>
             </div>

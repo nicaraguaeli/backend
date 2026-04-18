@@ -177,6 +177,16 @@ export default function AudioreportajesCTA({ onNavigate }: AudioreportajesCTAPro
           transform: translateY(28px);
           transition: opacity .75s ease, transform .75s ease;
         }
+        .arc2-section::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 5px;
+          background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.15) 50%, transparent 100%);
+          z-index: 5;
+        }
         .arc2-section.arc2-visible {
           opacity: 1;
           transform: none;
