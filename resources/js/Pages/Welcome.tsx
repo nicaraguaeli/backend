@@ -129,7 +129,7 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
                             <MostRead items={mostReadNews || []} />
 
                             {/* International News Widget */}
-                            <InternationalNews items={internationalNews || []} />
+                            {/*  <InternationalNews items={internationalNews || []} /> */}
 
                             {/* ── SIDEBAR BANNER (300×250) ── */}
                             {sidebarBanner && (
@@ -195,7 +195,7 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
 
 
 
-            <NacionalesSection news={nacionalesNews} />
+            {/*  <NacionalesSection news={nacionalesNews} /> */}
 
             {/* Video Gallery Section 
             {!videosLoading && videos.length > 0 && (
