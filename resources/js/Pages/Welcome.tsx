@@ -165,7 +165,10 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
                         <VideoGallery
                             title="Reportajes ABC TV"
                             videos={videos}
-                            seeMoreUrl="/videos"
+                            onSeeMore={() => {
+                                window.history.pushState(null, '', '#videos');
+                                window.dispatchEvent(new PopStateEvent('popstate'));
+                            }}
                         />
                     </div>
                 </div>

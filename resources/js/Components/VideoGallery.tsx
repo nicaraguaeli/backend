@@ -7,7 +7,7 @@ interface VideoGalleryProps {
     videos: Video[];
     className?: string;
     compact?: boolean;
-    seeMoreUrl?: string;
+    onSeeMore?: () => void;
 }
 
 export default function VideoGallery({
@@ -15,7 +15,7 @@ export default function VideoGallery({
     videos,
     className = "",
     compact = false,
-    seeMoreUrl = "/videos",
+    onSeeMore,
 }: VideoGalleryProps) {
     const [activeVideo, setActiveVideo] = useState<Video | undefined>(videos?.[0]);
 
@@ -408,10 +408,10 @@ export default function VideoGallery({
             {/* ── Footer CTA ── */}
             <div className="vg-footer">
                 <span className="vg-footer-text">Más contenido en ABC TV</span>
-                <a href={seeMoreUrl} className="vg-cta">
+                <button className="vg-cta" onClick={onSeeMore}>
                     Ver todos los videos
                     <ChevronRight size={14} />
-                </a>
+                </button>
             </div>
         </section>
     );
