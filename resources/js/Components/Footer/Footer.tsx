@@ -170,7 +170,7 @@ export default function Footer() {
           {/* Col 4: App & Newsletter */}
           <div className="col-md-6 col-lg-3">
 
-            {/* App Section */}
+            {/* App Section 
             <h4 className="text-white h6 fw-bold mb-3">App Oficial</h4>
             <div className="mb-4">
               <a href="https://play.google.com/store/apps" target="_blank" rel="noreferrer" className="d-inline-block hover-opacity transition-transform">
@@ -181,7 +181,7 @@ export default function Footer() {
                 />
               </a>
             </div>
-
+            */}
             {/* Newsletter */}
             <h4 className="text-white h6 fw-bold mb-3">Boletín</h4>
             <div className="newsletter-box mt-3">
