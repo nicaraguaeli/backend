@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use App\Models\Country;
 use App\Models\City;
 use App\Models\Tag;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Option;
 use Inertia\Inertia;
@@ -164,6 +165,9 @@ class NewsController extends Controller
         }
         $news->tags()->sync($tagIds);
 
+        // Invalidar caché de portada inmediatamente
+        Cache::forget('home_page_data');
+
         return redirect()->route('admin.news.index')->with('success', 'News created successfully.');
     }
 
@@ -298,6 +302,9 @@ if ($imagePath) {
     }
     $news->tags()->sync($tagIds);
 
+    // Invalidar caché de portada inmediatamente
+    Cache::forget('home_page_data');
+
     return redirect()
         ->route('admin.news.index')
         ->with('success', 'News updated successfully.');
@@ -311,6 +318,9 @@ if ($imagePath) {
 
         $news->delete();
 
+        // Invalidar caché de portada inmediatamente
+        Cache::forget('home_page_data');
+
         return redirect()->route('admin.news.index')->with('success', 'News deleted successfully.');
     }
 
@@ -323,6 +333,9 @@ if ($imagePath) {
         $news->is_published = $request->is_published;
         $news->save();
 
+        // Invalidar caché de portada inmediatamente
+        Cache::forget('home_page_data');
+
         return response()->json(['success' => true, 'message' => 'News status updated successfully.']);
     }
 
@@ -330,6 +343,9 @@ if ($imagePath) {
     {
         $news->is_featured = !$news->is_featured;
         $news->save();
+
+        // Invalidar caché de portada inmediatamente
+        Cache::forget('home_page_data');
 
         return response()->json(['success' => true, 'is_featured' => $news->is_featured]);
     }
@@ -350,6 +366,9 @@ if ($imagePath) {
                 $news->is_hero = !$isCurrentlyHero;
                 $news->save();
             });
+
+            // Invalidar caché de portada inmediatamente
+            Cache::forget('home_page_data');
 
             return response()->json(['success' => true, 'is_hero' => $news->is_hero]);
 
@@ -422,6 +441,9 @@ if ($imagePath) {
     $message = $action === 'publish'
         ? 'Noticias publicadas correctamente.'
         : 'Noticias despublicadas correctamente.';
+
+    // Invalidar caché de portada inmediatamente
+    Cache::forget('home_page_data');
 
     return response()->json(['success' => true, 'message' => $message]);
 }

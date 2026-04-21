@@ -22,14 +22,21 @@ export default function Hero({ post, onReadMore }: HeroProps) {
   return (
     <div
       className="hero-section position-relative d-flex align-items-center"
-      style={{
-        backgroundImage: `url("${post.image_path ? asset(`storage/${post.image_path}`) : ''}")`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        minHeight: '80vh'
-      }}
+      style={{ minHeight: '80vh' }}
     >
+      {/* Fix 4: Real <img> with fetchPriority="high" so the browser preloads it as LCP */}
+      {post.image_path && (
+        <img
+          src={asset(`storage/${post.image_path}`)}
+          alt={post.title}
+          fetchPriority="high"
+          loading="eager"
+          decoding="async"
+          className="position-absolute top-0 start-0 w-100 h-100"
+          style={{ objectFit: 'cover', objectPosition: 'center', zIndex: 0 }}
+        />
+      )}
+
       {/* Dark overlay with gradient to ensure text readability over the image */}
       <div
         className="hero-overlay"

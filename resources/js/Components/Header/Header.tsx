@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { router, Link } from '@inertiajs/react';
+import { router, Link, usePage } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { asset, url } from '@/url';
 import { Menu, X, Search, Play, Pause, Facebook, Instagram, Youtube, ChevronDown } from 'lucide-react';
@@ -11,7 +11,6 @@ const Tiktok = ({ size = 24, fill = "currentColor", className }: any) => (
   </svg>
 );
 import { NavItem, AudioState } from '../../types';
-import { fetchCategories } from '../../services/newsService';
 import { SOCIAL_LINKS } from '../../constants';
 
 // Data for the Mega Menu (kept simple now: no icons/colors, render as normal dropdown items)
@@ -43,70 +42,63 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
   const [activeSuggestion, setActiveSuggestion] = useState<number | null>(null);
   const searchRef = React.useRef<HTMLInputElement | null>(null);
 
+  // Fix 2: Read categories from Inertia shared prop (no extra fetch needed)
+  const { navCategories = [] } = usePage().props as any;
+
   // Determinar si el botón debe mostrar "Sonando" (Solo si es LIVE y está PLAYING)
   const isLivePlaying = audioState.type === 'live' && audioState.isPlaying;
 
-  // Load Categories on Mount
+  // Build nav items from shared navCategories prop (runs on mount and whenever prop changes)
   useEffect(() => {
-    const loadMenu = async () => {
-      try {
-        // API now returns top-level categories with their children nested
-        const categories = await fetchCategories();
+    try {
+      const visibleCategories = (navCategories as any[]).filter(cat => {
+        const isActive = Boolean(Number(cat.is_active));
+        const showInMenu = Boolean(Number(cat.show_in_menu));
+        return isActive && showInMenu;
+      });
 
-        // Filter top-level visible categories
-        const visibleCategories = categories.filter(cat => {
-          const isActive = Boolean(Number(cat.is_active));
-          const showInMenu = Boolean(Number(cat.show_in_menu));
-          return isActive && showInMenu;
-        });
+      visibleCategories.sort((a: any, b: any) => (Number(a.menu_order) || 0) - (Number(b.menu_order) || 0));
 
-        // Sort by menu_order
-        visibleCategories.sort((a, b) => (Number(a.menu_order) || 0) - (Number(b.menu_order) || 0));
+      const dynamicNavItems: NavItem[] = visibleCategories.map((cat: any) => {
+        const visibleChildren = (cat.children || []).filter((child: any) => {
+          return Boolean(Number(child.is_active)) && Boolean(Number(child.show_in_menu));
+        }).sort((a: any, b: any) => (Number(a.menu_order) || 0) - (Number(b.menu_order) || 0));
 
-        // Build nav items: if a category has visible children → subItems dropdown
-        const dynamicNavItems: NavItem[] = visibleCategories.map(cat => {
-          const visibleChildren = (cat.children || []).filter(child => {
-            return Boolean(Number(child.is_active)) && Boolean(Number(child.show_in_menu));
-          }).sort((a, b) => (Number(a.menu_order) || 0) - (Number(b.menu_order) || 0));
+        const navItem: NavItem = {
+          label: cat.name,
+          href: cat.custom_url ? cat.custom_url : route('category.show', { slug: cat.slug }),
+        };
 
-          const navItem: NavItem = {
-            label: cat.name,
-            href: cat.custom_url ? cat.custom_url : route('category.show', { slug: cat.slug }),
-          };
+        if (visibleChildren.length > 0) {
+          navItem.subItems = visibleChildren.map((child: any) => ({
+            label: child.name,
+            href: child.custom_url ? child.custom_url : route('category.show', { slug: child.slug }),
+          }));
+        }
 
-          if (visibleChildren.length > 0) {
-            navItem.subItems = visibleChildren.map(child => ({
-              label: child.name,
-              href: child.custom_url ? child.custom_url : route('category.show', { slug: child.slug }),
-            }));
-          }
+        return navItem;
+      });
 
-          return navItem;
-        });
+      // Add fixed 'Audioreportajes' link
+      dynamicNavItems.push({
+        label: 'Audioreportajes',
+        href: '#',
+        target: 'podcastview',
+      });
 
-        // Add fixed 'Audioreportajes' link
-        dynamicNavItems.push({
-          label: 'Audioreportajes',
-          href: '#',
-          target: 'podcastview',
-        });
+      // Add fixed 'ABC TV' link
+      dynamicNavItems.push({
+        label: 'ABC TV',
+        href: '#',
+        target: 'videos',
+      });
 
-        // Add fixed 'ABC TV' link
-        dynamicNavItems.push({
-          label: 'ABC TV',
-          href: '#',
-          target: 'videos',
-        });
-
-        setNavItems(dynamicNavItems);
-      } catch (err) {
-        console.error('Error loading menu categories:', err);
-        setNavItems([]);
-      }
-    };
-
-    loadMenu();
-  }, []);
+      setNavItems(dynamicNavItems);
+    } catch (err) {
+      console.error('Error building nav from shared prop:', err);
+      setNavItems([]);
+    }
+  }, [navCategories]);
 
   // Close mobile menu when screen size changes to desktop
   useEffect(() => {

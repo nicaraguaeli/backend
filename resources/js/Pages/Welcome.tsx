@@ -1,7 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import { asset } from '@/url';
 import MainLayout, { withMainLayout } from '@/Layouts/MainLayout';
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Hero from '@/Components/Hero';
 import MostRead from '@/Components/MostRead';
 import InternationalNews from '@/Components/InternationalNews';
@@ -17,7 +17,6 @@ import VideoGallery from '@/Components/VideoGallery';
 import { ArticleData, Category, Video } from '@/types';
 import { Calendar } from 'lucide-react';
 import { route } from 'ziggy-js';
-import { fetchYoutubeVideos } from '@/services/youtubeService';
 
 interface Banner {
     id: number;
@@ -38,27 +37,10 @@ interface WelcomeProps {
     internationalNews?: ArticleData[];
     banners?: Banner[];
     isFallbackFeatured?: boolean;
+    videos?: Video[]; // Fix 3: videos now passed from server
 }
 
-const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = [], featuredCategories = [], nacionalesNews = [], internationalNews = [], banners = [], isFallbackFeatured = false }: WelcomeProps) => {
-
-    const [videos, setVideos] = useState<Video[]>([]);
-    const [videosLoading, setVideosLoading] = useState(true);
-
-    // Load videos on mount
-    useEffect(() => {
-        const loadVideos = async () => {
-            try {
-                const fetchedVideos = await fetchYoutubeVideos('', 6);
-                setVideos(fetchedVideos);
-            } catch (error) {
-                console.error('Error loading videos:', error);
-            } finally {
-                setVideosLoading(false);
-            }
-        };
-        loadVideos();
-    }, []);
+const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = [], featuredCategories = [], nacionalesNews = [], internationalNews = [], banners = [], isFallbackFeatured = false, videos = [] }: WelcomeProps) => {
 
     const getBanner = (position: string) => {
         const positionBanners = banners.filter(b => b.position === position);
@@ -158,8 +140,8 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
                 onCategoryClick={(slug) => router.visit(route('category.show', { slug }))}
             />
 
-            {/* ── Video Gallery ABC TV ──────────────────────── */}
-            {!videosLoading && videos.length > 0 && (
+            {/* ── Video Gallery ABC TV ──────────────────────────────── */}
+            {videos.length > 0 && (
                 <div style={{ background: 'linear-gradient(180deg, #080f1e 0%, #0c1530 100%)', padding: '60px 0' }}>
                     <div className="container">
                         <VideoGallery

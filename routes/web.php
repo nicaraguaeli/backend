@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Admin\NewsController;
@@ -13,111 +15,123 @@ use App\Http\Controllers\Api\YoutubeController;
 
 Route::get('/youtube', [YoutubeController::class, 'index']);
 Route::get('/', function () {
-    // 1. Latest News (Hero)
-    // Prefer a published news item explicitly marked as hero; otherwise fallback to the latest published news
-    $heroNews = \App\Models\News::with(['author', 'categories'])
-        ->where('is_published', true)
-        ->where('is_hero', true)
-        ->orderBy('published_at', 'desc')
-        ->orderBy('created_at', 'desc')
-        ->first();
+    // Cache the entire home page data payload for 5 minutes (Fix 1)
+    $data = Cache::remember('home_page_data', now()->addMinutes(5), function () {
 
-    $latestNews = $heroNews ?? \App\Models\News::with(['author', 'categories'])
-        ->where('is_published', true)
-        ->orderBy('published_at', 'desc')
-        ->orderBy('created_at', 'desc')
-        ->first();
+        // 1. Latest News (Hero)
+        $heroNews = \App\Models\News::with(['author', 'categories'])
+            ->where('is_published', true)
+            ->where('is_hero', true)
+            ->orderBy('published_at', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->first();
 
-    // 2. Most Read News (Sidebar) — top 5 por vistas en los últimos 7 días
-    $mostReadNews = \App\Models\News::with(['categories', 'author'])
-        ->where('is_published', true)
-        ->where('published_at', '>=', now()->subDays(7))
-        ->orderBy('views', 'desc')
-        ->take(5)
-        ->get();
+        $latestNews = $heroNews ?? \App\Models\News::with(['author', 'categories'])
+            ->where('is_published', true)
+            ->orderBy('published_at', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->first();
 
-    // 3. Featured News (For FeaturedSection)
-    $featuredNews = \App\Models\News::with(['categories', 'author'])
-        ->where('is_published', true)
-        ->where('is_featured', true)
-        ->orderBy('published_at', 'desc')
-        ->take(4)
-        ->get();
+        // 2. Most Read News (Sidebar)
+        $mostReadNews = \App\Models\News::with(['categories', 'author'])
+            ->where('is_published', true)
+            ->where('published_at', '>=', now()->subDays(7))
+            ->orderBy('views', 'desc')
+            ->take(5)
+            ->get();
 
-    $isFallbackFeatured = false;
-    if ($featuredNews->isEmpty()) {
+        // 3. Featured News
         $featuredNews = \App\Models\News::with(['categories', 'author'])
             ->where('is_published', true)
-            ->whereHas('categories', function ($q) {
-                $q->where('slug', 'reportajes-abc');
-            })
+            ->where('is_featured', true)
             ->orderBy('published_at', 'desc')
             ->take(4)
             ->get();
-        $isFallbackFeatured = true;
-    }
 
-    // 4. More News (Main Content)
-    $moreNewsQuery = \App\Models\News::with(['categories', 'author'])
-        ->where('is_published', true)
-        ->orderBy('published_at', 'desc')
-        ->orderBy('created_at', 'desc');
+        $isFallbackFeatured = false;
+        if ($featuredNews->isEmpty()) {
+            $featuredNews = \App\Models\News::with(['categories', 'author'])
+                ->where('is_published', true)
+                ->whereHas('categories', function ($q) {
+                    $q->where('slug', 'reportajes-abc');
+                })
+                ->orderBy('published_at', 'desc')
+                ->take(4)
+                ->get();
+            $isFallbackFeatured = true;
+        }
 
-    if ($latestNews) {
-        $moreNewsQuery->where('id', '!=', $latestNews->id);
-    }
+        // 4. More News (Main Content)
+        $moreNewsQuery = \App\Models\News::with(['categories', 'author'])
+            ->where('is_published', true)
+            ->orderBy('published_at', 'desc')
+            ->orderBy('created_at', 'desc');
 
-    // Exclude featured news from "More News" to avoid duplication
-    if ($featuredNews->isNotEmpty()) {
-        $moreNewsQuery->whereNotIn('id', $featuredNews->pluck('id'));
-    }
+        if ($latestNews) {
+            $moreNewsQuery->where('id', '!=', $latestNews->id);
+        }
+        if ($featuredNews->isNotEmpty()) {
+            $moreNewsQuery->whereNotIn('id', $featuredNews->pluck('id'));
+        }
+        $moreNews = $moreNewsQuery->take(6)->get();
 
-    $moreNews = $moreNewsQuery->take(6)->get();
+        // 5. Featured Categories
+        $featuredCategories = \App\Models\Category::where('is_active', true)
+            ->where('is_featured', true)
+            ->get();
 
-    // 5. Featured Categories
-    $featuredCategories = \App\Models\Category::where('is_active', true)
-        ->where('is_featured', true)
-        ->get();
+        // 6. Nacionales / Internacionales
+        $nacionalesNews = \App\Models\News::with(['categories', 'author'])
+            ->where('is_published', true)
+            ->where('area', 'Nacional')
+            ->orderBy('published_at', 'desc')
+            ->take(4)
+            ->get();
 
-    // 6. Nacionales News
-    $nacionalesNews = \App\Models\News::with(['categories', 'author'])
-        ->where('is_published', true)
-        ->where('area', 'Nacional')
-        ->orderBy('published_at', 'desc')
-        ->take(4)
-        ->get();
+        $internationalNews = \App\Models\News::with(['categories', 'author'])
+            ->where('is_published', true)
+            ->where('area', 'Internacional')
+            ->orderBy('published_at', 'desc')
+            ->take(4)
+            ->get();
 
-    $internationalNews = \App\Models\News::with(['categories', 'author'])
-        ->where('is_published', true)
-        ->where('area', 'Internacional')
-        ->orderBy('published_at', 'desc')
-        ->take(4)
-        ->get();
+        // 7. Banners
+        $banners = \App\Models\Banner::where('is_active', true)->get();
 
-    // 7. Banners
-    $banners = \App\Models\Banner::where('is_active', true)->get();
+        // 8. Videos ABC TV — served directly from JSON (Fix 3)
+        $videos = [];
+        if (Storage::disk('local')->exists('youtube_videos.json')) {
+            $decoded = json_decode(Storage::disk('local')->get('youtube_videos.json'), true);
+            if (is_array($decoded)) {
+                $videos = collect($decoded)
+                    ->filter(fn($v) => !empty($v['id']) && !empty($v['title']))
+                    ->take(6)
+                    ->values()
+                    ->all();
+            }
+        }
 
+        // Serializar autor
+        $serializeAuthor = fn($news) => array_merge($news->toArray(), [
+            'author' => $news->serialized_author,
+        ]);
+        $serializeCollection = fn($col) => $col->map($serializeAuthor)->values();
 
+        return [
+            'latestNews'         => $latestNews ? $serializeAuthor($latestNews) : null,
+            'mostReadNews'       => $serializeCollection($mostReadNews),
+            'featuredNews'       => $serializeCollection($featuredNews),
+            'isFallbackFeatured' => $isFallbackFeatured,
+            'moreNews'           => $serializeCollection($moreNews),
+            'featuredCategories' => $featuredCategories,
+            'nacionalesNews'     => $serializeCollection($nacionalesNews),
+            'internationalNews'  => $serializeCollection($internationalNews),
+            'banners'            => $banners,
+            'videos'             => $videos,
+        ];
+    });
 
-    // Serializar autor (many-to-many → objeto plano {id, name, type}) para todos los items
-    // Esto hace que React pueda acceder a post.author.name en lugar de recibir una colección vacía
-    $serializeAuthor = fn($news) => array_merge($news->toArray(), [
-        'author' => $news->serialized_author,
-    ]);
-    $serializeCollection = fn($col) => $col->map($serializeAuthor)->values();
-
-    return Inertia::render('Welcome', [
-        'latestNews' => $latestNews ? $serializeAuthor($latestNews) : null,
-        'mostReadNews' => $serializeCollection($mostReadNews),
-        'featuredNews' => $serializeCollection($featuredNews),
-        'isFallbackFeatured' => $isFallbackFeatured,
-        'moreNews' => $serializeCollection($moreNews),
-        'featuredCategories' => $featuredCategories,
-        'nacionalesNews' => $serializeCollection($nacionalesNews),
-        'internationalNews' => $serializeCollection($internationalNews),
-        'banners' => $banners,
-
-    ]);
+    return Inertia::render('Welcome', $data);
 })->name('home');
 
 // Rutas de Autenticación (Blade - para Admin)
@@ -256,8 +270,13 @@ Route::get('/autor/{id}', [BlogNewsController::class, 'authorNews'])->name('auth
 // Rutas API para el Blog (React consumirá esto)
 Route::get('api/news', [BlogNewsController::class, 'index'])->name('api.news.index');
 
+// Fix 5: Cachear la API de categorías por 1 hora
 Route::get('api/categories', function () {
-    return response()->json(\App\Models\Category::with('children')->whereNull('parent_id')->get());
+    return Cache::remember('api_categories', now()->addHour(), fn () =>
+        response()->json(
+            \App\Models\Category::with('children')->whereNull('parent_id')->get()
+        )
+    );
 })->name('api.categories.index');
 
 // API para AudioReportajes (consumido por React)
