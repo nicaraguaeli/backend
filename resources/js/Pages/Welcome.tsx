@@ -49,7 +49,7 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
     useEffect(() => {
         const loadVideos = async () => {
             try {
-                const fetchedVideos = await fetchYoutubeVideos('Radio ABC Stereo reportajes', 6);
+                const fetchedVideos = await fetchYoutubeVideos('', 6);
                 setVideos(fetchedVideos);
             } catch (error) {
                 console.error('Error loading videos:', error);
@@ -158,13 +158,25 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
                 onCategoryClick={(slug) => router.visit(route('category.show', { slug }))}
             />
 
+            {/* ── Video Gallery ABC TV ──────────────────────── */}
+            {!videosLoading && videos.length > 0 && (
+                <div style={{ background: 'linear-gradient(180deg, #080f1e 0%, #0c1530 100%)', padding: '60px 0' }}>
+                    <div className="container">
+                        <VideoGallery
+                            title="Reportajes ABC TV"
+                            videos={videos}
+                            seeMoreUrl="/videos"
+                        />
+                    </div>
+                </div>
+            )}
 
-            <AudioreportajesCTA
+            {/*<AudioreportajesCTA
                 onNavigate={() => {
                     window.history.pushState(null, '', '#audioreportajes');
                     window.dispatchEvent(new PopStateEvent('popstate'));
                 }}
-            />*/
+            />*/}
 
             {footerBanner && (
                 <div className="container my-5">
@@ -197,16 +209,6 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
 
             {/*  <NacionalesSection news={nacionalesNews} /> */}
 
-            {/* Video Gallery Section 
-            {!videosLoading && videos.length > 0 && (
-                <div className="container my-5">
-                    <VideoGallery
-                        title="Reportajes ABC TV"
-                        videos={videos}
-                    />
-                </div>
-            )}
-            */}
             <JobsCallToAction />
             <NewsTicker
                 news={[

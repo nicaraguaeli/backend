@@ -66,7 +66,8 @@ class FetchYouTubeData extends Command
                         'date' => $item['snippet']['publishedAt'],
                     ];
                 })
-                ->filter()
+                ->filter(fn($v) => !empty($v['id']) && !empty($v['title']))
+                ->sortByDesc(fn($v) => $v['date'])
                 ->values();
 
             Storage::disk('local')->put('youtube_videos.json', $videos->toJson());

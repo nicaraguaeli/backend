@@ -125,8 +125,8 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
     // If navigating to a URL route, first close any special view (podcast/video)
     if (href && (href.startsWith(route('home')) || href.startsWith('/') || href.startsWith('http'))) {
       if (href.startsWith('http') && !href.startsWith(route('home'))) {
-         window.location.href = href;
-         return;
+        window.location.href = href;
+        return;
       }
       if (onNavigate) onNavigate('home'); // reset podcastview / videoreportajes
       router.visit(href);
@@ -256,7 +256,6 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
               <li className="nav-item"><Link href={route('corporate.about')} className="nav-link text-light px-2 py-0 hover-white" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>QUIÉNES SOMOS</Link></li>
               <li className="nav-item"><Link href={route('corporate.advertise')} className="nav-link text-light px-2 py-0 hover-white" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>ANUNCIATE</Link></li>
               <li className="nav-item"><Link href={route('corporate.contact')} className="nav-link text-light px-2 py-0 hover-white" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>CONTÁCTANOS</Link></li>
-              <li className="nav-item"><a href="#" onClick={navigateToVideos} className="nav-link text-abc-gold px-2 py-0 hover-white fw-bold" style={{ fontSize: '11px', letterSpacing: '0.5px', color: '#f1c40f' }}>ABCTV</a></li>
               <li className="nav-item"><Link href={route('corporate.programming')} className="nav-link text-light px-2 py-0 hover-white" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>PROGRAMACIÓN</Link></li>
               <li className="nav-item"><a href="#" onClick={navigateToJobs} className="nav-link text-light px-2 py-0 hover-white cursor-pointer" style={{ fontSize: '11px', letterSpacing: '0.5px' }}>EMPLEOS</a></li>
             </ul>
