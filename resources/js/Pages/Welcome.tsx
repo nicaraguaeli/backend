@@ -174,12 +174,12 @@ const Welcome = ({ latestNews, mostReadNews = [], featuredNews = [], moreNews = 
                 </div>
             )}
 
-            {/*<AudioreportajesCTA
+            <AudioreportajesCTA
                 onNavigate={() => {
                     window.history.pushState(null, '', '#audioreportajes');
                     window.dispatchEvent(new PopStateEvent('popstate'));
                 }}
-            />*/}
+            />
 
             {footerBanner && (
                 <div className="container my-5">
