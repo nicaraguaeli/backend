@@ -131,7 +131,15 @@ Route::get('/', function () {
         ];
     });
 
-    return Inertia::render('Welcome', $data);
+    // Extraer la URL de la imagen hero para preload en el <head> del Blade,
+    // ANTES de que React monte. Esto es lo que realmente mejora el LCP.
+    $heroImageUrl = null;
+    if (!empty($data['latestNews']['image_path'])) {
+        $heroImageUrl = asset('storage/' . $data['latestNews']['image_path']);
+    }
+
+    return Inertia::render('Welcome', $data)
+        ->withViewData(['heroImageUrl' => $heroImageUrl]);
 })->name('home');
 
 // Rutas de Autenticación (Blade - para Admin)
