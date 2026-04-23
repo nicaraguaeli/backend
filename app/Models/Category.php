@@ -8,6 +8,18 @@ class Category extends Model
 {
     public $timestamps = false;
 
+    protected static function booted()
+    {
+        static::saved(function ($category) {
+            \Illuminate\Support\Facades\Cache::forget('nav_categories');
+        });
+
+        static::deleted(function ($category) {
+            \Illuminate\Support\Facades\Cache::forget('nav_categories');
+        });
+    }
+
+
     // Solo columnas reales
     protected $fillable = [
         'name', 'slug', 'is_active', 'is_featured', 'show_in_menu', 'menu_order', 'image_path', 'theme_color', 'theme_color_secondary', 'parent_id', 'custom_url'

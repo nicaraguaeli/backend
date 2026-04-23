@@ -64,6 +64,7 @@ Route::get('/', function () {
         // 4. More News (Main Content)
         $moreNewsQuery = \App\Models\News::with(['categories', 'author'])
             ->where('is_published', true)
+            ->whereIn('area', ['Local', 'Departamental'])
             ->orderBy('published_at', 'desc')
             ->orderBy('created_at', 'desc');
 

@@ -148,6 +148,8 @@ class CategoryController extends Controller
             Category::where('id', $categoryId)->update(['menu_order' => $index + 1]);
         }
 
+        \Illuminate\Support\Facades\Cache::forget('nav_categories');
+
         return response()->json(['success' => true, 'message' => 'El orden de las categorías ha sido actualizado.']);
     }
 
