@@ -60,10 +60,7 @@
 
         <div class="form-group">
             <label for="content">Contenido <span class="text-danger">*</span></label>
-            <div class="alert alert-info small py-2 mb-2" role="alert">
-                <i class="fas fa-info-circle mr-1"></i>
-                <strong>¡Nueva función!</strong> Para aplicar una marca de agua a las imágenes de esta sección, marca la opción <strong>"Agregar marca al contenido"</strong> en la barra lateral derecha <em>antes</em> de subir la imagen al editor.</br> Tambien se a ajustado el pie de foto de foto de la imagen para su mejor vizualizacion.
-            </div>
+ 
             <textarea class="textarea @error('content') is-invalid @enderror"
                       name="content" id="content">{{ old('content', $news->content ?? '') }}</textarea>
             @error('content')
@@ -232,7 +229,7 @@
                             @enderror
                         </div>
                         <div class="form-group">
-                            <label for="city_id">Ciudad <span class="text-danger">*</span></label>
+                            <label for="city_id">Ciudad</label>
                             <select name="city_id" id="city_id"
                                     class="form-control select2 @error('city_id') is-invalid @enderror"
                                     {{ !empty($cities) ? '' : 'disabled' }}>

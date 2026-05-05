@@ -22,7 +22,8 @@ export default function Hero({ post, onReadMore }: HeroProps) {
   return (
     <div
       className="hero-section position-relative d-flex align-items-center"
-      style={{ minHeight: '80vh' }}
+      style={{ minHeight: '80vh', cursor: 'pointer' }}
+      onClick={onReadMore}
     >
       {/* Fix 4: Real <img> with fetchPriority="high" so the browser preloads it as LCP */}
       {post.image_path && (
@@ -65,6 +66,7 @@ export default function Hero({ post, onReadMore }: HeroProps) {
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
                   if (onReadMore) onReadMore();
                 }}
                 className="text-white text-decoration-none"
@@ -101,7 +103,10 @@ export default function Hero({ post, onReadMore }: HeroProps) {
             {/* Actions */}
             <div className="d-flex flex-column flex-sm-row gap-3">
               <button
-                onClick={onReadMore}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (onReadMore) onReadMore();
+                }}
                 className="btn btn-abc-blue text-white fw-bold px-4 py-3 text-uppercase shadow-lg border-0 rounded-2 d-flex align-items-center justify-content-center gap-2"
               >
                 Leer Noticia Completa <ArrowRight size={18} />

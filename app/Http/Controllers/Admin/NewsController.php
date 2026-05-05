@@ -104,7 +104,7 @@ class NewsController extends Controller
             'author_id.*' => 'exists:authors,id',
             'categories' => 'required|array',
             'categories.*' => 'exists:categories,id',
-            'city_id' => 'required|exists:cities,id',
+            'city_id' => 'nullable|exists:cities,id',
             'country_id' => 'required|exists:countries,id',
             'tags' => 'nullable|array',
             'tags.*' => 'distinct',
