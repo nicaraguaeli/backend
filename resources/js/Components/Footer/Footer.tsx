@@ -223,7 +223,7 @@ export default function Footer() {
           <p className="mb-2 mb-md-0">
             &copy; {currentYear} Radio ABC Stereo. Todos los derechos reservados.
             <span className="d-none d-md-inline ms-2 border-start border-secondary ps-2">
-              Desarrollado por <a href="https://www.facebook.com/Galeanoejose" target="_blank" rel="noreferrer" className="text-white-50 text-decoration-none footer-link fw-bold">Eli M.</a>
+              Desarrollado por <a href="https://www.facebook.com/Galeanoejose" target="_blank" rel="noreferrer" className="text-white-50 text-decoration-none footer-link fw-bold">EliM.</a>
             </span>
           </p>
 

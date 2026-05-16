@@ -40,7 +40,9 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
   const [suggestions, setSuggestions] = useState<Array<{ id: number; title: string; slug: string; excerpt?: string }>>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [activeSuggestion, setActiveSuggestion] = useState<number | null>(null);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
   const searchRef = React.useRef<HTMLInputElement | null>(null);
+  const mobileSearchRef = React.useRef<HTMLInputElement | null>(null);
 
   // Fix 2: Read categories from Inertia shared prop (no extra fetch needed)
   const { navCategories = [] } = usePage().props as any;
@@ -237,6 +239,120 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
   };
 
 
+  // ── renderSuggestions: plain function, NOT a component, to avoid focus loss
+  const renderSuggestions = (onSelect: () => void) => {
+    if (!showSuggestions || suggestions.length === 0) return null;
+    return (
+      <div className="sb-suggestions" role="listbox">
+        <div className="sb-sugg-header">
+          <span className="sb-sugg-label">RESULTADOS</span>
+          <span className="sb-sugg-count">{suggestions.length} encontrado{suggestions.length !== 1 ? 's' : ''}</span>
+        </div>
+        {suggestions.map((s, idx) => {
+          const q = searchQuery.trim().toLowerCase();
+          const title = s.title;
+          const matchIdx = title.toLowerCase().indexOf(q);
+          const highlighted = matchIdx >= 0 && q.length > 0
+            ? <>{title.slice(0, matchIdx)}<mark className="sb-match">{title.slice(matchIdx, matchIdx + q.length)}</mark>{title.slice(matchIdx + q.length)}</>
+            : title;
+          return (
+            <button
+              key={s.id} type="button" role="option"
+              aria-selected={activeSuggestion === idx}
+              className={`sb-suggestion-item ${activeSuggestion === idx ? 'active' : ''}`}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                router.visit(route('news.show', { slug: s.slug }));
+                setShowSuggestions(false); setSuggestions([]); setSearchQuery('');
+                onSelect();
+              }}
+            >
+              <span className="sb-sugg-num">{String(idx + 1).padStart(2, '0')}</span>
+              <div className="sb-suggestion-text">
+                <span className="sb-suggestion-title">{highlighted}</span>
+                {s.excerpt && <span className="sb-suggestion-excerpt">{s.excerpt}</span>}
+              </div>
+              <Search size={12} className="sb-sugg-arrow" />
+            </button>
+          );
+        })}
+        <div className="sb-sugg-footer">
+          <button
+            type="button"
+            className="sb-sugg-all"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              const q = searchQuery.trim();
+              if (q) { setShowSuggestions(false); setSuggestions([]); setSearchQuery(''); router.visit(route('search', { q })); onSelect(); }
+            }}
+          >
+            Ver todos los resultados para &ldquo;{searchQuery.trim()}&rdquo; &rarr;
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  // ── renderSearch: plain function, NOT a component, to avoid focus loss on each keystroke
+  const renderSearch = (opts: {
+    inputRef?: React.RefObject<HTMLInputElement | null>;
+    dark?: boolean;
+    autoFocus?: boolean;
+    onClose?: () => void;
+  } = {}) => {
+    const { inputRef, dark = false, autoFocus = false, onClose } = opts;
+    return (
+      <div className="position-relative">
+        <form
+          onSubmit={(e) => { handleSearch(e); if (onClose) onClose(); }}
+          className={`sb-form ${dark ? 'sb-dark' : 'sb-light'}`}
+          role="search"
+          aria-label="Buscar noticias"
+        >
+          <button type="submit" className="sb-icon-btn" aria-label="Buscar">
+            <Search size={16} />
+          </button>
+          <input
+            ref={inputRef}
+            type="text"
+            className="sb-input"
+            placeholder="Buscar noticias..."
+            aria-label="Buscar noticias"
+            value={searchQuery}
+            autoFocus={autoFocus}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+            onFocus={() => { if (suggestions.length) setShowSuggestions(true); }}
+          />
+          {onClose && (
+            <button
+              type="button"
+              className="sb-close-btn"
+              aria-label={searchQuery ? 'Limpiar búsqueda' : 'Cerrar'}
+              onClick={() => {
+                if (searchQuery) {
+                  // Solo limpiar el campo, NO cerrar
+                  setSearchQuery('');
+                  setSuggestions([]);
+                  setShowSuggestions(false);
+                  setActiveSuggestion(null);
+                  // Devolver foco al input
+                  if (inputRef?.current) inputRef.current.focus();
+                } else {
+                  onClose();
+                }
+              }}
+            >
+              <X size={15} />
+            </button>
+          )}
+        </form>
+        {renderSuggestions(() => { if (onClose) onClose(); })}
+      </div>
+    );
+  };
+
   return (
     <header className="fixed-top bg-white shadow-sm">
       {/* Top Bar: Corporate Links & Socials (Desktop Only) */}
@@ -278,28 +394,13 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
             </a>
           </div>
 
-          {/* Center: Search */}
-          <div className="d-none d-xl-block flex-grow-1 mx-5 search-container position-relative">
-            <form onSubmit={handleSearch} className="input-group" role="search" aria-label="Buscar noticias">
-              <input ref={searchRef} type="text" className="form-control bg-light border-end-0 rounded-start-pill ps-4" placeholder="Buscar noticias..." aria-label="Buscar noticias" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={handleKeyDown} onBlur={() => setTimeout(() => setShowSuggestions(false), 150)} onFocus={() => { if (suggestions.length) setShowSuggestions(true); }} />
-              <button type="submit" className="btn btn-light border-start-0 rounded-end-pill pe-3"><Search size={18} className="text-primary" /></button>
-            </form>
-
-            {showSuggestions && suggestions.length > 0 && (
-              <div className="search-suggestions dropdown-menu show mt-1 w-100 shadow-sm" role="listbox" aria-label="Sugerencias de búsqueda">
-                {suggestions.map((s, idx) => (
-                  <button key={s.id} type="button" role="option" aria-selected={activeSuggestion === idx} className={`dropdown-item text-truncate ${activeSuggestion === idx ? 'active' : ''}`} onMouseDown={(e) => { e.preventDefault(); router.visit(route('news.show', { slug: s.slug })); setShowSuggestions(false); setSuggestions([]); setSearchQuery(''); }}>
-                    <strong className="d-block">{s.title}</strong>
-                    {s.excerpt && <small className="text-muted d-block">{s.excerpt}</small>}
-                  </button>
-                ))}
-              </div>
-            )}
-
+          {/* Center: Search — desktop only */}
+          <div className="d-none d-xl-block flex-grow-1 mx-5 search-container">
+            {renderSearch({ inputRef: searchRef })}
           </div>
 
           {/* Right: Live Button */}
-          <div className="d-flex align-items-center gap-3">
+          <div className="d-flex align-items-center gap-2 gap-md-3">
             <button
               onClick={onPlayLive}
               className={`btn ${isLivePlaying ? 'btn-outline-danger' : 'btn-abc-red'} rounded-pill d-flex align-items-center gap-2 px-3 py-2 shadow-sm border-0`}
@@ -320,6 +421,15 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
           </div>
         </div>
       </div>
+
+      {/* Mobile Search Panel — slide down */}
+      {showMobileSearch && (
+        <div className="mobile-search-panel d-xl-none">
+          <div className="container py-3">
+            {renderSearch({ inputRef: mobileSearchRef, autoFocus: true, onClose: () => setShowMobileSearch(false) })}
+          </div>
+        </div>
+      )}
 
       {/* Bottom Bar: Main Navigation */}
       <div className="bg-abc-blue d-none d-lg-block">
@@ -393,37 +503,9 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
               </button>
             </div>
 
-            {/* Search */}
-            <div className="mobile-drawer-search position-relative">
-              <form onSubmit={handleSearch} className="d-flex gap-2" role="search" aria-label="Buscar">
-                <div className="flex-grow-1 position-relative">
-                  <Search size={15} className="mobile-search-icon" />
-                  <input
-                    type="text"
-                    className="mobile-search-input"
-                    placeholder="Buscar noticias..."
-                    aria-label="Buscar"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                    onFocus={() => { if (suggestions.length) setShowSuggestions(true); }}
-                  />
-                </div>
-                <button className="mobile-search-btn" type="submit">IR</button>
-              </form>
-              {showSuggestions && suggestions.length > 0 && (
-                <div className="search-suggestions dropdown-menu show mt-1 w-100 shadow" style={{ left: 0 }} role="listbox">
-                  {suggestions.map((s, idx) => (
-                    <button key={s.id} type="button" role="option" aria-selected={activeSuggestion === idx}
-                      className={`dropdown-item text-truncate ${activeSuggestion === idx ? 'active' : ''}`}
-                      onMouseDown={(e) => { e.preventDefault(); router.visit(route('news.show', { slug: s.slug })); setShowSuggestions(false); setSuggestions([]); setSearchQuery(''); setIsMobileMenuOpen(false); }}>
-                      <strong className="d-block">{s.title}</strong>
-                      {s.excerpt && <small className="text-muted d-block">{s.excerpt}</small>}
-                    </button>
-                  ))}
-                </div>
-              )}
+            {/* Search — dark variant */}
+            <div className="mobile-drawer-search">
+              {renderSearch({ dark: true, onClose: () => setIsMobileMenuOpen(false) })}
             </div>
 
             {/* Navigation Items */}
@@ -628,14 +710,18 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
         /* Nav Item (leaf) */
         .mobile-nav-item {
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           justify-content: space-between;
+          gap: 8px;
           padding: 11px 18px;
           text-decoration: none;
           color: rgba(255,255,255,0.78);
           font-size: 0.83rem;
           font-weight: 600;
           letter-spacing: 0.2px;
+          line-height: 1.4;
+          white-space: normal;
+          word-break: break-word;
           border-left: 2px solid transparent;
           transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
           background: transparent;
@@ -728,10 +814,190 @@ export default function Header({ audioState, onPlayLive, onNavigate, onCategoryC
         }
         .mobile-social-link:hover { color: #fff; transform: translateY(-2px); }
 
-        /* ===== SHARED ===== */
-        .search-suggestions { position: absolute; z-index: 2050; max-height: 280px; overflow-y: auto; }
-        .search-suggestions .dropdown-item { white-space: normal; }
-        .search-suggestions .dropdown-item small { display: block; }
+        /* ===== SEARCH BAR (shared) ===== */
+
+        /* Light variant — desktop center bar */
+        .sb-form {
+          display: flex; align-items: center; gap: 6px;
+          height: 42px; border-radius: 10px;
+          padding: 0 6px 0 12px;
+          transition: box-shadow 0.22s ease, border-color 0.22s ease;
+        }
+        .sb-light {
+          background: #f2f4f8;
+          border: 1.5px solid #dde1e9;
+        }
+        .sb-light:focus-within {
+          background: #fff;
+          border-color: var(--abc-blue, #1a3c6b);
+          box-shadow: 0 0 0 3px rgba(26,60,107,0.10);
+        }
+        /* Dark variant — mobile drawer */
+        .sb-dark {
+          background: rgba(255,255,255,0.07);
+          border: 1.5px solid rgba(255,255,255,0.13);
+        }
+        .sb-dark:focus-within {
+          background: rgba(255,255,255,0.12);
+          border-color: var(--abc-red, #c0392b);
+          box-shadow: 0 0 0 3px rgba(192,57,43,0.18);
+        }
+
+        /* Icon button (submit) */
+        .sb-icon-btn {
+          background: none; border: none; padding: 0;
+          display: flex; align-items: center; flex-shrink: 0;
+          cursor: pointer; transition: color 0.18s ease;
+        }
+        .sb-light .sb-icon-btn { color: #8c95a6; }
+        .sb-light:focus-within .sb-icon-btn { color: var(--abc-blue, #1a3c6b); }
+        .sb-dark  .sb-icon-btn { color: rgba(255,255,255,0.4); }
+        .sb-dark:focus-within  .sb-icon-btn { color: var(--abc-red, #c0392b); }
+
+        /* Text input */
+        .sb-input {
+          flex: 1; border: none; background: transparent;
+          outline: none; min-width: 0;
+          font-size: 0.855rem; font-weight: 400;
+        }
+        .sb-light .sb-input { color: #1a1a2e; }
+        .sb-light .sb-input::placeholder { color: #adb5c2; }
+        .sb-dark  .sb-input { color: #fff; }
+        .sb-dark  .sb-input::placeholder { color: rgba(255,255,255,0.35); }
+
+        /* Close button (mobile panels) */
+        .sb-close-btn {
+          background: none; border: none; padding: 4px;
+          display: flex; align-items: center; flex-shrink: 0;
+          cursor: pointer; border-radius: 6px;
+          transition: background 0.15s ease, color 0.15s ease;
+        }
+        .sb-light .sb-close-btn { color: #8c95a6; }
+        .sb-light .sb-close-btn:hover { background: #eee; color: #333; }
+        .sb-dark  .sb-close-btn { color: rgba(255,255,255,0.45); }
+        .sb-dark  .sb-close-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+        /* Suggestions panel */
+        .sb-suggestions {
+          position: absolute; left: 0; right: 0;
+          top: calc(100% + 6px);
+          background: #fff;
+          border: 1px solid #e0e4ed;
+          border-radius: 12px;
+          box-shadow: 0 16px 48px rgba(26,60,107,0.14), 0 2px 8px rgba(0,0,0,0.06);
+          z-index: 2100; overflow: hidden;
+          animation: sbFadeIn 0.17s ease;
+        }
+        @keyframes sbFadeIn {
+          from { opacity: 0; transform: translateY(-6px) scale(0.99); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        /* Header row */
+        .sb-sugg-header {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 10px 14px 6px;
+          border-bottom: 1px solid #f0f2f7;
+        }
+        .sb-sugg-label {
+          font-size: 0.57rem; font-weight: 800;
+          letter-spacing: 1.4px; color: #a0a9bc;
+        }
+        .sb-sugg-count {
+          font-size: 0.68rem; font-weight: 600;
+          color: #b8bfcf;
+        }
+        /* Each suggestion row */
+        .sb-suggestion-item {
+          display: flex; align-items: center; gap: 10px;
+          width: 100%; background: none; border: none;
+          padding: 9px 14px; text-align: left; cursor: pointer;
+          border-top: 1px solid #f4f6fa;
+          transition: background 0.12s ease;
+          position: relative;
+        }
+        .sb-suggestion-item:first-of-type { border-top: none; }
+        .sb-suggestion-item:hover, .sb-suggestion-item.active {
+          background: #f4f7ff;
+        }
+        .sb-suggestion-item:hover .sb-sugg-num { color: var(--abc-blue, #1a3c6b); }
+        .sb-suggestion-item:hover .sb-sugg-arrow { opacity: 1; transform: translateX(0); }
+        /* Number badge */
+        .sb-sugg-num {
+          font-size: 0.62rem; font-weight: 800;
+          color: #d4d9e6; min-width: 20px;
+          text-align: right; flex-shrink: 0;
+          transition: color 0.15s ease;
+          font-variant-numeric: tabular-nums;
+        }
+        /* Text block */
+        .sb-suggestion-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+        .sb-suggestion-title {
+          font-size: 0.84rem; font-weight: 600; color: #1a1a2e;
+          white-space: normal; overflow: visible; display: block;
+          line-height: 1.35; word-break: break-word;
+        }
+        .sb-suggestion-excerpt {
+          font-size: 0.71rem; color: #9ba3b5; line-height: 1.4;
+          white-space: normal; overflow: visible; display: block;
+          word-break: break-word;
+        }
+        /* On large screens keep titles on one line with ellipsis */
+        @media (min-width: 992px) {
+          .sb-suggestion-title {
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+          }
+          .sb-suggestion-excerpt {
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+          }
+        }
+        /* Highlighted match */
+        .sb-match {
+          background: rgba(26,60,107,0.12);
+          color: var(--abc-blue, #1a3c6b);
+          font-weight: 700;
+          padding: 0 1px;
+          border-radius: 2px;
+        }
+        /* Arrow icon */
+        .sb-sugg-arrow {
+          color: #c4cad5; flex-shrink: 0;
+          opacity: 0; transform: translateX(-4px);
+          transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+        /* Footer: ver todos */
+        .sb-sugg-footer {
+          border-top: 1px solid #edf0f7;
+          padding: 8px 14px;
+          background: #fafbfd;
+        }
+        .sb-sugg-all {
+          background: none; border: none; padding: 0;
+          font-size: 0.75rem; font-weight: 600;
+          color: var(--abc-blue, #1a3c6b);
+          cursor: pointer;
+          transition: color 0.15s ease;
+          text-align: left;
+        }
+        .sb-sugg-all:hover { color: var(--abc-red, #c0392b); }
+
+        /* Mobile search slide-down panel */
+        .mobile-search-panel {
+          background: #fff;
+          border-top: 1px solid #eaedf2;
+          border-bottom: 3px solid var(--abc-blue, #1a3c6b);
+          box-shadow: 0 6px 24px rgba(26,60,107,0.10);
+          animation: msPanelIn 0.22s cubic-bezier(0.16,1,0.3,1);
+        }
+        @keyframes msPanelIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Remove old mobile search styles (replaced) */
+        .mobile-search-input, .mobile-search-icon, .mobile-search-btn { display: none; }
+
+        /* ===== SHARED (legacy) ===== */
+        .search-suggestions { display: none; }
         .rotate-180 { transform: rotate(180deg); transition: transform 0.2s ease; }
       `}</style>
     </header>
