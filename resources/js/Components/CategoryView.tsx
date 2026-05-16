@@ -219,47 +219,77 @@ export default function CategoryView({ category, categoryName, posts, onPostClic
         )}
 
         {/* ── Paginación ───────────────────────────────────────────────── */}
-        {totalPages > 1 && (
-          <nav aria-label="Paginación de noticias">
-            <ul className="pagination justify-content-center gap-2">
-              <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                <button
-                  className="page-link border-0 bg-abc-blue text-white rounded-pill px-4 shadow-sm"
-                  onClick={() => paginate(currentPage - 1)}
-                  disabled={currentPage === 1}
-                >
-                  <ChevronLeft size={18} className="me-1" /> Anterior
-                </button>
-              </li>
+        {totalPages > 1 && (() => {
+          // Construye la lista de páginas con ellipsis
+          const buildPages = (): (number | '...')[] => {
+            if (totalPages <= 7) {
+              return Array.from({ length: totalPages }, (_, i) => i + 1);
+            }
+            const pages: (number | '...')[] = [1];
+            const left  = Math.max(2, currentPage - 1);
+            const right = Math.min(totalPages - 1, currentPage + 1);
 
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
-                <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
+            if (left > 2)  pages.push('...');
+            for (let i = left; i <= right; i++) pages.push(i);
+            if (right < totalPages - 1) pages.push('...');
+            pages.push(totalPages);
+            return pages;
+          };
+
+          return (
+            <nav aria-label="Paginación de noticias">
+              <ul className="pagination justify-content-center flex-wrap gap-2" style={{ rowGap: '8px' }}>
+                {/* Anterior */}
+                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
                   <button
-                    className={`page-link rounded-circle border-2 ${
-                      currentPage === number
-                        ? 'bg-abc-red text-white border-abc-red shadow'
-                        : 'bg-white text-abc-blue border-abc-blue'
-                    }`}
-                    onClick={() => paginate(number)}
-                    style={{ width: '40px', height: '40px', fontWeight: 'bold' }}
+                    className="page-link border-0 bg-abc-blue text-white rounded-pill px-3 shadow-sm d-flex align-items-center gap-1"
+                    onClick={() => paginate(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    style={{ fontSize: '0.85rem' }}
                   >
-                    {number}
+                    <ChevronLeft size={16} /> Ant.
                   </button>
                 </li>
-              ))}
 
-              <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                <button
-                  className="page-link border-0 bg-abc-blue text-white rounded-pill px-4 shadow-sm"
-                  onClick={() => paginate(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                >
-                  Siguiente <ChevronRight size={18} className="ms-1" />
-                </button>
-              </li>
-            </ul>
-          </nav>
-        )}
+                {buildPages().map((item, idx) =>
+                  item === '...' ? (
+                    <li key={`ellipsis-${idx}`} className="page-item disabled">
+                      <span className="page-link border-0 bg-transparent text-muted px-1" style={{ fontWeight: 700 }}>
+                        …
+                      </span>
+                    </li>
+                  ) : (
+                    <li key={item} className={`page-item ${currentPage === item ? 'active' : ''}`}>
+                      <button
+                        className={`page-link rounded-circle border-2 ${
+                          currentPage === item
+                            ? 'bg-abc-red text-white border-abc-red shadow'
+                            : 'bg-white text-abc-blue border-abc-blue'
+                        }`}
+                        onClick={() => paginate(item)}
+                        style={{ width: '40px', height: '40px', fontWeight: 'bold', fontSize: '0.85rem' }}
+                      >
+                        {item}
+                      </button>
+                    </li>
+                  )
+                )}
+
+                {/* Siguiente */}
+                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                  <button
+                    className="page-link border-0 bg-abc-blue text-white rounded-pill px-3 shadow-sm d-flex align-items-center gap-1"
+                    onClick={() => paginate(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    style={{ fontSize: '0.85rem' }}
+                  >
+                    Sig. <ChevronRight size={16} />
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          );
+        })()}
 
       </div>
     </div>
