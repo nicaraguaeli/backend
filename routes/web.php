@@ -304,13 +304,13 @@ Route::get('/boletin/cancelar/{token}', [App\Http\Controllers\SubscriberControll
 
 // Ruta para Empleos (React)
 Route::get('/empleos', function () {
-    $vacancies = \App\Models\Vacancy::where('is_active', true)
-        ->whereDate('expires_at', '>=', now())
-        ->orderBy('created_at', 'desc')
-        ->get();
+    $vacancies = \App\Models\Vacancy::active()
+        ->orderByDesc('created_at')
+        ->get(['id', 'title', 'company', 'city', 'country', 'employment_type',
+               'description', 'file_path', 'is_active', 'expires_at', 'created_at']);
 
     return Inertia::render('Jobs', [
-        'vacancies' => $vacancies
+        'vacancies' => $vacancies,
     ]);
 })->name('jobs.index');
 
