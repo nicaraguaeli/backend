@@ -138,6 +138,19 @@
         @endif
     </div>
 
+    {{-- Slider de opacidad --}}
+    <div class="form-group mb-2" id="watermarkOpacityGroup">
+        <label for="watermark_opacity_range" class="small mb-1">
+            Opacidad de la marca de agua: <strong id="watermarkOpacityValue">50</strong>%
+        </label>
+        <input type="range"
+               id="watermark_opacity_range"
+               min="0" max="100" step="1" value="50"
+               class="form-control-range">
+        {{-- Hidden input que se envía con el form --}}
+        <input type="hidden" name="watermark_opacity" id="watermark_opacity" value="50">
+    </div>
+
 <div id="watermarkUploadBox">
     @csrf
 
@@ -453,6 +466,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const uploadBtn = document.getElementById('uploadWatermarkBtn');
     const watermarkPreviewContainer = document.getElementById('watermarkPreviewContainer');
     const watermarkStatus = document.getElementById('watermarkStatus');
+
+    // Opacity slider sync
+    const opacityRange  = document.getElementById('watermark_opacity_range');
+    const opacityHidden = document.getElementById('watermark_opacity');
+    const opacityLabel  = document.getElementById('watermarkOpacityValue');
+    if (opacityRange) {
+        opacityRange.addEventListener('input', function () {
+            opacityHidden.value = this.value;
+            opacityLabel.textContent = this.value;
+        });
+    }
 
     function toggleWatermarkManager() {
         if ((addWatermarkCheckbox && addWatermarkCheckbox.checked) || 

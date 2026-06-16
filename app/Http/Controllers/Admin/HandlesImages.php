@@ -66,8 +66,10 @@ trait HandlesImages
             $watermarkBinary = Storage::disk('public')->get($watermarkOption->value);
             $watermark = $manager->read($watermarkBinary);
 
+            
+
             // Aplicar watermark
-            $image->place($watermark, 'bottom-right', 10, 10, 50);
+            $image->place($watermark, 'bottom-right', 10, 10, 100);
         }
     }
 }

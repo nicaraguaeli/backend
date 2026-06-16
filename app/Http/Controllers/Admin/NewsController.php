@@ -108,7 +108,8 @@ class NewsController extends Controller
             'country_id' => 'required|exists:countries,id',
             'tags' => 'nullable|array',
             'tags.*' => 'distinct',
-            'add_watermark' => 'sometimes|boolean',
+            'add_watermark'      => 'sometimes|boolean',
+            'watermark_opacity'  => 'sometimes|integer|min:0|max:100',
         ]);
          
         
@@ -242,7 +243,8 @@ class NewsController extends Controller
     $data['country'] = $countryName;
 
     // NUEVA LÓGICA DE IMAGEN
-$applyWatermark = $request->boolean('add_watermark');
+$applyWatermark   = $request->boolean('add_watermark');
+$watermarkOpacity = $request->integer('watermark_opacity', 100);
 $imagePath = null;
 
 if ($request->filled('cropped_image')) {
@@ -256,7 +258,8 @@ if ($request->filled('cropped_image')) {
     $imagePath = $this->storeImageBinary(
         $binary,
         $news->image_path,
-        $applyWatermark
+        $applyWatermark,
+        $watermarkOpacity
     );
 } elseif ($request->hasFile('image_path')) {
     // sigue funcionando para archivos físicos normales
@@ -265,7 +268,8 @@ if ($request->filled('cropped_image')) {
     $imagePath = $this->storeImageBinary(
         $binary,
         $news->image_path,
-        $applyWatermark
+        $applyWatermark,
+        $watermarkOpacity
     );
 } elseif ($applyWatermark && $news->image_path) {
     $binary = Storage::disk('public')->get($news->image_path);
@@ -273,7 +277,8 @@ if ($request->filled('cropped_image')) {
     $imagePath = $this->storeImageBinary(
         $binary,
         $news->image_path,
-        true
+        true,
+        $watermarkOpacity
     );
 }
 

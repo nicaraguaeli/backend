@@ -13,7 +13,8 @@ trait HandlesImages
 {
     protected function handleImageUpload(Request $request, ?string $oldPath = null): ?string
     {
-        $applyWatermark = $request->boolean('add_watermark');
+        $applyWatermark   = $request->boolean('add_watermark');
+        $watermarkOpacity = $request->integer('watermark_opacity', 50);
 
         // Caso: imagen recortada (base64)
         if ($request->filled('cropped_image')) {
@@ -34,14 +35,14 @@ trait HandlesImages
                 return null;
             }
 
-            return $this->storeImageBinary($binary, $oldPath, $applyWatermark);
+            return $this->storeImageBinary($binary, $oldPath, $applyWatermark, $watermarkOpacity);
         }
 
         // Caso: archivo tradicional
         if ($request->hasFile('image_path') && $request->file('image_path')->isValid()) {
             
             $binary = file_get_contents($request->file('image_path')->getRealPath());
-            return $this->storeImageBinary($binary, $oldPath, $applyWatermark);
+            return $this->storeImageBinary($binary, $oldPath, $applyWatermark, $watermarkOpacity);
         }
 
         return null;
@@ -51,7 +52,8 @@ trait HandlesImages
    protected function storeImageBinary(
     string $binary,
     ?string $oldPath = null,
-    bool $applyWatermark = false
+    bool $applyWatermark = false,
+    int $watermarkOpacity = 100
 ): ?string {
 
 
@@ -82,18 +84,18 @@ trait HandlesImages
                 $watermarkBinary = Storage::disk('public')->get($watermarkOption->value);
                 $watermark = $manager->read($watermarkBinary);
 
-                // ✅ Escalar watermark
-                $watermarkWidth = (int) ($img->width() * 0.2);
-                $watermark->scale(width: $watermarkWidth);
+                        $watermark->resize(
+                        $img->width(),
+                        $img->height()
+                    );
 
-                // ✅ Colocar
-                $img->place(
-                    $watermark,
-                    'center',
-                    10,
-                    10,
-                    50
-                );
+                    $img->place(
+                        $watermark,
+                        'top-left',
+                        0,
+                        0,
+                        $watermarkOpacity
+                    );
             }
         }
 
